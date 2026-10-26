@@ -10,7 +10,7 @@
       <ecomm-button label="Add to bag" [full]="true" />
     </button>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">You pay on PayFast. No card number on this page.</p>
-  } @else {
+  } @else if (ready()) {
     <h1 class="font-display text-[40px] leading-11.5">That product is not in the shop.</h1>
   }
 </section>

@@ -1,0 +1,98 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [develop, release, main]
+  pull_request:
+    branches: [develop, release, main]
+
+concurrency:
+  group: shop-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish the API
+        run: dotnet publish EcommWebApi/EcommWebApi.csproj --configuration Release --output artifacts/api
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: EcommWebApp/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: EcommWebApp
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the shop
+        working-directory: EcommWebApp
+        run: pnpm build
+
+      - name: Upload the API
+        uses: actions/upload-artifact@v4
+        with:
+          name: api
+          path: artifacts/api
+          if-no-files-found: error
+
+      - name: Upload the shop
+        uses: actions/upload-artifact@v4
+        with:
+          name: shop
+          path: EcommWebApp/dist/EcommWebApp/browser
+          if-no-files-found: error
+
+  deploy-staging:
+    name: Deploy UAT
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release' && vars.STAGING_HOST != ''
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download the build
+        uses: actions/download-artifact@v4
+
+      - name: Publish to UAT
+        env:
+          STAGING_HOST: ${{ vars.STAGING_HOST }}
+        run: |
+          echo "::error::UAT host is $STAGING_HOST, and publishing to that host is not set up yet."
+          exit 1
+
+  deploy-production:
+    name: Deploy production
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PRODUCTION_HOST != ''
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download the build
+        uses: actions/download-artifact@v4
+
+      - name: Publish to production
+        env:
+          PRODUCTION_HOST: ${{ vars.PRODUCTION_HOST }}
+        run: |
+          echo "::error::Production host is $PRODUCTION_HOST, and publishing to that host is not set up yet."
+          exit 1

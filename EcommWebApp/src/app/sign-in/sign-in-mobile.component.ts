@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonComponent } from 'ecomm-components';
+import { SignInBaseDirective } from './sign-in-base.directive';
 
 @Component({
   selector: 'app-sign-in-mobile',
@@ -8,4 +9,4 @@ import { ButtonComponent } from 'ecomm-components';
   templateUrl: './sign-in-mobile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SignInMobileComponent {}
+export class SignInMobileComponent extends SignInBaseDirective {}

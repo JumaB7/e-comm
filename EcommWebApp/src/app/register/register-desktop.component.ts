@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonComponent } from 'ecomm-components';
+import { RegisterBaseDirective } from './register-base.directive';
 
 @Component({
   selector: 'app-register-desktop',
@@ -8,4 +9,4 @@ import { ButtonComponent } from 'ecomm-components';
   templateUrl: './register-desktop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterDesktopComponent {}
+export class RegisterDesktopComponent extends RegisterBaseDirective {}

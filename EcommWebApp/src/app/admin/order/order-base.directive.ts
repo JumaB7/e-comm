@@ -10,6 +10,7 @@ export class OrderDetailBaseDirective {
   readonly id = toSignal(inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('id') ?? '')), {
     initialValue: '',
   });
+  readonly ready = this.catalog.ordersReady;
   readonly order = computed(() => this.catalog.findOrder(this.id()));
   readonly canPack = computed(() => this.order()?.fulfilment === 'To pack');
 

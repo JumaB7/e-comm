@@ -12,6 +12,7 @@ export class ProductBaseDirective {
   readonly sku = toSignal(inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('sku') ?? '')), {
     initialValue: '',
   });
+  readonly ready = this.catalog.ready;
   readonly product = computed(() => this.catalog.find(this.sku()));
   readonly related = computed(() => this.catalog.products().filter((product) => product.sku !== this.sku()).slice(0, 3));
   readonly quantity = signal(1);

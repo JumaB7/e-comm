@@ -10,4 +10,20 @@ export class CheckoutBaseDirective {
   readonly total = this.cart.totalLabel;
   readonly delivery = this.cart.delivery;
   readonly hasLines = this.cart.count;
+  readonly email = this.cart.email;
+  readonly phone = this.cart.phone;
+  readonly fullName = this.cart.fullName;
+  readonly street = this.cart.street;
+  readonly suburb = this.cart.suburb;
+  readonly city = this.cart.city;
+  readonly province = this.cart.province;
+  readonly postalCode = this.cart.postalCode;
+
+  setContact(
+    field: 'email' | 'phone' | 'fullName' | 'street' | 'suburb' | 'city' | 'province' | 'postalCode',
+    event: Event,
+  ): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.cart[field].set(value);
+  }
 }

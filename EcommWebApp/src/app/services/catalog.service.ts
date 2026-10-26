@@ -1,209 +1,86 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, catchError, of, switchMap, throwError } from 'rxjs';
 import { ShopOrder } from '../models/order.model';
 import { Product } from '../models/product.model';
+import { CheckoutDetails } from './cart.service';
+import { apiMessage } from './auth.interceptor';
 
-const delivery = { label: 'Delivery', value: 'Courier, 2–5 working days' };
-
-function withStock(product: Product, stock: number): Product {
-  return { ...product, stock, low: stock <= 4 };
+export interface OrderSummary {
+  today: number;
+  paidTodayCents: number;
+  awaiting: number;
+  lowStock: number;
 }
+
+export interface SalesMonth {
+  month: string;
+  profitCents: number;
+}
+
+export interface SalesReport {
+  totalSalesCents: number;
+  orderCount: number;
+  profitCents: number;
+  thisMonthCents: number;
+  months: SalesMonth[];
+}
+
+interface CheckoutResponse {
+  order: ShopOrder;
+  receiptKey: string;
+  mode: 'local' | 'payfast';
+  payFastUrl?: string;
+  fields?: Record<string, string>;
+}
+
+const emptySummary: OrderSummary = { today: 0, paidTodayCents: 0, awaiting: 0, lowStock: 0 };
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
+  private readonly http = inject(HttpClient);
   readonly search = signal('');
-  readonly products = signal<Product[]>([
-    {
-      sku: 'VS-OPT-1042',
-      name: '10×42 binoculars',
-      category: 'Optics',
-      price: 'R 8 450',
-      amount: 8450,
-      stock: 12,
-      low: false,
-      blurb:
-        'Roof-prism glass for last light. Rubber armour, waterproof, and a strap that stays put on a stalk. Sold as a single pair.',
-      specs: [
-        { label: 'Magnification', value: '10×42' },
-        { label: 'Weight', value: '680 g' },
-        { label: 'Waterproof', value: 'Yes' },
-        delivery,
-      ],
-    },
-    {
-      sku: 'VS-APP-220',
-      name: 'Merino stalking shirt',
-      category: 'Apparel',
-      price: 'R 1 290',
-      amount: 1290,
-      stock: 4,
-      low: true,
-      blurb: 'Quiet merino for a long stalk. This listing is the medium.',
-      specs: [
-        { label: 'Size', value: 'M' },
-        delivery,
-      ],
-    },
-    {
-      sku: 'VS-KNF-018',
-      name: 'Fixed-blade skinner',
-      category: 'Knives',
-      price: 'R 890',
-      amount: 890,
-      stock: 20,
-      low: false,
-      blurb: 'A fixed blade for skinning in the field. Sold on its own, with a sheath.',
-      specs: [
-        { label: 'Blade', value: 'Fixed' },
-        delivery,
-      ],
-    },
-    {
-      sku: 'VS-PCK-028',
-      name: '28L daypack',
-      category: 'Packs',
-      price: 'R 1 750',
-      amount: 1750,
-      stock: 9,
-      low: false,
-      blurb: 'A 28 litre daypack for water, glass, and a layer.',
-      specs: [
-        { label: 'Volume', value: '28 L' },
-        delivery,
-      ],
-    },
-    {
-      sku: 'VS-CMP-014',
-      name: 'Ground blind',
-      category: 'Camp',
-      price: 'R 3 200',
-      amount: 3200,
-      stock: 2,
-      low: true,
-      blurb: 'A ground blind for a sitting hunt. Packs down for the courier.',
-      specs: [delivery],
-    },
-    {
-      sku: 'VS-CMP-033',
-      name: 'Trail camera',
-      category: 'Camp',
-      price: 'R 2 150',
-      amount: 2150,
-      stock: 7,
-      low: false,
-      blurb: 'A trail camera for the fence line. Sold as a single unit.',
-      specs: [delivery],
-    },
-    {
-      sku: 'VS-LMP-014',
-      name: 'Rechargeable headlamp',
-      category: 'Camp',
-      price: 'R 480',
-      amount: 480,
-      stock: 15,
-      low: false,
-      blurb: 'A rechargeable headlamp for camp and the walk back.',
-      specs: [
-        { label: 'Power', value: 'Rechargeable' },
-        delivery,
-      ],
-    },
-    {
-      sku: 'VS-APP-310',
-      name: 'Stalking boots',
-      category: 'Apparel',
-      price: 'R 2 890',
-      amount: 2890,
-      stock: 6,
-      low: false,
-      blurb: 'Boots for a dry stalk. Sold as a pair.',
-      specs: [delivery],
-    },
-  ]);
-
-  readonly orders = signal<ShopOrder[]>([
-    {
-      id: 'VS-1048',
-      customer: 'Thabo Mokoena',
-      email: 'thabo@example.co.za',
-      phone: '082 555 0142',
-      address: '14 Kloof Road, Parktown, Johannesburg, 2193',
-      total: 'R 9 860',
-      status: 'Paid',
-      tone: 'paid',
-      fulfilment: 'To pack',
-      fulfilmentNote: 'Paid, not yet packed.',
-      reference: 'pf_184920',
-      paidDetail: 'R 9 860 · card · 26 Oct 2026, 14:12',
-      paymentNote: 'Marked paid only because the PayFast signature matched.',
-      lines: ['10×42 binoculars · 1 · R 8 450', 'Merino stalking shirt · M · R 1 290', 'Courier · R 120'],
-    },
-    {
-      id: 'VS-1047',
-      customer: 'A. Naidoo',
-      email: 'a.naidoo@example.co.za',
-      phone: '083 555 0190',
-      address: '8 Marine Parade, Durban, 4001',
-      total: 'R 1 290',
-      status: 'Awaiting payment',
-      tone: 'awaiting',
-      fulfilment: 'Waiting',
-      fulfilmentNote: 'Waiting on payment.',
-      reference: '',
-      paidDetail: 'R 1 290 · not paid yet',
-      paymentNote: 'Paid only after the PayFast signature matches.',
-      lines: ['Merino stalking shirt · M · R 1 290'],
-    },
-    {
-      id: 'VS-1046',
-      customer: 'J. van Wyk',
-      email: 'j.vanwyk@example.co.za',
-      phone: '072 555 0144',
-      address: '22 Church Street, Stellenbosch, 7600',
-      total: 'R 3 200',
-      status: 'Packed',
-      tone: 'packed',
-      fulfilment: 'To ship',
-      fulfilmentNote: 'Packed, ready to ship.',
-      reference: 'pf_184700',
-      paidDetail: 'R 3 200 · card · 25 Oct 2026, 16:02',
-      paymentNote: 'Marked paid only because the PayFast signature matched.',
-      lines: ['Ground blind · 1 · R 3 200'],
-    },
-    {
-      id: 'VS-1045',
-      customer: 'L. Dlamini',
-      email: 'l.dlamini@example.co.za',
-      phone: '071 555 0188',
-      address: '4 Oxford Road, Rosebank, Johannesburg, 2196',
-      total: 'R 890',
-      status: 'Paid',
-      tone: 'paid',
-      fulfilment: 'Shipped',
-      fulfilmentNote: 'Shipped.',
-      reference: 'pf_184640',
-      paidDetail: 'R 890 · card · 25 Oct 2026, 09:15',
-      paymentNote: 'Marked paid only because the PayFast signature matched.',
-      lines: ['Fixed-blade skinner · 1 · R 890'],
-    },
-    {
-      id: 'VS-1044',
-      customer: 'S. Botha',
-      email: 's.botha@example.co.za',
-      phone: '082 555 0110',
-      address: '19 Reid Street, Westdene, Bloemfontein, 9301',
-      total: 'R 2 150',
-      status: 'Paid',
-      tone: 'paid',
-      fulfilment: 'To pack',
-      fulfilmentNote: 'Paid, not yet packed.',
-      reference: 'pf_184510',
-      paidDetail: 'R 2 150 · card · 24 Oct 2026, 11:40',
-      paymentNote: 'Marked paid only because the PayFast signature matched.',
-      lines: ['Trail camera · 1 · R 2 150'],
-    },
-  ]);
-
+  readonly products = signal<Product[]>([]);
   readonly featured = computed(() => this.products().slice(0, 4));
+  readonly ready = signal(false);
+  readonly orders = signal<ShopOrder[]>([]);
+  readonly ordersReady = signal(false);
+  readonly summary = signal<OrderSummary>(emptySummary);
+  readonly sales = signal<SalesReport | null>(null);
+  readonly receipt = signal<ShopOrder | null>(null);
+  readonly receiptReady = signal(false);
+
+  constructor() {
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.http
+      .get<Product[]>('/api/products')
+      .pipe(catchError(() => of([] as Product[])))
+      .subscribe((products) => {
+        this.products.set(products);
+        this.ready.set(true);
+      });
+  }
+
+  loadAdmin(): void {
+    this.http
+      .get<ShopOrder[]>('/api/admin/orders')
+      .pipe(catchError(() => of([] as ShopOrder[])))
+      .subscribe((orders) => {
+        this.orders.set(orders);
+        this.ordersReady.set(true);
+      });
+    this.http
+      .get<OrderSummary>('/api/admin/orders/summary')
+      .pipe(catchError(() => of(emptySummary)))
+      .subscribe((summary) => this.summary.set(summary));
+    this.http
+      .get<SalesReport>('/api/admin/sales')
+      .pipe(catchError(() => of(null)))
+      .subscribe((sales) => this.sales.set(sales));
+  }
 
   find(sku: string): Product | undefined {
     return this.products().find((product) => product.sku === sku);
@@ -217,34 +94,91 @@ export class CatalogService {
     if (quantity < 1) {
       return;
     }
-    this.products.update((products) =>
-      products.map((product) => {
-        if (product.name.toLowerCase() !== name.trim().toLowerCase()) {
-          return product;
+    this.http
+      .post<Product>('/api/admin/stock', { name, quantity, direction })
+      .pipe(catchError(() => of(undefined)))
+      .subscribe((product) => {
+        if (!product) {
+          return;
         }
-        return withStock(product, Math.max(0, product.stock + direction * quantity));
-      }),
-    );
+        this.products.update((products) => products.map((item) => (item.sku === product.sku ? product : item)));
+        this.loadAdmin();
+      });
   }
 
   removeProduct(sku: string): void {
-    this.products.update((products) => products.filter((product) => product.sku !== sku));
+    this.http.delete(`/api/admin/products/${sku}`).subscribe({
+      next: () => this.products.update((products) => products.filter((product) => product.sku !== sku)),
+    });
   }
 
   addProduct(product: Product): void {
-    if (this.find(product.sku)) {
-      return;
-    }
-    this.products.update((products) => [...products, withStock(product, product.stock)]);
+    this.http
+      .post<Product>('/api/admin/products', {
+        name: product.name,
+        sku: product.sku,
+        category: product.category,
+        priceRands: product.amount,
+        stock: product.stock,
+      })
+      .pipe(catchError(() => of(undefined)))
+      .subscribe((saved) => {
+        if (!saved || this.find(saved.sku)) {
+          return;
+        }
+        this.products.update((products) => [...products, saved]);
+      });
   }
 
   markPacked(id: string): void {
-    this.orders.update((orders) =>
-      orders.map((order) =>
-        order.id === id && order.fulfilment === 'To pack'
-          ? { ...order, fulfilment: 'Packed', fulfilmentNote: 'Packed. Payment is unchanged.' }
-          : order,
-      ),
+    this.http
+      .post<ShopOrder>(`/api/admin/orders/${id}/pack`, {})
+      .pipe(catchError(() => of(undefined)))
+      .subscribe((order) => {
+        if (!order) {
+          return;
+        }
+        this.orders.update((orders) => orders.map((item) => (item.id === order.id ? order : item)));
+      });
+  }
+
+  pay(details: CheckoutDetails): Observable<ShopOrder | null> {
+    return this.http.post<CheckoutResponse>('/api/orders', details).pipe(
+      switchMap((result) => {
+        sessionStorage.setItem('veld-receipt', result.receiptKey);
+        if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
+          submitPayFast(result.payFastUrl, result.fields);
+          return of(null);
+        }
+        return this.http.post<ShopOrder>(`/api/payfast/local/${result.order.id}`, {});
+      }),
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(apiMessage(error)))),
     );
   }
+
+  loadReceipt(key: string): void {
+    this.receiptReady.set(false);
+    this.http
+      .get<ShopOrder>(`/api/orders/receipt/${key}`)
+      .pipe(catchError(() => of(null)))
+      .subscribe((order) => {
+        this.receipt.set(order);
+        this.receiptReady.set(true);
+      });
+  }
+}
+
+function submitPayFast(url: string, fields: Record<string, string>): void {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = url;
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
 }

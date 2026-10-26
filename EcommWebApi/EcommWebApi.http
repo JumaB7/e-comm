@@ -4,3 +4,18 @@ GET {{EcommWebApi_HostAddress}}/api/health
 Accept: application/json
 
 ###
+
+GET {{EcommWebApi_HostAddress}}/api/products
+Accept: application/json
+
+###
+
+POST {{EcommWebApi_HostAddress}}/api/auth/sign-in
+Content-Type: application/json
+
+{
+  "email": "admin@veldsupply.co.za",
+  "password": "password"
+}
+
+###

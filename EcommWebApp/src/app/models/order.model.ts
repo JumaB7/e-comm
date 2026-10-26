@@ -12,5 +12,6 @@ export interface ShopOrder {
   reference: string;
   paidDetail: string;
   paymentNote: string;
+  deliveryNote: string;
   lines: string[];
 }

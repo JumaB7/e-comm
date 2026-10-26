@@ -2,7 +2,7 @@
   <h1 class="font-display text-[40px] leading-11.5">Orders</h1>
   <p class="mt-2 text-[13px] leading-4.5 text-muted">Paid only after PayFast confirms it.</p>
   <ul class="mt-4 grid grid-cols-3 gap-2">
-    @for (stat of mobileStats; track stat.label) {
+    @for (stat of mobileStats(); track stat.label) {
       <li class="border border-line bg-white p-3">
         <p class="text-[13px] font-medium tracking-[0.08em] text-muted uppercase">{{ stat.label }}</p>
         <p class="mt-1 text-lg leading-6.5">{{ stat.value }}</p>

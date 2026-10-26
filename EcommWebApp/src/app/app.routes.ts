@@ -14,6 +14,7 @@ import { ShopContainerComponent } from './shop/shop-container.component';
 import { AdminShellContainerComponent } from './shell/admin-shell-container.component';
 import { ShopShellContainerComponent } from './shell/shop-shell-container.component';
 import { SignInContainerComponent } from './sign-in/sign-in-container.component';
+import { adminGuard } from './services/admin.guard';
 
 export const routes: Routes = [
   {
@@ -33,6 +34,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminShellContainerComponent,
+    canActivate: [adminGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'orders' },
       { path: 'orders', component: OrdersContainerComponent },

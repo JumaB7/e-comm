@@ -7,10 +7,10 @@
         <h2 class="text-xl font-semibold leading-6.5">Contact</h2>
         <div class="mt-4 flex gap-3">
           <label class="grid w-90 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
-            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="thabo@example.co.za" />
+            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="email()" (input)="setContact('email', $event)" />
           </label>
           <label class="grid w-62.5 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
-            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="082 555 0142" />
+            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="phone()" (input)="setContact('phone', $event)" />
           </label>
         </div>
       </div>
@@ -18,25 +18,25 @@
         <h2 class="text-xl font-semibold leading-6.5">Delivery address</h2>
         <div class="mt-4 grid gap-4">
           <label class="grid max-w-155.5 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
-            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Thabo Mokoena" />
+            <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="fullName()" (input)="setContact('fullName', $event)" />
           </label>
           <div class="flex flex-wrap gap-3">
             <label class="grid w-100 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
-              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="14 Kloof Road" />
+              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="street()" (input)="setContact('street', $event)" />
             </label>
             <label class="grid w-52.5 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
-              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Parktown" />
+              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="suburb()" (input)="setContact('suburb', $event)" />
             </label>
             <label class="grid w-60 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
-              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Johannesburg" />
+              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="city()" (input)="setContact('city', $event)" />
             </label>
           </div>
           <div class="flex gap-3">
             <label class="grid w-50 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
-              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Gauteng" />
+              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="province()" (input)="setContact('province', $event)" />
             </label>
             <label class="grid w-40 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
-              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="2193" />
+              <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="postalCode()" (input)="setContact('postalCode', $event)" />
             </label>
           </div>
         </div>

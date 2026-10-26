@@ -3,6 +3,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "ecomm-components": ["./projects/ecomm-components/src/public-api.ts"]
+    },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
@@ -26,6 +29,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ecomm-components/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ecomm-components/tsconfig.spec.json"
     }
   ]
 }

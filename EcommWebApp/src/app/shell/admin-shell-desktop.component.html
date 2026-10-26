@@ -1,0 +1,20 @@
+<div class="flex min-h-screen bg-canvas">
+  <aside class="flex w-60 shrink-0 flex-col bg-ink px-5 py-7 text-white">
+    <p class="font-display text-2xl">Veld Supply</p>
+    <p class="mt-1 text-xs font-semibold tracking-wide text-action">ADMIN</p>
+    <nav class="mt-8 grid gap-1">
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="bg-action text-ink"
+          class="px-3 py-2"
+          [routerLinkActiveOptions]="{ exact: true }">
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+  </aside>
+  <main class="min-w-0 flex-1 p-8">
+    <router-outlet />
+  </main>
+</div>

@@ -24,9 +24,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -66,6 +64,32 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "ecomm-components": {
+      "projectType": "library",
+      "root": "projects/ecomm-components",
+      "sourceRoot": "projects/ecomm-components/src",
+      "prefix": "ecomm",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ecomm-components/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ecomm-components/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ecomm-components/tsconfig.spec.json"
+          }
         }
       }
     }

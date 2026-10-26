@@ -1,0 +1,19 @@
+<section class="mx-auto max-w-6xl px-6 py-12">
+  @if (product(); as item) {
+    <div class="grid grid-cols-2 gap-10">
+      <div class="aspect-square bg-white"></div>
+      <div>
+        <p class="text-sm font-semibold tracking-wide text-action uppercase">{{ item.category }}</p>
+        <h1 class="mt-2 font-display text-5xl">{{ item.name }}</h1>
+        <p class="mt-4 text-3xl font-semibold text-action">{{ item.price }}</p>
+        <p class="mt-2 text-sm text-muted">{{ item.sku }} · {{ item.stock }} in stock</p>
+        <p class="mt-4 max-w-md text-muted">VAT included. Pay on PayFast by card, Instant EFT, or Capitec Pay.</p>
+        <a routerLink="/checkout" class="mt-8 inline-block">
+          <ecomm-button label="Add to bag" />
+        </a>
+      </div>
+    </div>
+  } @else {
+    <h1 class="font-display text-4xl">That product is not in the shop.</h1>
+  }
+</section>

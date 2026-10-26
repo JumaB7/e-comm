@@ -1,0 +1,20 @@
+<section class="grid gap-4 px-4 py-8">
+  <h1 class="font-display text-4xl">Create account</h1>
+  <p class="text-sm text-muted">Name, email, and a password.</p>
+  <label class="grid gap-2 text-xs font-semibold tracking-wide text-muted">FULL NAME
+    <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="Thabo Mokoena" />
+  </label>
+  <label class="grid gap-2 text-xs font-semibold tracking-wide text-muted">EMAIL
+    <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="thabo@example.co.za" />
+  </label>
+  <label class="grid gap-2 text-xs font-semibold tracking-wide text-muted">PHONE
+    <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="082 555 0142" />
+  </label>
+  <label class="grid gap-2 text-xs font-semibold tracking-wide text-muted">PASSWORD
+    <input type="password" class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="password" />
+  </label>
+  <a routerLink="/shop" class="block">
+    <ecomm-button label="Create account" [full]="true" />
+  </a>
+  <a routerLink="/sign-in" class="text-action">Already have an account? Sign in</a>
+</section>

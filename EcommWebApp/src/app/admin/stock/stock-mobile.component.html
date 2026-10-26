@@ -1,0 +1,22 @@
+<section class="grid gap-3">
+  <h1 class="font-display text-4xl">Stock</h1>
+  <p class="text-sm text-muted">Add or remove units. Delete takes it off the shop.</p>
+  <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">PRODUCT
+    <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="10×42 binoculars" />
+  </label>
+  <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">QUANTITY
+    <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="6" />
+  </label>
+  <ecomm-button label="Add stock" [full]="true" />
+  <ecomm-button label="Remove stock" variant="secondary" [full]="true" />
+  <div class="border border-line bg-white p-4">
+    <p class="font-semibold">Fixed-blade skinner</p>
+    <p class="text-sm text-muted">VS-KNF-018 · 20 on hand</p>
+  </div>
+  <div class="grid gap-3 border border-danger bg-white p-4">
+    <p class="text-lg font-semibold">Delete this product?</p>
+    <p class="text-sm text-muted">It leaves the shop. Past orders stay.</p>
+    <ecomm-button label="Delete" [full]="true" />
+    <ecomm-button label="Keep" variant="secondary" [full]="true" />
+  </div>
+</section>

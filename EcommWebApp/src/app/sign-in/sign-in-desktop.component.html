@@ -1,0 +1,16 @@
+<section class="mx-auto max-w-md px-6 py-16">
+  <form class="border border-line bg-white p-8">
+    <h1 class="font-display text-4xl">Sign in</h1>
+    <p class="mt-2 text-sm text-muted">Use the same account for orders and delivery.</p>
+    <label class="mt-6 grid gap-2 text-xs font-semibold tracking-wide text-muted">EMAIL
+      <input class="border border-line px-3 py-3 text-base font-normal text-ink" value="thabo@example.co.za" />
+    </label>
+    <label class="mt-4 grid gap-2 text-xs font-semibold tracking-wide text-muted">PASSWORD
+      <input type="password" class="border border-line px-3 py-3 text-base font-normal text-ink" value="password" />
+    </label>
+    <a routerLink="/shop" class="mt-6 block">
+      <ecomm-button label="Sign in" [full]="true" />
+    </a>
+    <a routerLink="/register" class="mt-4 inline-block text-action">New here? Create an account</a>
+  </form>
+</section>

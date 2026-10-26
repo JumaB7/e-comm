@@ -1,0 +1,23 @@
+<section>
+  <h1 class="font-display text-4xl">Sales</h1>
+  <p class="mt-2 text-sm text-muted">Paid orders only. Profit is sales minus product cost.</p>
+  <ul class="mt-4 grid grid-cols-2 gap-2">
+    @for (stat of stats; track stat.label) {
+      <li class="border border-line bg-white p-3">
+        <p class="text-[11px] font-semibold tracking-wide text-muted uppercase">{{ stat.label }}</p>
+        <p class="mt-1 text-xl">{{ stat.value }}</p>
+      </li>
+    }
+  </ul>
+  <div class="mt-4 border border-line bg-white p-4">
+    <p class="text-[11px] font-semibold tracking-wide text-muted">PROFIT, LAST 6 MONTHS</p>
+    <ul class="mt-4 flex items-end justify-between">
+      @for (bar of bars; track bar.month) {
+        <li class="flex flex-col items-center gap-1">
+          <div class="w-4 bg-action" [ngClass]="bar.heightClass"></div>
+          <span class="text-[11px] text-muted">{{ bar.month }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+</section>

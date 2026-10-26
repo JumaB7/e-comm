@@ -1,0 +1,16 @@
+<section>
+  <h1 class="font-display text-4xl">Orders</h1>
+  <p class="mt-2 text-sm text-muted">Paid only after PayFast confirms it.</p>
+  <ul class="mt-4 grid gap-3">
+    @for (order of orders(); track order.id) {
+      <li>
+        <a [routerLink]="['/admin/orders', order.id]" class="block border border-line bg-white p-4">
+          <span class="font-semibold">{{ order.id }}</span>
+          <span class="mt-1 block">{{ order.customer }}</span>
+          <span class="mt-1 block">{{ order.total }}</span>
+          <span class="mt-2 block"><ecomm-status-pill [label]="order.status" [tone]="order.tone" /></span>
+        </a>
+      </li>
+    }
+  </ul>
+</section>

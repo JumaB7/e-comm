@@ -1,0 +1,33 @@
+<section>
+  <h1 class="font-display text-5xl">Stock</h1>
+  <p class="mt-2 text-sm text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
+  <form class="mt-6 flex items-end gap-3 border border-line bg-white p-4">
+    <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">PRODUCT
+      <input class="border border-line bg-canvas px-3 py-2 text-base font-normal text-ink" value="10×42 binoculars" />
+    </label>
+    <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">QUANTITY
+      <input class="w-24 border border-line bg-canvas px-3 py-2 text-base font-normal text-ink" value="6" />
+    </label>
+    <ecomm-button label="Add stock" />
+    <ecomm-button label="Remove stock" variant="secondary" />
+  </form>
+  <div class="mt-4 border border-line bg-white">
+    @for (product of products(); track product.sku) {
+      <div class="grid grid-cols-3 border-b border-line px-4 py-3 last:border-b-0">
+        <span [class.text-danger]="product.low">{{ product.name }}</span>
+        <span class="text-sm text-muted">{{ product.sku }}</span>
+        <span>{{ product.stock }}</span>
+      </div>
+    }
+  </div>
+  <div class="mt-4 flex items-center justify-between border border-danger bg-white p-4">
+    <div>
+      <p class="text-lg font-semibold">Delete fixed-blade skinner?</p>
+      <p class="text-sm text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
+    </div>
+    <div class="flex gap-2">
+      <ecomm-button label="Keep" variant="secondary" />
+      <ecomm-button label="Delete" />
+    </div>
+  </div>
+</section>

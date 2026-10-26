@@ -1,0 +1,15 @@
+<div class="min-h-screen bg-canvas">
+  <p class="bg-ink py-2 text-center text-xs text-white">Free courier over R1 500 · Prices include VAT</p>
+  <header class="flex items-center justify-between bg-white px-4 py-3">
+    <a routerLink="/" class="font-display text-xl">Veld Supply</a>
+    <a routerLink="/checkout" class="text-sm font-semibold">Bag {{ bagCount() }}</a>
+  </header>
+  <div class="bg-white px-4 pb-4">
+    <input class="w-full border border-line px-3 py-3" placeholder="Search the range" aria-label="Search the range" />
+  </div>
+  <router-outlet />
+  <footer class="bg-ink px-4 py-8 text-white">
+    <p class="font-display text-xl">Veld Supply</p>
+    <p class="mt-2 text-sm">PayFast · Courier nationwide · VAT included</p>
+  </footer>
+</div>

@@ -1,0 +1,27 @@
+<div class="flex min-h-screen flex-col bg-canvas">
+  <p class="bg-ink py-2 text-center text-sm text-white">Courier delivery across South Africa · Free over R1 500 · Prices include VAT</p>
+  <header class="border-b border-line bg-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
+      <a routerLink="/" class="font-display text-2xl">Veld Supply</a>
+      <nav class="flex gap-6 text-sm font-semibold">
+        @for (link of links; track link.label) {
+          <a [routerLink]="link.path">{{ link.label }}</a>
+        }
+      </nav>
+      <div class="flex gap-6 text-sm font-semibold">
+        <a routerLink="/sign-in">Account</a>
+        <a routerLink="/checkout">Bag {{ bagCount() }}</a>
+      </div>
+    </div>
+  </header>
+  <div class="flex-1">
+    <router-outlet />
+  </div>
+  <footer class="bg-ink px-6 py-10 text-white">
+    <div class="mx-auto flex max-w-6xl flex-col gap-2">
+      <p class="font-display text-2xl">Veld Supply</p>
+      <p class="text-sm">Field kit for the South African hunt. Shipped nationwide.</p>
+      <p class="text-sm">PayFast · Courier nationwide · VAT included</p>
+    </div>
+  </footer>
+</div>

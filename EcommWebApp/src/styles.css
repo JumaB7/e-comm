@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../projects/ecomm-components/src";
 
 @theme {
   --color-canvas: #f4f4f4;
@@ -6,6 +7,8 @@
   --color-muted: #5c5c5c;
   --color-line: #e6e6e6;
   --color-action: #ff4b1f;
+  --color-success: #0e7a32;
+  --color-danger: #e10600;
   --font-display: "Fraunces", serif;
   --font-sans: "Source Sans 3", sans-serif;
 }

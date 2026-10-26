@@ -1,0 +1,16 @@
+<section class="mx-auto max-w-md px-6 py-16">
+  <form class="border border-line bg-white p-8">
+    <h1 class="font-display text-4xl">Create account</h1>
+    <p class="mt-2 text-sm text-muted">Name, email, and a password. That is all we store.</p>
+    <label class="mt-6 block text-xs font-semibold tracking-wide text-muted" for="name">FULL NAME</label>
+    <input id="name" type="text" class="mt-2 w-full border border-line px-3 py-3" autocomplete="name">
+    <label class="mt-4 block text-xs font-semibold tracking-wide text-muted" for="email">EMAIL</label>
+    <input id="email" type="email" class="mt-2 w-full border border-line px-3 py-3" autocomplete="email">
+    <label class="mt-4 block text-xs font-semibold tracking-wide text-muted" for="phone">PHONE</label>
+    <input id="phone" type="tel" class="mt-2 w-full border border-line px-3 py-3" autocomplete="tel">
+    <label class="mt-4 block text-xs font-semibold tracking-wide text-muted" for="password">PASSWORD</label>
+    <input id="password" type="password" class="mt-2 w-full border border-line px-3 py-3" autocomplete="new-password">
+    <button type="button" class="mt-6 w-full bg-action py-3 font-semibold">Create account</button>
+    <a routerLink="/sign-in" class="mt-4 inline-block text-action">Already have an account? Sign in</a>
+  </form>
+</section>

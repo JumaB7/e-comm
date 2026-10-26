@@ -1,0 +1,13 @@
+<section class="mx-auto max-w-6xl px-6 py-12">
+  <h1 class="font-display text-4xl">Shop</h1>
+  <p class="mt-2 text-muted">Sample range. Prices include VAT.</p>
+  <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+    @for (product of products(); track product.sku) {
+      <li class="border border-line bg-white p-5">
+        <h2 class="text-xl">{{ product.name }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ product.sku }}</p>
+        <p class="mt-4 text-lg font-semibold text-action">{{ product.price }}</p>
+      </li>
+    }
+  </ul>
+</section>

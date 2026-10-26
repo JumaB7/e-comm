@@ -1,9 +1,9 @@
 <section>
-  <h1 class="font-display text-[40px] leading-[46px]">Stock</h1>
-  <p class="mt-4 text-[13px] leading-[18px] text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
+  <h1 class="font-display text-[40px] leading-11.5">Stock</h1>
+  <p class="mt-4 text-[13px] leading-4.5 text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
   <form class="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white p-4">
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRODUCT
-      <input class="h-10 w-[280px] rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockName()" (input)="setName($event)" />
+      <input class="h-10 w-70 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockName()" (input)="setName($event)" />
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">QUANTITY
       <input class="h-10 w-16 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockQty()" (input)="setQty($event)" />
@@ -28,17 +28,17 @@
         class="grid w-full grid-cols-[1.6fr_160px_120px_160px] border-b border-line px-4 py-3 text-left last:border-b-0"
         (click)="choose(product.sku)">
         <span>{{ product.name }}</span>
-        <span class="text-[13px] leading-[18px] text-muted">{{ product.sku }}</span>
-        <span class="text-[13px] leading-[18px]">{{ product.stock }}</span>
-        <span class="text-[13px] leading-[18px] text-danger">@if (product.low) { Low }</span>
+        <span class="text-[13px] leading-4.5 text-muted">{{ product.sku }}</span>
+        <span class="text-[13px] leading-4.5">{{ product.stock }}</span>
+        <span class="text-[13px] leading-4.5 text-danger">@if (product.low) { Low }</span>
       </button>
     }
   </div>
   @if (pending(); as item) {
     <div class="mt-4 flex items-center justify-between gap-4 border border-danger bg-white p-4">
       <div>
-        <p class="text-lg leading-[26px]">{{ pendingTitle() }}</p>
-        <p class="text-[13px] leading-[18px] text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
+        <p class="text-lg leading-6.5">{{ pendingTitle() }}</p>
+        <p class="text-[13px] leading-4.5 text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
       </div>
       <div class="flex gap-2">
         <button type="button" class="border-0 bg-transparent p-0" (click)="keep()">

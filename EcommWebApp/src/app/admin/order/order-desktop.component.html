@@ -1,7 +1,7 @@
 @if (order(); as item) {
   <section>
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">ORDERS / {{ item.id }}</p>
-    <h1 class="mt-2 font-display text-[40px] leading-[46px]">Order {{ item.id }}</h1>
+    <h1 class="mt-2 font-display text-[40px] leading-11.5">Order {{ item.id }}</h1>
     <div class="mt-8 grid grid-cols-2 gap-5">
       <article class="border border-line bg-white p-5">
         <p class="text-[13px] font-medium tracking-[0.08em] text-muted">PAYMENT</p>
@@ -11,15 +11,15 @@
         } @else {
           <p class="mt-3 leading-6">No PayFast reference yet.</p>
         }
-        <p class="mt-2 text-[13px] leading-[18px] text-muted">{{ item.paidDetail }}</p>
-        <p class="mt-2 text-[13px] leading-[18px] text-muted">{{ item.paymentNote }}</p>
+        <p class="mt-2 text-[13px] leading-4.5 text-muted">{{ item.paidDetail }}</p>
+        <p class="mt-2 text-[13px] leading-4.5 text-muted">{{ item.paymentNote }}</p>
       </article>
       <article class="border border-line bg-white p-5">
         <p class="text-[13px] font-medium tracking-[0.08em] text-muted">CUSTOMER</p>
-        <p class="mt-3 text-lg leading-[26px]">{{ item.customer }}</p>
+        <p class="mt-3 text-lg leading-6.5">{{ item.customer }}</p>
         <p class="mt-2 leading-6">{{ item.email }}</p>
         <p class="mt-2 leading-6">{{ item.phone }}</p>
-        <p class="mt-2 text-[13px] leading-[18px] text-muted">{{ item.address }}</p>
+        <p class="mt-2 text-[13px] leading-4.5 text-muted">{{ item.address }}</p>
       </article>
     </div>
     <article class="mt-5 border border-line bg-white p-5">
@@ -27,7 +27,7 @@
       @for (line of item.lines; track line) {
         <p class="mt-3 leading-6">{{ line }}</p>
       }
-      <p class="mt-3 text-lg leading-[26px]">Total {{ item.total }}, VAT included</p>
+      <p class="mt-3 text-lg leading-6.5">Total {{ item.total }}, VAT included</p>
     </article>
     <article class="mt-5 border border-line bg-white p-5">
       <p class="text-[13px] font-medium tracking-[0.08em] text-muted">FULFILMENT</p>
@@ -37,9 +37,9 @@
           <ecomm-button label="Mark as packed" variant="secondary" />
         </button>
       }
-      <p class="mt-4 text-[13px] leading-[18px] text-muted">Packing does not change the payment. Only PayFast can mark it paid.</p>
+      <p class="mt-4 text-[13px] leading-4.5 text-muted">Packing does not change the payment. Only PayFast can mark it paid.</p>
     </article>
   </section>
 } @else {
-  <h1 class="font-display text-[40px] leading-[46px]">Order not found.</h1>
+  <h1 class="font-display text-[40px] leading-11.5">Order not found.</h1>
 }

@@ -1,0 +1,32 @@
+<div
+  class="fixed inset-0 z-50 cursor-pointer overflow-hidden bg-black animate-scope-fade"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Through the glass"
+  (click)="close()"
+  (animationend)="onFadeEnd($event)">
+  <img
+    src="/scope-buck.jpg"
+    alt="A kudu bull standing in the veld at last light"
+    class="h-full w-full object-cover animate-scope-drift" />
+  <div
+    class="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80 shadow-[inset_0_0_48px_#00000073,0_0_0_100vmax_#000] animate-scope-ring"></div>
+  <svg
+    viewBox="0 0 200 200"
+    class="pointer-events-none absolute top-1/2 left-1/2 z-20 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 animate-scope-reticle"
+    aria-hidden="true">
+    <line x1="100" y1="8" x2="100" y2="36" stroke="white" stroke-width="3.2" />
+    <line x1="100" y1="164" x2="100" y2="192" stroke="white" stroke-width="3.2" />
+    <line x1="8" y1="100" x2="36" y2="100" stroke="white" stroke-width="3.2" />
+    <line x1="164" y1="100" x2="192" y2="100" stroke="white" stroke-width="3.2" />
+    <line x1="100" y1="36" x2="100" y2="92" stroke="white" stroke-width="0.7" />
+    <line x1="100" y1="108" x2="100" y2="164" stroke="white" stroke-width="0.7" />
+    <line x1="36" y1="100" x2="92" y2="100" stroke="white" stroke-width="0.7" />
+    <line x1="108" y1="100" x2="164" y2="100" stroke="white" stroke-width="0.7" />
+    <circle cx="100" cy="100" r="1.4" fill="white" />
+    <circle cx="100" cy="78" r="0.7" fill="white" />
+    <circle cx="100" cy="122" r="0.7" fill="white" />
+    <circle cx="78" cy="100" r="0.7" fill="white" />
+    <circle cx="122" cy="100" r="0.7" fill="white" />
+  </svg>
+</div>

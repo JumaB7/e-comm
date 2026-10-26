@@ -1,8 +1,8 @@
 <section>
   <div class="flex items-end justify-between gap-6">
     <div>
-      <h1 class="font-display text-[40px] leading-[46px]">Products</h1>
-      <p class="mt-2 text-[13px] leading-[18px] text-muted">SKU is the key a future till will use to match stock.</p>
+      <h1 class="font-display text-[40px] leading-11.5">Products</h1>
+      <p class="mt-2 text-[13px] leading-4.5 text-muted">SKU is the key a future till will use to match stock.</p>
     </div>
     <button type="button" class="border-0 bg-transparent p-0" (click)="toggleAdd()">
       <ecomm-button label="Add product" />
@@ -41,7 +41,7 @@
     @for (product of products(); track product.sku) {
       <div class="grid grid-cols-[1.6fr_160px_120px_80px_160px] items-center border-b border-line px-4 py-3 last:border-b-0">
         <span>{{ product.name }}</span>
-        <span class="text-[13px] leading-[18px] text-muted">{{ product.sku }}</span>
+        <span class="text-[13px] leading-4.5 text-muted">{{ product.sku }}</span>
         <span>{{ product.price }}</span>
         <span>{{ product.stock }}</span>
         @if (product.low) {

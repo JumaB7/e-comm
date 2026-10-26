@@ -1,7 +1,9 @@
 <div class="min-h-screen bg-canvas text-ink">
   <p class="bg-ink py-2 text-center text-[13px] leading-4.5 text-white">Free courier over R1 500 · Prices include VAT</p>
   <header class="flex items-center justify-between bg-white px-4 py-3.5">
-    <a routerLink="/" class="font-display text-[22px] leading-none">Veld Supply</a>
+    <a routerLink="/" aria-label="Veld Supply" class="block">
+      <img src="/kudu-logo.svg" alt="" class="h-9 w-auto" />
+    </a>
     <a routerLink="/checkout" class="text-[13px] font-medium tracking-[0.08em]">BAG {{ bagCount() }}</a>
   </header>
   @if (showSearch()) {
@@ -16,7 +18,7 @@
   }
   <router-outlet />
   <footer class="bg-ink px-4 py-6 text-white">
-    <p class="font-display text-[22px] leading-none">Veld Supply</p>
+    <img src="/kudu-logo.svg" alt="Veld Supply" class="h-9 w-auto" />
     <p class="mt-3 text-[13px] leading-4.5">PayFast · Courier nationwide · VAT included</p>
   </footer>
 </div>

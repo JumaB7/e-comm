@@ -8,7 +8,9 @@
       <span class="uppercase">{{ item.name }}</span>
     </p>
     <div class="mt-8 grid grid-cols-[minmax(0,1.6fr)_460px] gap-12">
-      <div class="h-160 bg-canvas"></div>
+      <div class="relative h-160 overflow-hidden bg-canvas">
+        <img [src]="'/products/' + item.sku + '.jpg'" [alt]="item.name" class="h-full w-full object-cover" />
+      </div>
       <div>
         <p class="text-[13px] font-medium tracking-[0.08em] uppercase">{{ item.category }}</p>
         <h1 class="mt-4 font-display text-[40px] leading-11.5">{{ item.name }}</h1>
@@ -52,7 +54,11 @@
         @for (product of related(); track product.sku) {
           <li>
             <a [routerLink]="['/product', product.sku]" class="block h-full">
-              <ecomm-product-card-desktop [name]="product.name" [category]="product.category" [price]="product.price" />
+              <ecomm-product-card-desktop
+                [name]="product.name"
+                [category]="product.category"
+                [price]="product.price"
+                [sku]="product.sku" />
             </a>
           </li>
         }

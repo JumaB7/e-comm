@@ -37,7 +37,11 @@
     @for (product of featured(); track product.sku) {
       <li>
         <a [routerLink]="['/product', product.sku]" class="block h-full">
-          <ecomm-product-card-mobile [name]="product.name" [category]="product.category" [price]="product.price" />
+          <ecomm-product-card-mobile
+            [name]="product.name"
+            [category]="product.category"
+            [price]="product.price"
+            [sku]="product.sku" />
         </a>
       </li>
     }

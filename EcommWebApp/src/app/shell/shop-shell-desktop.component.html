@@ -4,7 +4,9 @@
   </p>
   <header class="border-b border-line bg-white">
     <div class="relative mx-auto flex h-19.5 max-w-360 items-center justify-between px-16">
-      <a routerLink="/" class="font-display text-[26px] leading-none">Veld Supply</a>
+      <a routerLink="/" aria-label="Veld Supply" class="block">
+        <img src="/kudu-logo.svg" alt="" class="h-12 w-auto" />
+      </a>
       <nav class="absolute left-1/2 flex -translate-x-1/2 gap-7">
         @for (link of links; track link.label) {
           <a
@@ -28,7 +30,7 @@
   <footer class="bg-ink text-white">
     <div class="mx-auto grid max-w-360 gap-10 px-16 py-12 sm:grid-cols-4">
       <div class="max-w-70">
-        <p class="font-display text-[26px] leading-none">Veld Supply</p>
+        <img src="/kudu-logo.svg" alt="Veld Supply" class="h-12 w-auto" />
         <p class="mt-4 text-[13px] leading-4.5 text-white/80">Field kit for the South African hunt. Shipped nationwide.</p>
       </div>
       <div>

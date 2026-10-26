@@ -1,11 +1,13 @@
-import { Directive } from '@angular/core';
+import { Directive, inject } from '@angular/core';
+import { CartService } from '../services/cart.service';
 
 @Directive()
 export class CheckoutBaseDirective {
-  readonly lines = [
-    { name: '10×42 binoculars', price: 'R 8 450' },
-    { name: 'Merino stalking shirt', price: 'R 1 290' },
-  ];
-  readonly courier = 'R 120';
-  readonly total = 'R 9 860';
+  private readonly cart = inject(CartService);
+  readonly lines = this.cart.displayLines;
+  readonly subtotal = this.cart.subtotalLabel;
+  readonly courier = this.cart.courierLabel;
+  readonly total = this.cart.totalLabel;
+  readonly delivery = this.cart.delivery;
+  readonly hasLines = this.cart.count;
 }

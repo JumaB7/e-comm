@@ -1,12 +1,28 @@
-<section class="px-4 py-6">
-  <h1 class="font-display text-4xl">Shop</h1>
-  <ul class="mt-4 grid grid-cols-2 gap-3">
-    @for (product of products(); track product.sku) {
-      <li>
-        <a [routerLink]="['/product', product.sku]">
-          <ecomm-product-card-mobile [name]="product.name" [category]="product.category" [price]="product.price" />
-        </a>
-      </li>
+<section class="px-4 py-4">
+  <h1 class="font-display text-[40px] leading-[46px]">The range</h1>
+  <p class="mt-2 text-[13px] leading-[18px] text-muted">{{ countLabel() }} · VAT included</p>
+  <div class="mt-4 flex flex-wrap gap-2">
+    @for (filter of filters; track filter.label) {
+      <a
+        routerLink="/shop"
+        [queryParams]="filter.category ? { category: filter.category } : {}"
+        class="rounded-sm px-3 py-2 text-[13px] font-medium tracking-[0.08em]"
+        [ngClass]="category() === filter.category ? 'bg-inverse text-white' : 'border border-line bg-white text-ink'">
+        {{ filter.label }}
+      </a>
     }
-  </ul>
+  </div>
+  @if (visible().length === 0) {
+    <p class="mt-8 text-muted">Nothing in that kit.</p>
+  } @else {
+    <ul class="mt-4 grid grid-cols-2 gap-3">
+      @for (product of visible(); track product.sku) {
+        <li>
+          <a [routerLink]="['/product', product.sku]" class="block h-full">
+            <ecomm-product-card-mobile [name]="product.name" [category]="product.category" [price]="product.price" />
+          </a>
+        </li>
+      }
+    </ul>
+  }
 </section>

@@ -7,9 +7,17 @@ import { CatalogService } from '../../services/catalog.service';
 @Directive()
 export class OrderDetailBaseDirective {
   private readonly catalog = inject(CatalogService);
-  readonly id = toSignal(
-    inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('id') ?? '')),
-    { initialValue: '' },
-  );
+  readonly id = toSignal(inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('id') ?? '')), {
+    initialValue: '',
+  });
   readonly order = computed(() => this.catalog.findOrder(this.id()));
+  readonly canPack = computed(() => this.order()?.fulfilment === 'To pack');
+
+  markPacked(): void {
+    const order = this.order();
+    if (!order) {
+      return;
+    }
+    this.catalog.markPacked(order.id);
+  }
 }

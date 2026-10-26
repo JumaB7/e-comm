@@ -1,31 +1,72 @@
-<section class="mx-auto max-w-6xl px-6 py-14">
-  <div class="bg-ink px-10 py-14 text-white">
-    <p class="text-sm font-semibold tracking-wide text-action">THE RANGE</p>
-    <h1 class="mt-3 font-display text-6xl">Gear for the stalk.</h1>
-    <p class="mt-4 max-w-xl text-lg">Optics, apparel, knives, and camp kit. Pay on PayFast.</p>
-    <a routerLink="/shop" class="mt-8 inline-block">
-      <ecomm-button label="Shop the range" />
-    </a>
+<section class="bg-ink text-white">
+  <div class="mx-auto grid max-w-[1440px] items-center gap-12 px-16 py-16 lg:grid-cols-[minmax(0,1fr)_420px]">
+    <div class="max-w-[640px] py-8">
+      <p class="text-[13px] font-medium tracking-[0.08em] text-action">THE RANGE</p>
+      <h1 class="mt-6 font-display text-[64px] leading-[76px] tracking-[-0.02em]">Gear for the stalk.</h1>
+      <p class="mt-6 max-w-[520px] text-base leading-6">
+        Optics, apparel, knives, and camp kit for the South African hunt. Pay on PayFast with a card or Instant EFT.
+      </p>
+      <div class="mt-8 flex gap-3">
+        <a routerLink="/shop"><ecomm-button label="Shop the range" /></a>
+        <a routerLink="/shop"><ecomm-button label="New arrivals" variant="inverse" /></a>
+      </div>
+    </div>
+    @if (feature(); as item) {
+      <a [routerLink]="['/product', item.sku]" class="flex h-[420px] flex-col justify-between bg-canvas p-8 text-ink">
+        <div>
+          <p class="text-[13px] font-medium tracking-[0.08em]">THIS WEEK</p>
+          <p class="mt-3 max-w-[340px] font-display text-[28px] leading-[34px]">Glass that holds up at last light.</p>
+        </div>
+        <div>
+          <p class="text-lg leading-[26px]">{{ item.name }}</p>
+          <p class="text-[22px] font-semibold leading-7 text-action">{{ item.price }}</p>
+          <p class="text-[13px] leading-[18px] text-muted">Incl. VAT · {{ item.stock }} in stock</p>
+        </div>
+      </a>
+    }
   </div>
-  <h2 class="mt-12 font-display text-3xl">Shop by kit</h2>
-  <ul class="mt-4 grid grid-cols-4 gap-3">
-    @for (category of categories; track category) {
+</section>
+<section class="mx-auto max-w-[1440px] px-16 py-16">
+  <h2 class="font-display text-[40px] leading-[46px]">Shop by kit</h2>
+  <ul class="mt-6 grid grid-cols-4 gap-4">
+    @for (category of categories; track category.name) {
       <li>
-        <a routerLink="/shop" class="block border border-line bg-white p-5">
-          <p class="text-xs font-semibold text-action">KIT</p>
-          <p class="mt-2 text-xl">{{ category }}</p>
+        <a
+          routerLink="/shop"
+          [queryParams]="{ category: category.name }"
+          class="flex h-40 flex-col justify-end border border-line bg-white p-5">
+          <p class="text-[13px] leading-[18px] text-muted">{{ category.detail }}</p>
+          <p class="text-lg leading-[26px]">{{ category.name }}</p>
         </a>
       </li>
     }
   </ul>
-  <h2 class="mt-12 font-display text-3xl">In the shop</h2>
-  <ul class="mt-4 grid grid-cols-4 gap-4">
+</section>
+<section class="mx-auto max-w-[1440px] px-16 pb-16">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h2 class="font-display text-[40px] leading-[46px]">In the shop</h2>
+      <p class="mt-3 max-w-xl text-base leading-6 text-muted">
+        A sample of the range. About fifty products will live here, prices in rand, VAT included.
+      </p>
+    </div>
+    <a routerLink="/shop" class="text-[13px] font-medium tracking-[0.08em]">VIEW ALL</a>
+  </div>
+  <ul class="mt-8 grid grid-cols-4 gap-6">
     @for (product of featured(); track product.sku) {
       <li>
-        <a [routerLink]="['/product', product.sku]">
+        <a [routerLink]="['/product', product.sku]" class="block h-full">
           <ecomm-product-card-desktop [name]="product.name" [category]="product.category" [price]="product.price" />
         </a>
       </li>
     }
+  </ul>
+</section>
+<section class="border-y border-line bg-white">
+  <ul class="mx-auto grid max-w-[1440px] grid-cols-4 px-16 py-8 text-[13px] font-medium tracking-[0.08em]">
+    <li>PAYFAST CHECKOUT</li>
+    <li>CARD AND INSTANT EFT</li>
+    <li>VAT INCLUDED IN THE PRICE</li>
+    <li>COURIER NATIONWIDE</li>
   </ul>
 </section>

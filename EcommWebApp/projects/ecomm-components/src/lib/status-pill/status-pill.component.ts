@@ -11,15 +11,16 @@ export class StatusPillComponent {
   readonly label = input('');
   readonly tone = input<'paid' | 'packed' | 'awaiting' | 'low'>('paid');
   protected readonly classes = computed(() => {
+    const base = 'inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium leading-4';
     switch (this.tone()) {
       case 'paid':
-        return 'text-success';
+        return `${base} bg-success text-white`;
+      case 'packed':
+        return `${base} bg-action text-white`;
       case 'low':
-        return 'text-danger';
-      case 'awaiting':
-        return 'border border-line bg-canvas text-ink';
+        return `${base} bg-danger text-white`;
       default:
-        return 'text-ink';
+        return `${base} border border-line bg-canvas text-ink`;
     }
   });
 }

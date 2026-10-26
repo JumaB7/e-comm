@@ -1,14 +1,27 @@
-<section>
-  <h1 class="font-display text-4xl">Orders</h1>
-  <p class="mt-2 text-sm text-muted">Paid only after PayFast confirms it.</p>
+<section class="px-4 py-4">
+  <h1 class="font-display text-[40px] leading-[46px]">Orders</h1>
+  <p class="mt-2 text-[13px] leading-[18px] text-muted">Paid only after PayFast confirms it.</p>
+  <ul class="mt-4 grid grid-cols-3 gap-2">
+    @for (stat of mobileStats; track stat.label) {
+      <li class="border border-line bg-white p-3">
+        <p class="text-[13px] font-medium tracking-[0.08em] text-muted uppercase">{{ stat.label }}</p>
+        <p class="mt-1 text-lg leading-[26px]">{{ stat.value }}</p>
+      </li>
+    }
+  </ul>
   <ul class="mt-4 grid gap-3">
     @for (order of orders(); track order.id) {
       <li>
-        <a [routerLink]="['/admin/orders', order.id]" class="block border border-line bg-white p-4">
-          <span class="font-semibold">{{ order.id }}</span>
-          <span class="mt-1 block">{{ order.customer }}</span>
-          <span class="mt-1 block">{{ order.total }}</span>
-          <span class="mt-2 block"><ecomm-status-pill [label]="order.status" [tone]="order.tone" /></span>
+        <a [routerLink]="['/admin/orders', order.id]" class="block border border-line bg-white p-3">
+          <span class="flex items-center justify-between">
+            <span class="text-lg leading-[26px]">{{ order.id }}</span>
+            <span class="text-lg leading-[26px]">{{ order.total }}</span>
+          </span>
+          <span class="mt-2 block leading-6">{{ order.customer }}</span>
+          <span class="mt-2 flex items-center gap-2">
+            <ecomm-status-pill [label]="order.status" [tone]="order.tone" />
+            <span class="text-[13px] leading-[18px] text-muted">{{ order.fulfilment }}</span>
+          </span>
         </a>
       </li>
     }

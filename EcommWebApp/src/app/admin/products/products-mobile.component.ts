@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StatusPillComponent } from 'ecomm-components';
+import { ButtonComponent, StatusPillComponent } from 'ecomm-components';
 import { AdminProductsBaseDirective } from './products-base.directive';
 
 @Component({
   selector: 'app-admin-products-mobile',
-  imports: [StatusPillComponent],
+  imports: [ButtonComponent, StatusPillComponent],
   templateUrl: './products-mobile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

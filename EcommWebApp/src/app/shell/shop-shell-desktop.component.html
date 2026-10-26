@@ -1,27 +1,56 @@
-<div class="flex min-h-screen flex-col bg-canvas">
-  <p class="bg-ink py-2 text-center text-sm text-white">Courier delivery across South Africa · Free over R1 500 · Prices include VAT</p>
+<div class="flex min-h-screen flex-col bg-canvas text-ink">
+  <p class="bg-ink py-2.5 text-center text-[13px] leading-[18px] text-white">
+    Courier delivery across South Africa · Free over R1 500 · Prices include VAT
+  </p>
   <header class="border-b border-line bg-white">
-    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-      <a routerLink="/" class="font-display text-2xl">Veld Supply</a>
-      <nav class="flex gap-6 text-sm font-semibold">
+    <div class="relative mx-auto flex h-[78px] max-w-[1440px] items-center justify-between px-16">
+      <a routerLink="/" class="font-display text-[26px] leading-none">Veld Supply</a>
+      <nav class="absolute left-1/2 flex -translate-x-1/2 gap-7">
         @for (link of links; track link.label) {
-          <a [routerLink]="link.path">{{ link.label }}</a>
+          <a
+            [routerLink]="link.path"
+            [queryParams]="link.category ? { category: link.category } : {}"
+            class="text-[13px] font-medium tracking-[0.08em] uppercase"
+            [ngClass]="activeLabel() === link.label ? 'text-ink' : 'text-muted'">
+            {{ link.label }}
+          </a>
         }
       </nav>
-      <div class="flex gap-6 text-sm font-semibold">
-        <a routerLink="/sign-in">Account</a>
-        <a routerLink="/checkout">Bag {{ bagCount() }}</a>
+      <div class="flex gap-5 text-[13px] font-medium tracking-[0.08em]">
+        <a routerLink="/sign-in" class="uppercase">Account</a>
+        <a routerLink="/checkout" class="uppercase">Bag {{ bagCount() }}</a>
       </div>
     </div>
   </header>
   <div class="flex-1">
     <router-outlet />
   </div>
-  <footer class="bg-ink px-6 py-10 text-white">
-    <div class="mx-auto flex max-w-6xl flex-col gap-2">
-      <p class="font-display text-2xl">Veld Supply</p>
-      <p class="text-sm">Field kit for the South African hunt. Shipped nationwide.</p>
-      <p class="text-sm">PayFast · Courier nationwide · VAT included</p>
+  <footer class="bg-ink text-white">
+    <div class="mx-auto grid max-w-[1440px] gap-10 px-16 py-12 sm:grid-cols-4">
+      <div class="max-w-[280px]">
+        <p class="font-display text-[26px] leading-none">Veld Supply</p>
+        <p class="mt-4 text-[13px] leading-[18px] text-white/80">Field kit for the South African hunt. Shipped nationwide.</p>
+      </div>
+      <div>
+        <p class="text-[13px] font-medium tracking-[0.08em]">SHOP</p>
+        <a routerLink="/shop" [queryParams]="{ category: 'Optics' }" class="mt-2 block text-[13px] leading-[18px]">Optics</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Apparel' }" class="mt-2 block text-[13px] leading-[18px]">Apparel</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Knives' }" class="mt-2 block text-[13px] leading-[18px]">Knives</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Camp' }" class="mt-2 block text-[13px] leading-[18px]">Camp</a>
+      </div>
+      <div>
+        <p class="text-[13px] font-medium tracking-[0.08em]">HELP</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Delivery</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Returns</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Contact</p>
+      </div>
+      <div>
+        <p class="text-[13px] font-medium tracking-[0.08em]">PAY</p>
+        <p class="mt-2 text-[13px] leading-[18px]">PayFast</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Visa and Mastercard</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Instant EFT</p>
+        <p class="mt-2 text-[13px] leading-[18px]">Capitec Pay</p>
+      </div>
     </div>
   </footer>
 </div>

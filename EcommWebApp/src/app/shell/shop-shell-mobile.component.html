@@ -1,15 +1,22 @@
-<div class="min-h-screen bg-canvas">
-  <p class="bg-ink py-2 text-center text-xs text-white">Free courier over R1 500 · Prices include VAT</p>
-  <header class="flex items-center justify-between bg-white px-4 py-3">
-    <a routerLink="/" class="font-display text-xl">Veld Supply</a>
-    <a routerLink="/checkout" class="text-sm font-semibold">Bag {{ bagCount() }}</a>
+<div class="min-h-screen bg-canvas text-ink">
+  <p class="bg-ink py-2 text-center text-[13px] leading-[18px] text-white">Free courier over R1 500 · Prices include VAT</p>
+  <header class="flex items-center justify-between bg-white px-4 py-3.5">
+    <a routerLink="/" class="font-display text-[22px] leading-none">Veld Supply</a>
+    <a routerLink="/checkout" class="text-[13px] font-medium tracking-[0.08em]">BAG {{ bagCount() }}</a>
   </header>
-  <div class="bg-white px-4 pb-4">
-    <input class="w-full border border-line px-3 py-3" placeholder="Search the range" aria-label="Search the range" />
-  </div>
+  @if (showSearch()) {
+    <div class="bg-white px-4 pb-3">
+      <input
+        class="h-[50px] w-full rounded-sm border border-line bg-white px-3.5 text-base placeholder:text-muted"
+        placeholder="Search gear"
+        aria-label="Search gear"
+        [value]="search()"
+        (input)="onSearch($event)" />
+    </div>
+  }
   <router-outlet />
-  <footer class="bg-ink px-4 py-8 text-white">
-    <p class="font-display text-xl">Veld Supply</p>
-    <p class="mt-2 text-sm">PayFast · Courier nationwide · VAT included</p>
+  <footer class="bg-ink px-4 py-6 text-white">
+    <p class="font-display text-[22px] leading-none">Veld Supply</p>
+    <p class="mt-3 text-[13px] leading-[18px]">PayFast · Courier nationwide · VAT included</p>
   </footer>
 </div>

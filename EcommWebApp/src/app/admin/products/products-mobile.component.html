@@ -1,14 +1,47 @@
-<section>
-  <h1 class="font-display text-4xl">Products</h1>
+<section class="px-4 py-4">
+  <div class="flex items-center justify-between gap-3">
+    <h1 class="font-display text-[40px] leading-[46px]">Products</h1>
+    <button type="button" class="border-0 bg-transparent p-0" (click)="toggleAdd()">
+      <ecomm-button label="Add" />
+    </button>
+  </div>
+  <p class="mt-2 text-[13px] leading-[18px] text-muted">SKU matches the till later.</p>
+  @if (adding()) {
+    <form class="mt-4 grid gap-3 border border-line bg-white p-3">
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">NAME
+        <input class="h-[50px] rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftName()" (input)="setDraft('name', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SKU
+        <input class="h-[50px] rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftSku()" (input)="setDraft('sku', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRICE
+        <input class="h-[50px] rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftPrice()" (input)="setDraft('price', $event)" />
+      </label>
+      <button type="button" class="border-0 bg-transparent p-0" (click)="saveProduct()">
+        <ecomm-button label="Save product" [full]="true" />
+      </button>
+    </form>
+  }
   <ul class="mt-4 grid gap-3">
     @for (product of products(); track product.sku) {
-      <li class="border border-line bg-white p-4">
-        <p class="font-semibold" [class.text-danger]="product.low">{{ product.name }}</p>
-        <p class="text-sm text-muted">{{ product.sku }} · {{ product.stock }} on hand</p>
-        <p class="mt-2 font-semibold text-action">{{ product.price }}</p>
-        @if (product.low) {
-          <ecomm-status-pill label="Low" tone="low" />
-        }
+      <li class="border border-line bg-white p-3">
+        <p class="text-lg leading-[26px]">{{ product.name }}</p>
+        <p class="mt-1 text-[13px] leading-[18px] text-muted">{{ product.sku }}</p>
+        <span class="mt-2 flex items-center justify-between">
+          <span class="text-lg leading-[26px]">{{ product.price }}</span>
+          @if (product.low) {
+            <ecomm-status-pill label="Low stock" tone="low" />
+          } @else {
+            <ecomm-status-pill label="Live" tone="paid" />
+          }
+        </span>
+        <p class="mt-2 text-[13px] leading-[18px] text-muted">
+          @if (product.low) {
+            {{ product.stock }} left
+          } @else {
+            {{ product.stock }} in stock
+          }
+        </p>
       </li>
     }
   </ul>

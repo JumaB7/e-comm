@@ -1,13 +1,41 @@
-<section class="mx-auto max-w-6xl px-6 py-12">
-  <h1 class="font-display text-5xl">Shop</h1>
-  <p class="mt-2 text-muted">Prices include VAT.</p>
-  <ul class="mt-8 grid grid-cols-4 gap-4">
-    @for (product of products(); track product.sku) {
-      <li>
-        <a [routerLink]="['/product', product.sku]">
-          <ecomm-product-card-desktop [name]="product.name" [category]="product.category" [price]="product.price" />
-        </a>
-      </li>
+<section class="mx-auto max-w-[1440px] px-16 py-12">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="font-display text-[40px] leading-[46px]">The range</h1>
+      <p class="mt-3 text-base leading-6 text-muted">{{ countLabel() }}. Prices in rand, VAT included.</p>
+    </div>
+    <p class="text-[13px] font-medium tracking-[0.08em]">SORT: FEATURED</p>
+  </div>
+  <div class="mt-8 flex flex-wrap gap-2">
+    @for (filter of filters; track filter.label) {
+      <a
+        routerLink="/shop"
+        [queryParams]="filter.category ? { category: filter.category } : {}"
+        class="rounded-sm px-3.5 py-2 text-[13px] font-medium tracking-[0.08em]"
+        [ngClass]="category() === filter.category ? 'bg-inverse text-white' : 'border border-line bg-white text-ink'">
+        {{ filter.label }}
+      </a>
     }
+  </div>
+  @if (visible().length === 0) {
+    <p class="mt-10 text-muted">Nothing in that kit.</p>
+  } @else {
+    <ul class="mt-8 grid grid-cols-4 gap-6">
+      @for (product of visible(); track product.sku) {
+        <li>
+          <a [routerLink]="['/product', product.sku]" class="block h-full">
+            <ecomm-product-card-desktop [name]="product.name" [category]="product.category" [price]="product.price" />
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>
+<section class="border-y border-line bg-white">
+  <ul class="mx-auto grid max-w-[1440px] grid-cols-4 px-16 py-8 text-[13px] font-medium tracking-[0.08em]">
+    <li>PAYFAST CHECKOUT</li>
+    <li>CARD AND INSTANT EFT</li>
+    <li>VAT INCLUDED IN THE PRICE</li>
+    <li>COURIER NATIONWIDE</li>
   </ul>
 </section>

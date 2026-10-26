@@ -9,11 +9,11 @@ export class SalesBaseDirective {
     { label: 'This month', value: 'R 42 180' },
   ];
   readonly bars = [
-    { month: 'May', heightClass: 'h-16' },
-    { month: 'Jun', heightClass: 'h-24' },
-    { month: 'Jul', heightClass: 'h-20' },
-    { month: 'Aug', heightClass: 'h-32' },
-    { month: 'Sep', heightClass: 'h-28' },
-    { month: 'Oct', heightClass: 'h-40' },
+    { month: 'May', heightClass: 'h-[70px]', mobileClass: 'h-12' },
+    { month: 'Jun', heightClass: 'h-[96px]', mobileClass: 'h-16' },
+    { month: 'Jul', heightClass: 'h-[84px]', mobileClass: 'h-14' },
+    { month: 'Aug', heightClass: 'h-[130px]', mobileClass: 'h-[88px]' },
+    { month: 'Sep', heightClass: 'h-[112px]', mobileClass: 'h-[74px]' },
+    { month: 'Oct', heightClass: 'h-[168px]', mobileClass: 'h-28' },
   ];
 }

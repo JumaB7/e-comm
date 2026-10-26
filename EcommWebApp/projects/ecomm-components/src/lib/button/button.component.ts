@@ -9,14 +9,18 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class ButtonComponent {
   readonly label = input('');
-  readonly variant = input<'primary' | 'secondary'>('primary');
+  readonly variant = input<'primary' | 'secondary' | 'inverse'>('primary');
   readonly full = input(false);
   protected readonly classes = computed(() => {
     const width = this.full() ? 'w-full' : '';
+    const base =
+      'inline-flex items-center justify-center rounded-sm px-6 py-4 text-center text-[15px] font-semibold leading-5';
     const look =
       this.variant() === 'secondary'
-        ? 'border border-ink bg-white'
-        : 'bg-action';
-    return `${width} ${look} px-6 py-3 text-center font-semibold`;
+        ? 'border border-ink bg-white text-ink'
+        : this.variant() === 'inverse'
+          ? 'border border-white bg-transparent text-white'
+          : 'bg-action text-ink';
+    return `${base} ${width} ${look}`;
   });
 }

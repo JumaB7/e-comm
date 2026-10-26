@@ -2,9 +2,15 @@ export interface ShopOrder {
   id: string;
   customer: string;
   email: string;
+  phone: string;
+  address: string;
   total: string;
   status: string;
   tone: 'paid' | 'packed' | 'awaiting' | 'low';
-  when: string;
+  fulfilment: string;
+  fulfilmentNote: string;
   reference: string;
+  paidDetail: string;
+  paymentNote: string;
+  lines: string[];
 }

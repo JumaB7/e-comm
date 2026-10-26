@@ -1,47 +1,104 @@
-<section class="mx-auto grid max-w-6xl gap-8 px-6 py-12 lg:grid-cols-[1fr_320px]">
-  <form>
-    <h1 class="font-display text-5xl">Checkout</h1>
-    <p class="mt-2 text-muted">Delivery details. You will pay on PayFast.</p>
-    <div class="mt-8 grid gap-4">
-      <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">FULL NAME
-        <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="Thabo Mokoena" />
-      </label>
-      <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">EMAIL
-        <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="thabo@example.co.za" />
-      </label>
-      <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">PHONE
-        <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="082 555 0142" />
-      </label>
-      <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">STREET
-        <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="14 Kloof Road" />
-      </label>
-      <div class="grid grid-cols-2 gap-3">
-        <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">SUBURB
-          <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="Parktown" />
-        </label>
-        <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">CITY
-          <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="Johannesburg" />
-        </label>
-        <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">PROVINCE
-          <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="Gauteng" />
-        </label>
-        <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">POSTAL CODE
-          <input class="border border-line bg-white px-3 py-3 text-base font-normal text-ink" value="2193" />
-        </label>
+<section class="mx-auto max-w-[1440px] px-16 py-10">
+  <h1 class="font-display text-[40px] leading-[46px]">Checkout</h1>
+  <p class="mt-4 text-base leading-6 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
+  <div class="mt-8 grid grid-cols-[minmax(0,1fr)_400px] items-start gap-8">
+    <div class="grid gap-8">
+      <div>
+        <h2 class="text-xl font-semibold leading-[26px]">Contact</h2>
+        <div class="mt-4 flex gap-3">
+          <label class="grid w-[360px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
+            <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="thabo@example.co.za" />
+          </label>
+          <label class="grid w-[250px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
+            <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="082 555 0142" />
+          </label>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold leading-[26px]">Delivery address</h2>
+        <div class="mt-4 grid gap-4">
+          <label class="grid max-w-[622px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
+            <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Thabo Mokoena" />
+          </label>
+          <div class="flex flex-wrap gap-3">
+            <label class="grid w-[400px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
+              <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="14 Kloof Road" />
+            </label>
+            <label class="grid w-[210px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
+              <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Parktown" />
+            </label>
+            <label class="grid w-[240px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
+              <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Johannesburg" />
+            </label>
+          </div>
+          <div class="flex gap-3">
+            <label class="grid w-[200px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
+              <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="Gauteng" />
+            </label>
+            <label class="grid w-[160px] gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
+              <input class="h-[50px] rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" value="2193" />
+            </label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold leading-[26px]">Delivery</h2>
+        <div class="mt-4 grid max-w-[280px] gap-3">
+          <button
+            type="button"
+            class="px-4 py-3.5 text-left"
+            [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
+            (click)="delivery.set('courier')">
+            <span class="block text-base leading-6">Courier nationwide</span>
+            <span class="mt-0.5 block text-[13px] leading-[18px] text-muted">2–5 working days</span>
+          </button>
+          <button
+            type="button"
+            class="px-4 py-3.5 text-left"
+            [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
+            (click)="delivery.set('collect')">
+            <span class="block text-base leading-6">Collect from the shop</span>
+            <span class="mt-0.5 block text-[13px] leading-[18px] text-muted">We will email when it is packed</span>
+          </button>
+        </div>
       </div>
     </div>
-  </form>
-  <aside class="h-fit border border-line bg-white p-6">
-    <p class="text-xs font-semibold tracking-wide text-muted">YOUR BAG</p>
-    @for (line of lines; track line.name) {
-      <p class="mt-3">{{ line.name }}</p>
-      <p class="text-sm text-muted">{{ line.price }}</p>
-    }
-    <p class="mt-3 text-sm text-muted">Courier {{ courier }}</p>
-    <p class="mt-4 text-2xl font-semibold text-action">{{ total }}</p>
-    <p class="mt-2 text-sm text-muted">VAT included. The amount is fixed on the server.</p>
-    <a routerLink="/pay" class="mt-6 block">
-      <ecomm-button label="Continue to PayFast" [full]="true" />
-    </a>
-  </aside>
+    <aside class="border border-line bg-white p-6">
+      <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
+      @if (hasLines() === 0) {
+        <p class="mt-4 text-muted">Your bag is empty.</p>
+      } @else {
+        <ul class="mt-4 grid gap-4">
+          @for (line of lines(); track line.sku) {
+            <li class="flex items-start justify-between gap-4">
+              <div>
+                <p class="leading-6">{{ line.name }}</p>
+                <p class="text-[13px] leading-[18px] text-muted">{{ line.qtyLabel }}</p>
+              </div>
+              <p class="leading-6">{{ line.priceLabel }}</p>
+            </li>
+          }
+        </ul>
+        <div class="mt-4 border-t border-line pt-4">
+          <div class="flex items-center justify-between text-[13px] leading-6">
+            <span class="text-muted">Subtotal</span>
+            <span>{{ subtotal() }}</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-[13px] leading-6">
+            <span class="text-muted">Courier</span>
+            <span>{{ courier() }}</span>
+          </div>
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-lg leading-[26px]">Total</span>
+            <span class="text-[22px] font-semibold leading-7 text-action">{{ total() }}</span>
+          </div>
+          <p class="mt-3 text-[13px] leading-[18px] text-muted">VAT included.</p>
+          <a routerLink="/pay" class="mt-4 block">
+            <ecomm-button label="Continue to PayFast" [full]="true" />
+          </a>
+          <p class="mt-3 text-[13px] leading-[18px] text-muted">You will pay on PayFast by card, Instant EFT, or Capitec Pay.</p>
+        </div>
+      }
+    </aside>
+  </div>
 </section>

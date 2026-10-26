@@ -1,33 +1,53 @@
 <section>
-  <h1 class="font-display text-5xl">Stock</h1>
-  <p class="mt-2 text-sm text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
-  <form class="mt-6 flex items-end gap-3 border border-line bg-white p-4">
-    <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">PRODUCT
-      <input class="border border-line bg-canvas px-3 py-2 text-base font-normal text-ink" value="10×42 binoculars" />
+  <h1 class="font-display text-[40px] leading-[46px]">Stock</h1>
+  <p class="mt-4 text-[13px] leading-[18px] text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
+  <form class="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white p-4">
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRODUCT
+      <input class="h-10 w-[280px] rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockName()" (input)="setName($event)" />
     </label>
-    <label class="grid gap-1 text-xs font-semibold tracking-wide text-muted">QUANTITY
-      <input class="w-24 border border-line bg-canvas px-3 py-2 text-base font-normal text-ink" value="6" />
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">QUANTITY
+      <input class="h-10 w-16 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockQty()" (input)="setQty($event)" />
     </label>
-    <ecomm-button label="Add stock" />
-    <ecomm-button label="Remove stock" variant="secondary" />
+    <button type="button" class="border-0 bg-transparent p-0" (click)="addStock()">
+      <ecomm-button label="Add stock" />
+    </button>
+    <button type="button" class="border-0 bg-transparent p-0" (click)="removeStock()">
+      <ecomm-button label="Remove stock" variant="secondary" />
+    </button>
   </form>
   <div class="mt-4 border border-line bg-white">
+    <div class="grid grid-cols-[1.6fr_160px_120px_160px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+      <span>PRODUCT</span>
+      <span>SKU</span>
+      <span>ON HAND</span>
+      <span>STATE</span>
+    </div>
     @for (product of products(); track product.sku) {
-      <div class="grid grid-cols-3 border-b border-line px-4 py-3 last:border-b-0">
-        <span [class.text-danger]="product.low">{{ product.name }}</span>
-        <span class="text-sm text-muted">{{ product.sku }}</span>
-        <span>{{ product.stock }}</span>
-      </div>
+      <button
+        type="button"
+        class="grid w-full grid-cols-[1.6fr_160px_120px_160px] border-b border-line px-4 py-3 text-left last:border-b-0"
+        (click)="choose(product.sku)">
+        <span>{{ product.name }}</span>
+        <span class="text-[13px] leading-[18px] text-muted">{{ product.sku }}</span>
+        <span class="text-[13px] leading-[18px]">{{ product.stock }}</span>
+        <span class="text-[13px] leading-[18px] text-danger">@if (product.low) { Low }</span>
+      </button>
     }
   </div>
-  <div class="mt-4 flex items-center justify-between border border-danger bg-white p-4">
-    <div>
-      <p class="text-lg font-semibold">Delete fixed-blade skinner?</p>
-      <p class="text-sm text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
+  @if (pending(); as item) {
+    <div class="mt-4 flex items-center justify-between gap-4 border border-danger bg-white p-4">
+      <div>
+        <p class="text-lg leading-[26px]">{{ pendingTitle() }}</p>
+        <p class="text-[13px] leading-[18px] text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" class="border-0 bg-transparent p-0" (click)="keep()">
+          <ecomm-button label="Keep" variant="secondary" />
+        </button>
+        <button type="button" class="border-0 bg-transparent p-0" (click)="deleteProduct()">
+          <ecomm-button label="Delete" />
+        </button>
+      </div>
     </div>
-    <div class="flex gap-2">
-      <ecomm-button label="Keep" variant="secondary" />
-      <ecomm-button label="Delete" />
-    </div>
-  </div>
+  }
 </section>

@@ -1,12 +1,54 @@
 <section>
-  <h1 class="font-display text-5xl">Products</h1>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="font-display text-[40px] leading-[46px]">Products</h1>
+      <p class="mt-2 text-[13px] leading-[18px] text-muted">SKU is the key a future till will use to match stock.</p>
+    </div>
+    <button type="button" class="border-0 bg-transparent p-0" (click)="toggleAdd()">
+      <ecomm-button label="Add product" />
+    </button>
+  </div>
+  @if (adding()) {
+    <form class="mt-6 grid grid-cols-5 items-end gap-3 border border-line bg-white p-4">
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">NAME
+        <input class="h-10 rounded-sm border border-line bg-canvas px-3 text-base font-normal tracking-normal text-ink" [value]="draftName()" (input)="setDraft('name', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SKU
+        <input class="h-10 rounded-sm border border-line bg-canvas px-3 text-base font-normal tracking-normal text-ink" [value]="draftSku()" (input)="setDraft('sku', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CATEGORY
+        <input class="h-10 rounded-sm border border-line bg-canvas px-3 text-base font-normal tracking-normal text-ink" [value]="draftCategory()" (input)="setDraft('category', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRICE
+        <input class="h-10 rounded-sm border border-line bg-canvas px-3 text-base font-normal tracking-normal text-ink" [value]="draftPrice()" (input)="setDraft('price', $event)" />
+      </label>
+      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STOCK
+        <input class="h-10 rounded-sm border border-line bg-canvas px-3 text-base font-normal tracking-normal text-ink" [value]="draftStock()" (input)="setDraft('stock', $event)" />
+      </label>
+      <button type="button" class="border-0 bg-transparent p-0" (click)="saveProduct()">
+        <ecomm-button label="Save product" />
+      </button>
+    </form>
+  }
   <div class="mt-6 border border-line bg-white">
+    <div class="grid grid-cols-[1.6fr_160px_120px_80px_160px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+      <span>PRODUCT</span>
+      <span>SKU</span>
+      <span>PRICE</span>
+      <span>STOCK</span>
+      <span>STATE</span>
+    </div>
     @for (product of products(); track product.sku) {
-      <div class="grid grid-cols-4 items-center border-b border-line px-4 py-4 last:border-b-0">
-        <span [class.text-danger]="product.low">{{ product.name }}</span>
-        <span class="text-sm text-muted">{{ product.sku }}</span>
+      <div class="grid grid-cols-[1.6fr_160px_120px_80px_160px] items-center border-b border-line px-4 py-3 last:border-b-0">
+        <span>{{ product.name }}</span>
+        <span class="text-[13px] leading-[18px] text-muted">{{ product.sku }}</span>
         <span>{{ product.price }}</span>
-        <span>{{ product.stock }} @if (product.low) { <ecomm-status-pill label="Low" tone="low" /> }</span>
+        <span>{{ product.stock }}</span>
+        @if (product.low) {
+          <ecomm-status-pill label="Low stock" tone="low" />
+        } @else {
+          <ecomm-status-pill label="Live" tone="paid" />
+        }
       </div>
     }
   </div>

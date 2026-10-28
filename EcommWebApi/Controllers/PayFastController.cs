@@ -8,7 +8,7 @@ namespace EcommWebApi.Controllers;
 
 [ApiController]
 [Route("api/payfast")]
-public class PayFastController(ShopDbContext db, PaymentService payments, IWebHostEnvironment environment, IConfiguration configuration) : ControllerBase
+public class PayFastController(ShopDbContext db, PaymentService payments, IConfiguration configuration) : ControllerBase
 {
     [HttpPost("notify")]
     public async Task<IActionResult> Notify()
@@ -20,7 +20,8 @@ public class PayFastController(ShopDbContext db, PaymentService payments, IWebHo
     [HttpPost("local/{number}")]
     public async Task<ActionResult<OrderModel>> CompleteLocal(string number)
     {
-        if (!environment.IsDevelopment() || configuration["PayFast:Mode"] == "payfast")
+        var merchantId = configuration["PayFast:MerchantId"];
+        if (configuration["PayFast:Mode"] == "payfast" || !string.IsNullOrWhiteSpace(merchantId))
         {
             return NotFound();
         }

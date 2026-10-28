@@ -66,19 +66,22 @@ jobs:
   deploy-staging:
     name: Deploy UAT
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/release' && vars.STAGING_HOST != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest
     environment: staging
     steps:
       - name: Download the build
         uses: actions/download-artifact@v4
 
+      - name: Put the shop in the API
+        run: mkdir -p api/wwwroot && cp -a shop/. api/wwwroot/
+
       - name: Publish to UAT
-        env:
-          STAGING_HOST: ${{ vars.STAGING_HOST }}
-        run: |
-          echo "::error::UAT host is $STAGING_HOST, and publishing to that host is not set up yet."
-          exit 1
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: veld-supply
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: api
 
   deploy-production:
     name: Deploy production

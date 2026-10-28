@@ -16,6 +16,16 @@ export class ProductBaseDirective {
   readonly product = computed(() => this.catalog.find(this.sku()));
   readonly related = computed(() => this.catalog.products().filter((product) => product.sku !== this.sku()).slice(0, 3));
   readonly quantity = signal(1);
+  private readonly addedSku = signal('');
+  private readonly addedQty = signal(0);
+  readonly addedNotice = computed(() => {
+    const item = this.product();
+    const qty = this.addedQty();
+    if (!item || qty < 1 || this.addedSku() !== item.sku) {
+      return '';
+    }
+    return `${qty} × ${item.name} added to your bag.`;
+  });
 
   decrease(): void {
     this.quantity.update((value) => Math.max(1, value - 1));
@@ -30,6 +40,9 @@ export class ProductBaseDirective {
     if (!product) {
       return;
     }
-    this.cart.add(product, this.quantity());
+    const qty = this.quantity();
+    this.cart.add(product, qty);
+    this.addedSku.set(product.sku);
+    this.addedQty.set(qty);
   }
 }

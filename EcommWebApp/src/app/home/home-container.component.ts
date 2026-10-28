@@ -1,18 +1,17 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { BreakpointDirective } from '../directives/breakpoint.directive';
+import { scopeIntroKey } from '../models/constants';
 import { HomeDesktopComponent } from './home-desktop.component';
 import { HomeMobileComponent } from './home-mobile.component';
 import { ScopeIntroComponent } from './scope-intro.component';
-import { ViewportService } from '../services/viewport.service';
-
-const introKey = 'veld-scope-intro';
 
 function shouldPlayIntro(): boolean {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return false;
   }
   try {
-    return sessionStorage.getItem(introKey) !== 'seen';
+    return sessionStorage.getItem(scopeIntroKey) !== 'seen';
   } catch {
     return true;
   }
@@ -20,29 +19,24 @@ function shouldPlayIntro(): boolean {
 
 @Component({
   selector: 'app-home',
-  imports: [NgClass, HomeDesktopComponent, HomeMobileComponent, ScopeIntroComponent],
+  imports: [NgClass, BreakpointDirective, HomeDesktopComponent, HomeMobileComponent, ScopeIntroComponent],
   template: `
     @if (playIntro()) {
       <app-scope-intro (finished)="dismiss()" />
     }
     <div [ngClass]="playIntro() ? 'animate-site-pop' : ''">
-      @if (isMobile()) {
-        <app-home-mobile />
-      } @else {
-        <app-home-desktop />
-      }
+      <app-home-desktop *appBreakpoint="'desktop'" />
+      <app-home-mobile *appBreakpoint="'mobile'" />
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
   readonly playIntro = signal(shouldPlayIntro());
 
   dismiss(): void {
     try {
-      sessionStorage.setItem(introKey, 'seen');
+      sessionStorage.setItem(scopeIntroKey, 'seen');
     } catch {
       // Private browsing can block storage. The intro still closes.
     }

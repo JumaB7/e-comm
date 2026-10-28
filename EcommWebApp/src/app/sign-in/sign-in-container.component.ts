@@ -1,21 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BreakpointDirective } from '../directives/breakpoint.directive';
 import { SignInDesktopComponent } from './sign-in-desktop.component';
 import { SignInMobileComponent } from './sign-in-mobile.component';
-import { ViewportService } from '../services/viewport.service';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [SignInDesktopComponent, SignInMobileComponent],
+  imports: [BreakpointDirective, SignInDesktopComponent, SignInMobileComponent],
   template: `
-    @if (isMobile()) {
-      <app-sign-in-mobile />
-    } @else {
-      <app-sign-in-desktop />
-    }
+    <app-sign-in-desktop *appBreakpoint="'desktop'" />
+    <app-sign-in-mobile *appBreakpoint="'mobile'" />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SignInContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
-}
+export class SignInContainerComponent {}

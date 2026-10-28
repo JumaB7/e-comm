@@ -1,3 +1,18 @@
+export interface OrderSummary {
+  today: number;
+  paidTodayCents: number;
+  awaiting: number;
+  lowStock: number;
+}
+
+export interface CheckoutResponse {
+  order: ShopOrder;
+  receiptKey: string;
+  mode: 'local' | 'payfast';
+  payFastUrl?: string;
+  fields?: Record<string, string>;
+}
+
 export interface ShopOrder {
   id: string;
   customer: string;

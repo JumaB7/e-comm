@@ -29,6 +29,12 @@
             <ecomm-button label="Add to bag" />
           </button>
         </div>
+        @if (addedNotice()) {
+          <p class="mt-3 text-[13px] leading-4.5" role="status">
+            {{ addedNotice() }}
+            <a routerLink="/checkout" class="font-medium">View bag</a>
+          </p>
+        }
         <div class="mt-6 border border-line bg-white p-4">
           <p class="text-[13px] font-medium tracking-[0.08em]">PAYMENT</p>
           <p class="mt-1 max-w-105 text-[13px] leading-4.5 text-muted">

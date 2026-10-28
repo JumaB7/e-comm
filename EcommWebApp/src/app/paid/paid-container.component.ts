@@ -1,21 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BreakpointDirective } from '../directives/breakpoint.directive';
 import { PaidDesktopComponent } from './paid-desktop.component';
 import { PaidMobileComponent } from './paid-mobile.component';
-import { ViewportService } from '../services/viewport.service';
 
 @Component({
   selector: 'app-paid',
-  imports: [PaidDesktopComponent, PaidMobileComponent],
+  imports: [BreakpointDirective, PaidDesktopComponent, PaidMobileComponent],
   template: `
-    @if (isMobile()) {
-      <app-paid-mobile />
-    } @else {
-      <app-paid-desktop />
-    }
+    <app-paid-desktop *appBreakpoint="'desktop'" />
+    <app-paid-mobile *appBreakpoint="'mobile'" />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PaidContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
-}
+export class PaidContainerComponent {}

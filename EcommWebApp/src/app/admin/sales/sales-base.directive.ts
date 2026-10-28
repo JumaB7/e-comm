@@ -1,15 +1,7 @@
 import { Directive, computed, inject } from '@angular/core';
+import { salesBarSteps } from '../../models/constants';
 import { formatRand } from '../../models/money';
 import { CatalogService } from '../../services/catalog.service';
-
-const steps = [
-  { heightClass: 'h-17.5', mobileClass: 'h-12' },
-  { heightClass: 'h-21', mobileClass: 'h-14' },
-  { heightClass: 'h-24', mobileClass: 'h-16' },
-  { heightClass: 'h-28', mobileClass: 'h-18.5' },
-  { heightClass: 'h-32.5', mobileClass: 'h-22' },
-  { heightClass: 'h-42', mobileClass: 'h-28' },
-];
 
 @Directive()
 export class SalesBaseDirective {
@@ -27,8 +19,8 @@ export class SalesBaseDirective {
     const months = this.catalog.sales()?.months ?? [];
     const max = Math.max(0, ...months.map((month) => month.profitCents));
     return months.map((month) => {
-      const index = max === 0 ? 0 : Math.round((month.profitCents / max) * (steps.length - 1));
-      return { month: month.month, ...steps[index] };
+      const index = max === 0 ? 0 : Math.round((month.profitCents / max) * (salesBarSteps.length - 1));
+      return { month: month.month, ...salesBarSteps[index] };
     });
   });
   readonly tallest = computed(() => {

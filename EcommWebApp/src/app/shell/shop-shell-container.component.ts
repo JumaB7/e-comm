@@ -1,21 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BreakpointDirective } from '../directives/breakpoint.directive';
 import { ShopShellDesktopComponent } from './shop-shell-desktop.component';
 import { ShopShellMobileComponent } from './shop-shell-mobile.component';
-import { ViewportService } from '../services/viewport.service';
 
 @Component({
   selector: 'app-shop-shell',
-  imports: [ShopShellDesktopComponent, ShopShellMobileComponent],
+  imports: [BreakpointDirective, ShopShellDesktopComponent, ShopShellMobileComponent],
   template: `
-    @if (isMobile()) {
-      <app-shop-shell-mobile />
-    } @else {
-      <app-shop-shell-desktop />
-    }
+    <app-shop-shell-desktop *appBreakpoint="'desktop'" />
+    <app-shop-shell-mobile *appBreakpoint="'mobile'" />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShopShellContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
-}
+export class ShopShellContainerComponent {}

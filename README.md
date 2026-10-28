@@ -20,6 +20,28 @@ Money is stored in cents. A price of R 9 860 is `986000`. The API calculates tot
 
 Customers and admins are two roles on the same API. Admin actions, including stock and sales, check for the admin role.
 
+## Run locally
+
+Start the API first, then the shop. The shop calls `/api` on its own address, and the dev server forwards those calls to the API.
+
+From `EcommWebApi`:
+
+```powershell
+dotnet run --launch-profile http
+```
+
+The API is [http://localhost:5156](http://localhost:5156). Swagger is [http://localhost:5156/swagger](http://localhost:5156/swagger). In Visual Studio, use the **http** profile. This uses the local database `EcommLocal`, not Azure.
+
+From `EcommWebApp`:
+
+```powershell
+pnpm start
+```
+
+The shop is [http://localhost:4200](http://localhost:4200).
+
+Sign in with `admin@veldsupply.co.za` or `thabo@example.co.za`. Both passwords are `password`.
+
 ## Databases
 
 SQL Server holds the shop data. Schema changes are EF Core migrations in `EcommWebApi`. Edit the C# model, add a migration, and commit that migration with the code. The same migration is applied to each database. UAT and production are not edited by hand.

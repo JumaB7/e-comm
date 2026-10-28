@@ -1,21 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BreakpointDirective } from '../directives/breakpoint.directive';
 import { AdminShellDesktopComponent } from './admin-shell-desktop.component';
 import { AdminShellMobileComponent } from './admin-shell-mobile.component';
-import { ViewportService } from '../services/viewport.service';
 
 @Component({
   selector: 'app-admin-shell',
-  imports: [AdminShellDesktopComponent, AdminShellMobileComponent],
+  imports: [BreakpointDirective, AdminShellDesktopComponent, AdminShellMobileComponent],
   template: `
-    @if (isMobile()) {
-      <app-admin-shell-mobile />
-    } @else {
-      <app-admin-shell-desktop />
-    }
+    <app-admin-shell-desktop *appBreakpoint="'desktop'" />
+    <app-admin-shell-mobile *appBreakpoint="'mobile'" />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminShellContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
-}
+export class AdminShellContainerComponent {}

@@ -2,14 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, of, tap } from 'rxjs';
+import { AuthSession } from '../models/auth.model';
 import { apiMessage } from './auth.interceptor';
-
-export interface AuthSession {
-  token: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

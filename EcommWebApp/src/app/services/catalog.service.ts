@@ -1,40 +1,12 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, of, switchMap, throwError } from 'rxjs';
-import { ShopOrder } from '../models/order.model';
+import { CheckoutDetails } from '../models/cart.model';
+import { emptyOrderSummary } from '../models/constants';
+import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model';
 import { Product } from '../models/product.model';
-import { CheckoutDetails } from './cart.service';
+import { SalesReport } from '../models/sales.model';
 import { apiMessage } from './auth.interceptor';
-
-export interface OrderSummary {
-  today: number;
-  paidTodayCents: number;
-  awaiting: number;
-  lowStock: number;
-}
-
-export interface SalesMonth {
-  month: string;
-  profitCents: number;
-}
-
-export interface SalesReport {
-  totalSalesCents: number;
-  orderCount: number;
-  profitCents: number;
-  thisMonthCents: number;
-  months: SalesMonth[];
-}
-
-interface CheckoutResponse {
-  order: ShopOrder;
-  receiptKey: string;
-  mode: 'local' | 'payfast';
-  payFastUrl?: string;
-  fields?: Record<string, string>;
-}
-
-const emptySummary: OrderSummary = { today: 0, paidTodayCents: 0, awaiting: 0, lowStock: 0 };
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
@@ -45,7 +17,7 @@ export class CatalogService {
   readonly ready = signal(false);
   readonly orders = signal<ShopOrder[]>([]);
   readonly ordersReady = signal(false);
-  readonly summary = signal<OrderSummary>(emptySummary);
+  readonly summary = signal<OrderSummary>(emptyOrderSummary);
   readonly sales = signal<SalesReport | null>(null);
   readonly receipt = signal<ShopOrder | null>(null);
   readonly receiptReady = signal(false);
@@ -74,7 +46,7 @@ export class CatalogService {
       });
     this.http
       .get<OrderSummary>('/api/admin/orders/summary')
-      .pipe(catchError(() => of(emptySummary)))
+      .pipe(catchError(() => of(emptyOrderSummary)))
       .subscribe((summary) => this.summary.set(summary));
     this.http
       .get<SalesReport>('/api/admin/sales')

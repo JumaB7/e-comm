@@ -1,21 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BreakpointDirective } from '../../directives/breakpoint.directive';
 import { OrdersDesktopComponent } from './orders-desktop.component';
 import { OrdersMobileComponent } from './orders-mobile.component';
-import { ViewportService } from '../../services/viewport.service';
 
 @Component({
   selector: 'app-orders',
-  imports: [OrdersDesktopComponent, OrdersMobileComponent],
+  imports: [BreakpointDirective, OrdersDesktopComponent, OrdersMobileComponent],
   template: `
-    @if (isMobile()) {
-      <app-orders-mobile />
-    } @else {
-      <app-orders-desktop />
-    }
+    <app-orders-desktop *appBreakpoint="'desktop'" />
+    <app-orders-mobile *appBreakpoint="'mobile'" />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrdersContainerComponent {
-  private readonly viewport = inject(ViewportService);
-  readonly isMobile = this.viewport.isMobile;
-}
+export class OrdersContainerComponent {}

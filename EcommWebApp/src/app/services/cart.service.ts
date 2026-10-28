@@ -1,45 +1,20 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { cartSeed } from '../mock-data/cart.mock-data';
+import { CartLine, CheckoutDetails } from '../models/cart.model';
+import { courierFee } from '../models/constants';
 import { formatRand } from '../models/money';
 import { Product } from '../models/product.model';
-
-export interface CartLine {
-  sku: string;
-  name: string;
-  amount: number;
-  qty: number;
-  detail: string;
-}
-
-export interface CheckoutDetails {
-  email: string;
-  phone: string;
-  name: string;
-  street: string;
-  suburb: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  delivery: 'courier' | 'collect';
-  method: string;
-  lines: { sku: string; qty: number; detail: string }[];
-}
-
-const courierFee = 120;
-const seed: CartLine[] = [
-  { sku: 'VS-OPT-1042', name: '10×42 binoculars', amount: 8450, qty: 1, detail: '' },
-  { sku: 'VS-APP-220', name: 'Merino stalking shirt', amount: 1290, qty: 1, detail: 'M' },
-];
 
 function readBag(): CartLine[] {
   try {
     const raw = sessionStorage.getItem('veld-bag');
     if (!raw) {
-      return seed;
+      return cartSeed;
     }
     const parsed = JSON.parse(raw) as CartLine[];
-    return Array.isArray(parsed) ? parsed : seed;
+    return Array.isArray(parsed) ? parsed : cartSeed;
   } catch {
-    return seed;
+    return cartSeed;
   }
 }
 

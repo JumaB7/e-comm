@@ -16,13 +16,16 @@ export class ShopShellBaseDirective {
   readonly accountRole = this.auth.role;
   readonly bagCount = this.cart.count;
   readonly search = this.catalog.search;
-  readonly links = [
-    { label: 'Shop', path: '/shop', category: '' },
-    { label: 'Optics', path: '/shop', category: 'Optics' },
-    { label: 'Apparel', path: '/shop', category: 'Apparel' },
-    { label: 'Camp', path: '/shop', category: 'Camp' },
-    { label: 'Knives', path: '/shop', category: 'Knives' },
-  ];
+  readonly links = computed(() => {
+    const signedIn = !!this.accountName();
+    return [
+      { label: 'Home', path: '/' },
+      { label: 'Shop', path: '/shop' },
+      signedIn
+        ? { label: 'Orders', path: '/account/orders' }
+        : { label: 'Account', path: '/sign-in' },
+    ];
+  });
   private readonly url = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -37,10 +40,22 @@ export class ShopShellBaseDirective {
   });
   readonly activeLabel = computed(() => {
     const path = this.url().split('?')[0];
-    if (path !== '/shop') {
-      return '';
+    if (path === '/' || path === '') {
+      return 'Home';
     }
-    return this.router.parseUrl(this.url()).queryParams['category'] ?? 'Shop';
+    if (path.startsWith('/shop') || path.startsWith('/product')) {
+      return 'Shop';
+    }
+    if (path.startsWith('/account')) {
+      return 'Orders';
+    }
+    if (path.startsWith('/sign-in') || path.startsWith('/register')) {
+      return 'Account';
+    }
+    if (path.startsWith('/checkout') || path.startsWith('/pay') || path.startsWith('/paid')) {
+      return 'Bag';
+    }
+    return '';
   });
 
   signOut(): void {

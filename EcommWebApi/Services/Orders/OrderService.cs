@@ -117,9 +117,27 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
         return orders.Select(OrderMapper.Order).ToList();
     }
 
+    public async Task<List<OrderModel>> ListForEmail(string email)
+    {
+        var match = email.Trim().ToLowerInvariant();
+        var orders = await db.Orders.Include(order => order.Lines)
+            .Where(order => order.Email.ToLower() == match)
+            .OrderByDescending(order => order.CreatedAt)
+            .ToListAsync();
+        return orders.Select(OrderMapper.Order).ToList();
+    }
+
     public async Task<OrderModel?> Get(string number)
     {
         var order = await db.Orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Number == number);
+        return order is null ? null : OrderMapper.Order(order);
+    }
+
+    public async Task<OrderModel?> GetForEmail(string number, string email)
+    {
+        var match = email.Trim().ToLowerInvariant();
+        var order = await db.Orders.Include(item => item.Lines)
+            .FirstOrDefaultAsync(item => item.Number == number && item.Email.ToLower() == match);
         return order is null ? null : OrderMapper.Order(order);
     }
 

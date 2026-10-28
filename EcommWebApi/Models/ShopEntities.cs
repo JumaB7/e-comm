@@ -10,6 +10,7 @@ public class Product
     public int CostCents { get; set; }
     public int Stock { get; set; }
     public string Blurb { get; set; } = "";
+    public string Image { get; set; } = "";
     public List<ProductSpec> Specs { get; set; } = [];
 }
 

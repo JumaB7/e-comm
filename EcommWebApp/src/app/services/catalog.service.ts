@@ -19,6 +19,10 @@ export class CatalogService {
   readonly ready = signal(false);
   readonly orders = signal<ShopOrder[]>([]);
   readonly ordersReady = signal(false);
+  readonly myOrders = signal<ShopOrder[]>([]);
+  readonly myOrdersReady = signal(false);
+  readonly myOrder = signal<ShopOrder | null>(null);
+  readonly myOrderReady = signal(false);
   readonly summary = signal<OrderSummary>(emptyOrderSummary);
   readonly sales = signal<SalesReport | null>(null);
   readonly receipt = signal<ShopOrder | null>(null);
@@ -99,6 +103,16 @@ export class CatalogService {
     );
   }
 
+  uploadProductImage(sku: string, file: File): Observable<Product> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.spinner.pending(this.http.post<Product>(`/api/admin/products/${encodeURIComponent(sku)}/image`, body)).pipe(
+      tap((saved) => {
+        this.products.update((products) => products.map((item) => (item.sku === saved.sku ? saved : item)));
+      }),
+    );
+  }
+
   markPacked(id: string): void {
     this.spinner
       .pending(this.http.post<ShopOrder>(`/api/admin/orders/${id}/pack`, {}).pipe(catchError(() => of(undefined))))
@@ -143,6 +157,29 @@ export class CatalogService {
       .subscribe((order) => {
         this.receipt.set(order);
         this.receiptReady.set(true);
+      });
+  }
+
+  loadMyOrders(): void {
+    this.myOrdersReady.set(false);
+    this.spinner
+      .pending(this.http.get<ShopOrder[]>('/api/orders/mine').pipe(catchError(() => of([] as ShopOrder[]))))
+      .subscribe((orders) => {
+        this.myOrders.set(orders);
+        this.myOrdersReady.set(true);
+      });
+  }
+
+  loadMyOrder(number: string): void {
+    this.myOrderReady.set(false);
+    this.myOrder.set(null);
+    this.spinner
+      .pending(
+        this.http.get<ShopOrder>(`/api/orders/mine/${encodeURIComponent(number)}`).pipe(catchError(() => of(null))),
+      )
+      .subscribe((order) => {
+        this.myOrder.set(order);
+        this.myOrderReady.set(true);
       });
   }
 

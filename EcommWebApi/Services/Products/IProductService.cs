@@ -15,4 +15,6 @@ public interface IProductService
     Task<bool> Delete(string sku);
 
     Task<ShopOutcome<ProductModel>> AdjustStock(StockRequest request);
+
+    Task<ShopOutcome<ProductModel>> SetImage(string sku, IFormFile file);
 }

@@ -12,5 +12,6 @@ export interface Product {
   stock: number;
   low: boolean;
   blurb: string;
+  image: string;
   specs: ProductSpec[];
 }

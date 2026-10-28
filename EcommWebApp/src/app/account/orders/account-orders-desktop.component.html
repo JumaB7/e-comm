@@ -1,0 +1,38 @@
+<section class="mx-auto max-w-360 px-16 py-10">
+  <h1 class="font-display text-[40px] leading-11.5">Your orders</h1>
+  <p class="mt-2 text-[13px] leading-4.5 text-muted">Track packing, shipping, and collection for every order on this account.</p>
+  @if (ready() && orders().length === 0) {
+    <p class="mt-8 border border-line bg-white px-4 py-4 text-[13px] leading-4.5 text-muted">No orders yet.</p>
+    <a routerLink="/shop" class="mt-4 inline-block text-[13px] font-medium tracking-[0.08em] uppercase text-ink">Shop gear</a>
+  } @else if (ready()) {
+    <div class="mt-8 overflow-x-auto border border-line bg-white">
+      <div class="min-w-[720px]">
+        <div class="grid grid-cols-[110px_130px_minmax(180px,1.4fr)_100px_140px_160px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+          <span>ORDER</span>
+          <span>PLACED</span>
+          <span>ITEMS</span>
+          <span>TOTAL</span>
+          <span>PAYMENT</span>
+          <span>PROGRESS</span>
+        </div>
+        @for (order of orders(); track order.id) {
+          <a [routerLink]="['/account/orders', order.id]" class="block border-b border-line last:border-b-0">
+            <span class="grid grid-cols-[110px_130px_minmax(180px,1.4fr)_100px_140px_160px] items-center px-4 py-3">
+              <span class="font-medium">{{ order.id }}</span>
+              <span class="whitespace-nowrap text-[13px] leading-4.5 text-muted">{{ order.placed }}</span>
+              <span class="truncate text-[13px] leading-4.5">{{ order.lines[0] }}@if (order.lines.length > 1) { · +{{ order.lines.length - 1 }} }</span>
+              <span class="whitespace-nowrap">{{ order.total }}</span>
+              <ecomm-status-pill [label]="order.status" [tone]="order.tone" />
+              <span class="grid justify-items-start gap-1">
+                <ecomm-status-pill [label]="order.fulfilment" [tone]="order.fulfilmentTone" />
+                @if (order.tracking) {
+                  <span class="text-[13px] leading-4.5 text-muted">{{ order.tracking }}</span>
+                }
+              </span>
+            </span>
+          </a>
+        }
+      </div>
+    </div>
+  }
+</section>

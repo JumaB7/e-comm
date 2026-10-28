@@ -1,4 +1,4 @@
-import { Directive, effect, inject, signal } from '@angular/core';
+import { Directive, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
@@ -18,6 +18,16 @@ export class CheckoutBaseDirective {
   readonly hasLines = this.cart.count;
   readonly submitted = signal(false);
   readonly form: CheckoutForm = checkoutForm();
+  private readonly qtyEdits = signal<Record<string, number>>({});
+  readonly bagRows = computed(() =>
+    this.lines().map((line) => ({
+      ...line,
+      editQty: this.qtyEdits()[line.sku] ?? line.qty,
+    })),
+  );
+  readonly bagDirty = computed(() =>
+    this.lines().some((line) => (this.qtyEdits()[line.sku] ?? line.qty) !== line.qty),
+  );
 
   constructor() {
     this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
@@ -40,6 +50,48 @@ export class CheckoutBaseDirective {
       this.fill(this.form.controls.province, this.cart.province());
       this.fill(this.form.controls.postalCode, this.cart.postalCode());
     });
+    effect(() => {
+      const lines = this.cart.lines();
+      untracked(() => {
+        const edits = { ...this.qtyEdits() };
+        let changed = false;
+        for (const line of lines) {
+          if (edits[line.sku] === undefined) {
+            edits[line.sku] = line.qty;
+            changed = true;
+          }
+        }
+        for (const sku of Object.keys(edits)) {
+          if (!lines.some((line) => line.sku === sku)) {
+            delete edits[sku];
+            changed = true;
+          }
+        }
+        if (changed) {
+          this.qtyEdits.set(edits);
+        }
+      });
+    });
+  }
+
+  bumpQty(sku: string, delta: number): void {
+    this.qtyEdits.update((edits) => {
+      const current = edits[sku] ?? 1;
+      return { ...edits, [sku]: Math.max(1, current + delta) };
+    });
+  }
+
+  updateBag(): void {
+    this.cart.applyQuantities(this.qtyEdits());
+    const next: Record<string, number> = {};
+    for (const line of this.cart.lines()) {
+      next[line.sku] = line.qty;
+    }
+    this.qtyEdits.set(next);
+  }
+
+  remove(sku: string): void {
+    this.cart.remove(sku);
   }
 
   continue(): void {

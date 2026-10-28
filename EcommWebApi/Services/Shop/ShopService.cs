@@ -19,9 +19,6 @@ public class ShopService(ShopDbContext db) : IShopService
                 .OrderByDescending(item => item.CreatedAt)
                 .FirstOrDefaultAsync();
         var delivery = order?.Delivery == "collect" ? "collect" : "courier";
-        var bag = order?.Lines
-            .Select(line => new StarterLineModel(line.Sku, line.Name, line.Quantity, line.Detail))
-            .ToList() ?? [];
         return new ShopDefaultsModel(
             customer?.Email ?? "",
             admin?.Email ?? "",
@@ -33,6 +30,6 @@ public class ShopService(ShopDbContext db) : IShopService
             order?.Province ?? "",
             order?.PostalCode ?? "",
             delivery,
-            bag);
+            []);
     }
 }

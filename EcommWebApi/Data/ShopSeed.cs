@@ -10,28 +10,42 @@ public static class ShopSeed
 
     public static void Apply(ShopDbContext db)
     {
-        if (db.Products.Any())
+        if (!db.Products.Any())
         {
+            db.Users.AddRange(
+                User("Veld Supply", "admin@veldsupply.co.za", "010 000 0000", "Admin"),
+                User("Thabo Mokoena", "thabo@example.co.za", "082 555 0142", "Customer"));
+
+            var products = new List<Product>
+            {
+                Gear("VS-OPT-1042", "10×42 binoculars", "Optics", 8450, 12, "Roof-prism glass for last light. Rubber armour, waterproof, and a strap that stays put on a stalk. Sold as a single pair.", ("Magnification", "10×42"), ("Weight", "680 g"), ("Waterproof", "Yes")),
+                Gear("VS-APP-220", "Merino stalking shirt", "Apparel", 1290, 4, "Quiet merino for a long stalk. This listing is the medium.", ("Size", "M")),
+                Gear("VS-KNF-018", "Fixed-blade skinner", "Knives", 890, 20, "A fixed blade for skinning in the field. Sold on its own, with a sheath.", ("Blade", "Fixed")),
+                Gear("VS-PCK-028", "28L daypack", "Packs", 1750, 9, "A 28 litre daypack for water, glass, and a layer.", ("Volume", "28 L")),
+                Gear("VS-CMP-014", "Ground blind", "Camp", 3200, 2, "A ground blind for a sitting hunt. Packs down for the courier."),
+                Gear("VS-CMP-033", "Trail camera", "Camp", 2150, 7, "A trail camera for the fence line. Sold as a single unit."),
+                Gear("VS-LMP-014", "Rechargeable headlamp", "Camp", 480, 15, "A rechargeable headlamp for camp and the walk back.", ("Power", "Rechargeable")),
+                Gear("VS-APP-310", "Stalking boots", "Apparel", 2890, 6, "Boots for a dry stalk. Sold as a pair."),
+            };
+            db.Products.AddRange(products);
+            db.SaveChanges();
+            SeedOrders(db, products);
             return;
         }
 
-        db.Users.AddRange(
-            User("Veld Supply", "admin@veldsupply.co.za", "010 000 0000", "Admin"),
-            User("Thabo Mokoena", "thabo@example.co.za", "082 555 0142", "Customer"));
-
-        var products = new List<Product>
+        var missingImage = db.Products.Where(product => product.Image == "").ToList();
+        foreach (var product in missingImage)
         {
-            Gear("VS-OPT-1042", "10×42 binoculars", "Optics", 8450, 12, "Roof-prism glass for last light. Rubber armour, waterproof, and a strap that stays put on a stalk. Sold as a single pair.", ("Magnification", "10×42"), ("Weight", "680 g"), ("Waterproof", "Yes")),
-            Gear("VS-APP-220", "Merino stalking shirt", "Apparel", 1290, 4, "Quiet merino for a long stalk. This listing is the medium.", ("Size", "M")),
-            Gear("VS-KNF-018", "Fixed-blade skinner", "Knives", 890, 20, "A fixed blade for skinning in the field. Sold on its own, with a sheath.", ("Blade", "Fixed")),
-            Gear("VS-PCK-028", "28L daypack", "Packs", 1750, 9, "A 28 litre daypack for water, glass, and a layer.", ("Volume", "28 L")),
-            Gear("VS-CMP-014", "Ground blind", "Camp", 3200, 2, "A ground blind for a sitting hunt. Packs down for the courier."),
-            Gear("VS-CMP-033", "Trail camera", "Camp", 2150, 7, "A trail camera for the fence line. Sold as a single unit."),
-            Gear("VS-LMP-014", "Rechargeable headlamp", "Camp", 480, 15, "A rechargeable headlamp for camp and the walk back.", ("Power", "Rechargeable")),
-            Gear("VS-APP-310", "Stalking boots", "Apparel", 2890, 6, "Boots for a dry stalk. Sold as a pair."),
-        };
-        db.Products.AddRange(products);
-        db.SaveChanges();
+            product.Image = $"/products/{product.Sku}.jpg";
+        }
+        if (missingImage.Count > 0)
+        {
+            db.SaveChanges();
+        }
+    }
+
+    private static void SeedOrders(ShopDbContext db, List<Product> products)
+    {
 
         ShopOrder Order(string number, string name, string email, string phone, string street, string suburb, string city, string province, string postal, string delivery, int courier, string status, string tone, string fulfilment, string fulfilmentNote, string reference, string method, DateTime shopTime, bool paid, params (string sku, int qty, string detail)[] lines)
         {
@@ -112,6 +126,7 @@ public static class ShopSeed
             CostCents = cents * 67 / 100,
             Stock = stock,
             Blurb = blurb,
+            Image = $"/products/{sku}.jpg",
         };
         product.Specs.Add(new ProductSpec { Label = "Delivery", Value = "Courier, 2–5 working days" });
         foreach (var spec in specs)

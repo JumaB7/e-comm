@@ -43,5 +43,28 @@ public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
         return ShopOutcome<AuthModel>.Ok(Session(user));
     }
 
-    private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Role);
+    public async Task<ShopOutcome<CheckoutProfileModel>> Profile(string email)
+    {
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Email == email);
+        if (user is null)
+        {
+            return ShopOutcome<CheckoutProfileModel>.Unauthorized("Sign in again.");
+        }
+        var order = await db.Orders.AsNoTracking()
+            .Where(item => item.Email == email)
+            .OrderByDescending(item => item.CreatedAt)
+            .FirstOrDefaultAsync();
+        return ShopOutcome<CheckoutProfileModel>.Ok(new CheckoutProfileModel(
+            user.Name,
+            user.Email,
+            user.Phone,
+            order?.Street ?? "",
+            order?.Suburb ?? "",
+            order?.City ?? "",
+            order?.Province ?? "",
+            order?.PostalCode ?? "",
+            order?.Delivery == "collect" ? "collect" : "courier"));
+    }
+
+    private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Phone, user.Role);
 }

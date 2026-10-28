@@ -84,6 +84,11 @@ namespace EcommWebApi.Data.Migrations
                     b.Property<int>("CostCents")
                         .HasColumnType("int");
 
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)

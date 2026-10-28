@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { AccountOrderContainerComponent } from './account/order/account-order-container.component';
+import { AccountOrdersContainerComponent } from './account/orders/account-orders-container.component';
 import { AdminProductsContainerComponent } from './admin/products/products-container.component';
 import { OrderContainerComponent } from './admin/order/order-container.component';
 import { OrdersContainerComponent } from './admin/orders/orders-container.component';
@@ -15,6 +17,7 @@ import { AdminShellContainerComponent } from './shell/admin-shell-container.comp
 import { ShopShellContainerComponent } from './shell/shop-shell-container.component';
 import { SignInContainerComponent } from './sign-in/sign-in-container.component';
 import { adminGuard } from './services/admin.guard';
+import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +28,8 @@ export const routes: Routes = [
       { path: 'shop', component: ShopContainerComponent },
       { path: 'product/:sku', component: ProductContainerComponent },
       { path: 'checkout', component: CheckoutContainerComponent },
+      { path: 'account/orders', component: AccountOrdersContainerComponent, canActivate: [authGuard] },
+      { path: 'account/orders/:id', component: AccountOrderContainerComponent, canActivate: [authGuard] },
       { path: 'sign-in', component: SignInContainerComponent },
       { path: 'register', component: RegisterContainerComponent },
       { path: 'pay', component: PayContainerComponent },

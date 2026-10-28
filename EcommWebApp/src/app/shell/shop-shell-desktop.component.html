@@ -7,29 +7,35 @@
       <a routerLink="/" aria-label="Veld Supply" class="block">
         <img src="/kudu-logo.svg" alt="" class="h-12 w-auto" />
       </a>
-      <nav class="absolute left-1/2 flex -translate-x-1/2 gap-7">
-        @for (link of links; track link.label) {
+      <nav class="absolute left-1/2 flex -translate-x-1/2 items-center gap-7">
+        @for (link of links(); track link.label) {
           <a
             [routerLink]="link.path"
-            [queryParams]="link.category ? { category: link.category } : {}"
             class="text-[13px] font-medium tracking-[0.08em] uppercase"
             [ngClass]="activeLabel() === link.label ? 'text-ink' : 'text-muted'">
             {{ link.label }}
           </a>
         }
-      </nav>
-      <div class="flex items-center gap-5 text-[13px] font-medium tracking-[0.08em]">
-        @if (accountName()) {
+        @if (accountName(); as name) {
+          <span class="text-[13px] font-medium tracking-[0.08em] text-ink">{{ name }}</span>
           @if (accountRole() === 'Admin') {
-            <a routerLink="/admin" class="uppercase">Admin</a>
+            <a routerLink="/admin" class="text-[13px] font-medium tracking-[0.08em] uppercase text-muted">Admin</a>
           }
-          <span class="font-normal tracking-normal">{{ accountName() }}</span>
-          <button type="button" class="border-0 bg-transparent p-0 uppercase" (click)="signOut()">Sign out</button>
-        } @else {
-          <a routerLink="/sign-in" class="uppercase">Account</a>
+          <button type="button" class="border-0 bg-transparent p-0 text-[13px] font-medium tracking-[0.08em] uppercase text-muted" (click)="signOut()">Sign out</button>
         }
-        <a routerLink="/checkout" class="uppercase">Bag {{ bagCount() }}</a>
-      </div>
+        <a
+          routerLink="/checkout"
+          class="inline-flex items-center gap-2 text-[13px] font-medium tracking-[0.08em] uppercase"
+          [ngClass]="activeLabel() === 'Bag' ? 'text-ink' : 'text-muted'"
+          [attr.aria-label]="'Bag, ' + bagCount() + ' items'">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6.5 9h11l-1 11.5H7.5L6.5 9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M9 9V7.5a3 3 0 0 1 6 0V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          <span>{{ bagCount() }}</span>
+        </a>
+      </nav>
+      <span class="w-12"></span>
     </div>
   </header>
   <div class="flex-1">

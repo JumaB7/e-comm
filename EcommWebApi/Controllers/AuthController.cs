@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using EcommWebApi.Contracts;
 using EcommWebApi.Services.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -18,4 +20,12 @@ public class AuthController(IAuthService auth) : ControllerBase
     [HttpPost("sign-in")]
     public async Task<ActionResult<AuthModel>> SignIn(SignInRequest request) =>
         ShopResults.From(await auth.SignIn(request));
+
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult<CheckoutProfileModel>> Profile()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
+        return ShopResults.From(await auth.Profile(email));
+    }
 }

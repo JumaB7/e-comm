@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, of } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { Product } from '../../models/product.model';
 import { apiMessage } from '../../services/api-message';
 import { CatalogService } from '../../services/catalog.service';
@@ -46,6 +46,9 @@ export class AdminProductsBaseDirective {
   readonly editingSku = signal('');
   readonly menuSku = signal('');
   readonly saveError = signal('');
+  readonly imageFile = signal<File | null>(null);
+  readonly imagePreview = signal('');
+  readonly imageError = signal('');
   private readonly editSku = signal('');
   readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -91,9 +94,33 @@ export class AdminProductsBaseDirective {
     if (!this.adding()) {
       this.editingSku.set('');
       this.clearEditQuery();
+      this.clearImage();
       return;
     }
     this.resetBlank();
+  }
+
+  onImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.imageError.set('');
+    if (!file) {
+      this.clearImage();
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.imageError.set('Use a JPG, PNG, or WebP image.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 2_500_000) {
+      this.imageError.set('Keep the image under 2.5 MB.');
+      input.value = '';
+      return;
+    }
+    this.revokePreview();
+    this.imageFile.set(file);
+    this.imagePreview.set(URL.createObjectURL(file));
   }
 
   editProduct(product: Product): void {
@@ -140,6 +167,10 @@ export class AdminProductsBaseDirective {
     const editing = this.editingSku();
     const request = editing ? this.catalog.updateProduct(editing, payload) : this.catalog.addProduct(payload);
     request.pipe(
+      switchMap((saved) => {
+        const file = this.imageFile();
+        return file ? this.catalog.uploadProductImage(saved.sku, file) : of(saved);
+      }),
       catchError((error: HttpErrorResponse) => {
         this.saveError.set(apiMessage(error));
         return of(undefined);
@@ -160,6 +191,8 @@ export class AdminProductsBaseDirective {
     this.adding.set(true);
     this.submitted.set(false);
     this.saveError.set('');
+    this.clearImage();
+    this.imagePreview.set(product.image || `/products/${product.sku}.jpg`);
     this.suspendPrefix = true;
     this.form.reset({
       name: product.name,
@@ -191,6 +224,7 @@ export class AdminProductsBaseDirective {
   }
 
   private resetBlank(): void {
+    this.clearImage();
     this.suspendPrefix = true;
     this.form.reset({
       name: '',
@@ -210,6 +244,20 @@ export class AdminProductsBaseDirective {
     this.category.set('Optics');
     this.skuPrefix.set(skuPrefixes['Optics']);
     this.suspendPrefix = false;
+  }
+
+  private clearImage(): void {
+    this.revokePreview();
+    this.imageFile.set(null);
+    this.imagePreview.set('');
+    this.imageError.set('');
+  }
+
+  private revokePreview(): void {
+    const preview = this.imagePreview();
+    if (preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
   }
 
   private clearEditQuery(): void {

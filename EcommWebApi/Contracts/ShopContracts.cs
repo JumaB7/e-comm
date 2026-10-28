@@ -11,6 +11,7 @@ public record ProductModel(
     int Stock,
     bool Low,
     string Blurb,
+    string Image,
     List<SpecModel> Specs);
 
 public record OrderModel(
@@ -43,7 +44,18 @@ public record CheckoutModel(
     string? PayFastUrl,
     Dictionary<string, string>? Fields);
 
-public record AuthModel(string Token, string Name, string Email, string Role);
+public record AuthModel(string Token, string Name, string Email, string Phone, string Role);
+
+public record CheckoutProfileModel(
+    string Name,
+    string Email,
+    string Phone,
+    string Street,
+    string Suburb,
+    string City,
+    string Province,
+    string PostalCode,
+    string Delivery);
 
 public record OrderSummaryModel(int Today, string PaidToday, string PaidTodayShort, int Awaiting, int LowStock);
 

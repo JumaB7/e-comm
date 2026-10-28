@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, of, tap } from 'rxjs';
-import { AuthSession } from '../models/auth.model';
+import { AuthSession, CheckoutProfile } from '../models/auth.model';
 import { apiMessage } from './api-message';
 import { SpinnerService } from './spinner.service';
 
@@ -12,6 +12,8 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly spinner = inject(SpinnerService);
   readonly name = signal(sessionStorage.getItem('veld-name') ?? '');
+  readonly email = signal(sessionStorage.getItem('veld-email') ?? '');
+  readonly phone = signal(sessionStorage.getItem('veld-phone') ?? '');
   readonly role = signal(sessionStorage.getItem('veld-role') ?? '');
   readonly error = signal('');
 
@@ -27,13 +29,21 @@ export class AuthService {
     sessionStorage.removeItem('veld-token');
     sessionStorage.removeItem('veld-role');
     sessionStorage.removeItem('veld-name');
+    sessionStorage.removeItem('veld-email');
+    sessionStorage.removeItem('veld-phone');
     this.name.set('');
+    this.email.set('');
+    this.phone.set('');
     this.role.set('');
   }
 
   signOut(): void {
     this.clearSession();
     void this.router.navigateByUrl('/');
+  }
+
+  profile() {
+    return this.http.get<CheckoutProfile>('/api/auth/profile').pipe(catchError(() => of(undefined)));
   }
 
   private submit(url: string, body: object, returnUrl: string): void {
@@ -67,7 +77,11 @@ export class AuthService {
     sessionStorage.setItem('veld-token', session.token);
     sessionStorage.setItem('veld-role', session.role);
     sessionStorage.setItem('veld-name', session.name);
+    sessionStorage.setItem('veld-email', session.email);
+    sessionStorage.setItem('veld-phone', session.phone ?? '');
     this.role.set(session.role);
     this.name.set(session.name);
+    this.email.set(session.email);
+    this.phone.set(session.phone ?? '');
   }
 }

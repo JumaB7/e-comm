@@ -47,6 +47,17 @@ public class AdminController(IOrderService orders, IProductService products) : C
     public async Task<ActionResult<ProductModel>> UpdateProduct(string sku, CreateProductRequest request) =>
         ShopResults.From(await products.Update(sku, request));
 
+    [HttpPost("products/{sku}/image")]
+    [RequestSizeLimit(3_000_000)]
+    public async Task<ActionResult<ProductModel>> UploadProductImage(string sku, IFormFile? file)
+    {
+        if (file is null)
+        {
+            return BadRequest(new MessageModel("Choose an image file."));
+        }
+        return ShopResults.From(await products.SetImage(sku, file));
+    }
+
     [HttpDelete("products/{sku}")]
     public async Task<IActionResult> DeleteProduct(string sku) =>
         await products.Delete(sku) ? NoContent() : NotFound();

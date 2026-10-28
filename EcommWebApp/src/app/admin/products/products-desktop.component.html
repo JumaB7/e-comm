@@ -97,6 +97,23 @@
           </label>
         </div>
       }
+      <div class="mt-4 flex items-start gap-4">
+        <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">IMAGE
+          <input
+            class="block w-full max-w-80 text-base font-normal tracking-normal text-ink file:mr-3 file:border file:border-line file:bg-canvas file:px-3 file:py-2"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onImage($event)" />
+          @if (imageError()) {
+            <span class="font-normal tracking-normal text-danger">{{ imageError() }}</span>
+          } @else {
+            <span class="font-normal tracking-normal text-muted">JPG, PNG, or WebP · under 2.5 MB</span>
+          }
+        </label>
+        @if (imagePreview()) {
+          <img [src]="imagePreview()" alt="" class="h-24 w-24 object-cover" />
+        }
+      </div>
       @if (saveError()) {
         <p class="mt-4 text-[13px] leading-4.5 text-danger">{{ saveError() }}</p>
       }

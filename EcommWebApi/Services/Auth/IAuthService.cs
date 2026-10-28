@@ -7,4 +7,6 @@ public interface IAuthService
     Task<ShopOutcome<AuthModel>> Register(RegisterRequest request);
 
     Task<ShopOutcome<AuthModel>> SignIn(SignInRequest request);
+
+    Task<ShopOutcome<CheckoutProfileModel>> Profile(string email);
 }

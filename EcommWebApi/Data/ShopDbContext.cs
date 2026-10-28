@@ -17,6 +17,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             product.Property(item => item.Sku).HasMaxLength(32);
             product.Property(item => item.Name).HasMaxLength(120);
             product.Property(item => item.Category).HasMaxLength(40);
+            product.Property(item => item.Image).HasMaxLength(200);
             product.HasMany(item => item.Specs).WithOne().HasForeignKey(spec => spec.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
 

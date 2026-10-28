@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services.Products;
 
-public class ProductService(ShopDbContext db) : IProductService
+public class ProductService(ShopDbContext db, ProductImageStore images) : IProductService
 {
     private static readonly Dictionary<string, string> SkuPrefixes = new(StringComparer.Ordinal)
     {
@@ -55,6 +55,7 @@ public class ProductService(ShopDbContext db) : IProductService
             CostCents = cents * 67 / 100,
             Stock = request.Stock,
             Blurb = $"{name}. Sold on its own.",
+            Image = "",
             Specs = SpecsFrom(request.Specs),
         };
         db.Products.Add(product);
@@ -90,7 +91,15 @@ public class ProductService(ShopDbContext db) : IProductService
             return ShopOutcome<ProductModel>.Conflict("That SKU is already in the shop.");
         }
         product.Name = name;
-        product.Sku = nextSku;
+        if (skuChanged)
+        {
+            var moved = images.Rename(product.Sku, nextSku);
+            if (moved is not null)
+            {
+                product.Image = moved;
+            }
+            product.Sku = nextSku;
+        }
         product.Category = category;
         product.PriceCents = ShopMoney.RandsToCents(request.PriceRands);
         product.Stock = request.Stock;
@@ -110,9 +119,29 @@ public class ProductService(ShopDbContext db) : IProductService
         {
             return false;
         }
+        images.Remove(product.Sku);
         db.Products.Remove(product);
         await db.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<ShopOutcome<ProductModel>> SetImage(string sku, IFormFile file)
+    {
+        var product = await db.Products.Include(item => item.Specs).FirstOrDefaultAsync(item => item.Sku == sku);
+        if (product is null)
+        {
+            return ShopOutcome<ProductModel>.NotFound("That product is not in the shop.");
+        }
+        try
+        {
+            product.Image = await images.Save(product.Sku, file);
+        }
+        catch (InvalidOperationException error)
+        {
+            return ShopOutcome<ProductModel>.BadRequest(error.Message);
+        }
+        await db.SaveChangesAsync();
+        return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
     }
 
     public async Task<ShopOutcome<ProductModel>> AdjustStock(StockRequest request)

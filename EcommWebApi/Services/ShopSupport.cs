@@ -114,6 +114,7 @@ public static class OrderMapper
         product.Stock,
         product.Stock <= ShopMoney.LowStockAt,
         product.Blurb,
+        product.Image,
         product.Specs.Select(spec => new SpecModel(spec.Label, spec.Value)).ToList());
 
     public static OrderModel Order(ShopOrder order)

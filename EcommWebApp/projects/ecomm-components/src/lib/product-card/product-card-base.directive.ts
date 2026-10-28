@@ -6,5 +6,6 @@ export class ProductCardBaseDirective {
   readonly category = input('');
   readonly price = input('');
   readonly sku = input('');
-  readonly photo = computed(() => (this.sku() ? `/products/${this.sku()}.jpg` : ''));
+  readonly image = input('');
+  readonly photo = computed(() => this.image());
 }

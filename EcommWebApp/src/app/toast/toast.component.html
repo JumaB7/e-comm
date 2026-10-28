@@ -1,0 +1,16 @@
+@if (message(); as text) {
+  <div
+    class="fixed inset-x-0 top-20 z-[70] flex justify-center px-4"
+    role="status"
+    aria-live="polite">
+    <div class="flex max-w-md items-start gap-3 border border-line bg-white px-4 py-3 shadow-[0_12px_24px_rgba(17,17,17,0.12)]">
+      <p class="min-w-0 flex-1 text-[13px] leading-4.5">
+        {{ text }}
+        <a routerLink="/checkout" class="ml-1 font-medium" (click)="dismiss()">View bag</a>
+      </p>
+      <button type="button" class="border-0 bg-transparent p-0 text-[13px] leading-4.5 text-muted" (click)="dismiss()" aria-label="Dismiss">
+        Close
+      </button>
+    </div>
+  </div>
+}

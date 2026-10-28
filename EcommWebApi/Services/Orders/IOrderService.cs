@@ -10,7 +10,11 @@ public interface IOrderService
 
     Task<List<OrderModel>> List();
 
+    Task<List<OrderModel>> ListForEmail(string email);
+
     Task<OrderModel?> Get(string number);
+
+    Task<OrderModel?> GetForEmail(string number, string email);
 
     Task<OrderModel?> Pack(string number);
 

@@ -1,12 +1,11 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { CartLine, CartQuote, CheckoutDetails } from '../models/cart.model';
 import { emptyCartQuote } from '../models/constants';
 import { Product } from '../models/product.model';
-import { ShopDefaultsService } from './shop-defaults.service';
-import { SpinnerService } from './spinner.service';
+import { AuthService } from './auth.service';
 
 function readBag(): CartLine[] | null {
   try {
@@ -21,21 +20,16 @@ function readBag(): CartLine[] | null {
   }
 }
 
+type ContactField = 'email' | 'phone' | 'fullName' | 'street' | 'suburb' | 'city' | 'province' | 'postalCode';
+
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly http = inject(HttpClient);
-  private readonly shop = inject(ShopDefaultsService);
-  private readonly spinner = inject(SpinnerService);
-  readonly bagChoice = signal<CartLine[] | null>(readBag());
-  readonly lines = computed(() => this.bagChoice() ?? this.shop.defaults().bag);
+  private readonly auth = inject(AuthService);
+  readonly bagChoice = signal<CartLine[]>(readBag() ?? []);
+  readonly lines = computed(() => this.bagChoice());
   readonly deliveryChoice = signal<'courier' | 'collect' | null>(null);
-  readonly delivery = computed<'courier' | 'collect'>(() => {
-    const chosen = this.deliveryChoice();
-    if (chosen) {
-      return chosen;
-    }
-    return this.shop.defaults().delivery === 'collect' ? 'collect' : 'courier';
-  });
+  readonly delivery = computed<'courier' | 'collect'>(() => this.deliveryChoice() ?? 'courier');
   private readonly emailChoice = signal<string | null>(null);
   private readonly phoneChoice = signal<string | null>(null);
   private readonly nameChoice = signal<string | null>(null);
@@ -44,14 +38,15 @@ export class CartService {
   private readonly cityChoice = signal<string | null>(null);
   private readonly provinceChoice = signal<string | null>(null);
   private readonly postalChoice = signal<string | null>(null);
-  readonly email = computed(() => this.emailChoice() ?? this.shop.defaults().customerEmail);
-  readonly phone = computed(() => this.phoneChoice() ?? this.shop.defaults().phone);
-  readonly fullName = computed(() => this.nameChoice() ?? this.shop.defaults().name);
-  readonly street = computed(() => this.streetChoice() ?? this.shop.defaults().street);
-  readonly suburb = computed(() => this.suburbChoice() ?? this.shop.defaults().suburb);
-  readonly city = computed(() => this.cityChoice() ?? this.shop.defaults().city);
-  readonly province = computed(() => this.provinceChoice() ?? this.shop.defaults().province);
-  readonly postalCode = computed(() => this.postalChoice() ?? this.shop.defaults().postalCode);
+  private readonly profileLoadedFor = signal('');
+  readonly email = computed(() => this.emailChoice() ?? '');
+  readonly phone = computed(() => this.phoneChoice() ?? '');
+  readonly fullName = computed(() => this.nameChoice() ?? '');
+  readonly street = computed(() => this.streetChoice() ?? '');
+  readonly suburb = computed(() => this.suburbChoice() ?? '');
+  readonly city = computed(() => this.cityChoice() ?? '');
+  readonly province = computed(() => this.provinceChoice() ?? '');
+  readonly postalCode = computed(() => this.postalChoice() ?? '');
   readonly count = computed(() => this.lines().reduce((sum, line) => sum + line.qty, 0));
   private readonly quote = toSignal(
     toObservable(
@@ -61,9 +56,7 @@ export class CartService {
       })),
     ).pipe(
       switchMap((body) =>
-        this.spinner.pending(
-          this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote))),
-        ),
+        this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote))),
       ),
     ),
     { initialValue: emptyCartQuote },
@@ -85,6 +78,8 @@ export class CartService {
         sku: line.sku,
         name: match?.name || line.name,
         priceLabel: match?.price ?? '',
+        qty: line.qty,
+        detail: line.detail,
         qtyLabel: line.detail ? `Qty ${line.qty} · ${line.detail}` : `Qty ${line.qty}`,
       };
     });
@@ -105,18 +100,70 @@ export class CartService {
 
   constructor() {
     effect(() => {
-      const bag = this.bagChoice();
-      if (bag === null) {
+      sessionStorage.setItem('veld-bag', JSON.stringify(this.bagChoice()));
+    });
+    effect(() => {
+      const email = this.auth.email();
+      const token = sessionStorage.getItem('veld-token');
+      if (!email || !token) {
+        untracked(() => {
+          if (this.profileLoadedFor()) {
+            this.clearContact();
+          }
+        });
         return;
       }
-      sessionStorage.setItem('veld-bag', JSON.stringify(bag));
+      if (this.profileLoadedFor() === email) {
+        return;
+      }
+      untracked(() => {
+        this.profileLoadedFor.set(email);
+        if (!this.emailChoice()) {
+          this.emailChoice.set(email);
+        }
+        if (!this.nameChoice() && this.auth.name()) {
+          this.nameChoice.set(this.auth.name());
+        }
+        if (!this.phoneChoice() && this.auth.phone()) {
+          this.phoneChoice.set(this.auth.phone());
+        }
+        this.auth.profile().subscribe((profile) => {
+          if (!profile) {
+            return;
+          }
+          if (!this.emailChoice()) {
+            this.emailChoice.set(profile.email);
+          }
+          if (!this.nameChoice()) {
+            this.nameChoice.set(profile.name);
+          }
+          if (!this.phoneChoice()) {
+            this.phoneChoice.set(profile.phone);
+          }
+          if (!this.streetChoice()) {
+            this.streetChoice.set(profile.street);
+          }
+          if (!this.suburbChoice()) {
+            this.suburbChoice.set(profile.suburb);
+          }
+          if (!this.cityChoice()) {
+            this.cityChoice.set(profile.city);
+          }
+          if (!this.provinceChoice()) {
+            this.provinceChoice.set(profile.province);
+          }
+          if (!this.postalChoice()) {
+            this.postalChoice.set(profile.postalCode);
+          }
+          if (!this.deliveryChoice()) {
+            this.deliveryChoice.set(profile.delivery);
+          }
+        });
+      });
     });
   }
 
-  setContact(
-    field: 'email' | 'phone' | 'fullName' | 'street' | 'suburb' | 'city' | 'province' | 'postalCode',
-    value: string,
-  ): void {
+  setContact(field: ContactField, value: string): void {
     if (field === 'email') {
       this.emailChoice.set(value);
     } else if (field === 'phone') {
@@ -148,7 +195,34 @@ export class CartService {
     this.bagChoice.set(next);
   }
 
+  remove(sku: string): void {
+    this.bagChoice.set(this.lines().filter((line) => line.sku !== sku));
+  }
+
+  applyQuantities(updates: Record<string, number>): void {
+    const next = this.lines()
+      .map((line) => {
+        const qty = updates[line.sku] ?? line.qty;
+        return { ...line, qty: Number.isFinite(qty) ? Math.floor(qty) : line.qty };
+      })
+      .filter((line) => line.qty >= 1);
+    this.bagChoice.set(next);
+  }
+
   clear(): void {
     this.bagChoice.set([]);
+  }
+
+  clearContact(): void {
+    this.emailChoice.set(null);
+    this.phoneChoice.set(null);
+    this.nameChoice.set(null);
+    this.streetChoice.set(null);
+    this.suburbChoice.set(null);
+    this.cityChoice.set(null);
+    this.provinceChoice.set(null);
+    this.postalChoice.set(null);
+    this.deliveryChoice.set(null);
+    this.profileLoadedFor.set('');
   }
 }

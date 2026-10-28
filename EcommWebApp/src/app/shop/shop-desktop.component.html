@@ -24,11 +24,12 @@
       @for (product of visible(); track product.sku) {
         <li>
           <a [routerLink]="['/product', product.sku]" class="block h-full">
-            <ecomm-product-card-desktop
-              [name]="product.name"
-              [category]="product.category"
-              [price]="product.price"
-              [sku]="product.sku" />
+              <ecomm-product-card-desktop
+                [name]="product.name"
+                [category]="product.category"
+                [price]="product.price"
+                [sku]="product.sku"
+                [image]="product.image" />
           </a>
         </li>
       }

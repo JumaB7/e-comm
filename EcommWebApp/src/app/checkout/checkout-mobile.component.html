@@ -2,8 +2,31 @@
   <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
   <aside class="mt-4 border border-line bg-white p-4">
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
-    @for (line of lines(); track line.sku) {
-      <p class="mt-2 leading-6">{{ line.name }} · {{ line.priceLabel }}</p>
+    @for (line of bagRows(); track line.sku) {
+      <div class="mt-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="leading-6">{{ line.name }}</p>
+            @if (line.detail) {
+              <p class="text-[13px] leading-4.5 text-muted">{{ line.detail }}</p>
+            }
+          </div>
+          <p class="shrink-0 leading-6">{{ line.priceLabel }}</p>
+        </div>
+        <div class="mt-2 flex items-center gap-4">
+          <div class="flex h-9 items-center border border-line">
+            <button type="button" class="px-3 text-base leading-none" (click)="bumpQty(line.sku, -1)" aria-label="Fewer">−</button>
+            <span class="min-w-6 text-center text-[13px] leading-4.5">{{ line.editQty }}</span>
+            <button type="button" class="px-3 text-base leading-none" (click)="bumpQty(line.sku, 1)" aria-label="More">+</button>
+          </div>
+          <button type="button" class="border-0 bg-transparent p-0 text-[13px] leading-4.5 text-muted" (click)="remove(line.sku)">Remove</button>
+        </div>
+      </div>
+    }
+    @if (bagDirty()) {
+      <button type="button" class="mt-3 w-full border-0 bg-transparent p-0" (click)="updateBag()">
+        <ecomm-button label="Update bag" [full]="true" />
+      </button>
     }
     @if (delivery() === 'courier') {
       <p class="mt-2 text-[13px] leading-4.5 text-muted">Courier · {{ courier() }}</p>

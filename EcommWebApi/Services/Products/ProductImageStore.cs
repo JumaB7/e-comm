@@ -37,7 +37,27 @@ public class ProductImageStore(IWebHostEnvironment env)
         var path = Path.Combine(Folder, name);
         await using var stream = File.Create(path);
         await file.CopyToAsync(stream);
-        return $"/products/{name}";
+        return PublicPath(name);
+    }
+
+    public string? FindPath(string sku)
+    {
+        if (!Directory.Exists(Folder))
+        {
+            return null;
+        }
+        return Directory.EnumerateFiles(Folder, $"{sku}.*").FirstOrDefault();
+    }
+
+    public string? FindPathByFileName(string fileName)
+    {
+        var name = Path.GetFileName(fileName);
+        if (string.IsNullOrWhiteSpace(name) || name != fileName || name.Contains("..", StringComparison.Ordinal))
+        {
+            return null;
+        }
+        var path = Path.Combine(Folder, name);
+        return File.Exists(path) ? path : null;
     }
 
     public void Remove(string sku)
@@ -68,6 +88,15 @@ public class ProductImageStore(IWebHostEnvironment env)
         var name = $"{toSku}{ext}";
         var next = Path.Combine(Folder, name);
         File.Move(existing, next, overwrite: true);
-        return $"/products/{name}";
+        return PublicPath(name);
     }
+
+    public static string PublicPath(string fileName) => $"/api/product-images/{fileName}";
+
+    public static string ContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    {
+        ".png" => "image/png",
+        ".webp" => "image/webp",
+        _ => "image/jpeg",
+    };
 }

@@ -9,7 +9,7 @@
     </p>
     <div class="mt-8 grid grid-cols-[minmax(0,1.6fr)_460px] gap-12">
       <div class="relative h-160 overflow-hidden bg-canvas">
-        <img [src]="item.image || '/products/' + item.sku + '.jpg'" [alt]="item.name" class="h-full w-full object-cover" />
+        <img [src]="item.image || '/api/product-images/' + item.sku + '.jpg'" [alt]="item.name" class="h-full w-full object-cover" />
       </div>
       <div>
         <p class="text-[13px] font-medium tracking-[0.08em] uppercase">{{ item.category }}</p>

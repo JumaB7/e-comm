@@ -72,10 +72,12 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0,
         }));
 });
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? ["http://localhost:4200"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("EcommWebApp", policy =>
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(corsOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod());
 });

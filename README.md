@@ -49,10 +49,23 @@ SQL Server holds the shop data. Schema changes are EF Core migrations in `EcommW
 | Database | Where it lives | Used by |
 | --- | --- | --- |
 | `EcommLocal` | SQL Server LocalDB on this PC (`MSSQLLocalDB`) | Development |
-| `EcommUat` | The staging server, when that host exists | The `release` branch |
+| `EcommUat` | Azure SQL on `e-comm-uat` | The `release` branch / App Service `veld-supply` |
 | `EcommProd` | The production server, when that host exists | The `main` branch |
 
 Each environment has its own connection string. The local string can stay in development settings. The UAT and production strings stay on those servers, not in git. Local development connects only to `EcommLocal`.
+
+UAT site: [https://veld-supply-cpdddtaqf8epdpe0.southafricanorth-01.azurewebsites.net](https://veld-supply-cpdddtaqf8epdpe0.southafricanorth-01.azurewebsites.net).
+
+On that App Service, keep these as **Environment variables** / connection strings (not in git):
+
+| Name | Notes |
+| --- | --- |
+| Connection string `Shop` | SQL Azure string for `EcommUat` |
+| `Jwt__Key` | At least 32 characters, not the local dev key |
+| `Jwt__Issuer` / `Jwt__Audience` | `veld-supply` |
+| PayFast merchant settings | Optional until real sandbox checkout is wired |
+
+`PayFast:ReturnBase`, `PayFast:NotifyBase`, and CORS origins for that host live in `appsettings.json` and can be overridden on Azure if the hostname changes.
 
 ## Branches
 
@@ -73,6 +86,6 @@ Work lands on `develop`. A version ready to try is merged into `release`, which 
 | `staging` | `release` | The UAT and test site. |
 | `production` | `main` | The live shop. |
 
-GitHub accepts a staging deploy only from `release`, and a production deploy only from `main`. The servers are not created yet. These environments are the gates those deploys will use once a host exists.
+GitHub accepts a staging deploy only from `release`, and a production deploy only from `main`. UAT deploys to the `veld-supply` App Service when `AZURE_WEBAPP_PUBLISH_PROFILE` is set. Production publishing is still a stub until `PRODUCTION_HOST` is set.
 
 The repository is private: [JumariBlignaut/e-comm](https://github.com/JumariBlignaut/e-comm).

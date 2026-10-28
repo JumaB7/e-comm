@@ -1,5 +1,6 @@
 using EcommWebApi.Models;
 using EcommWebApi.Services;
+using EcommWebApi.Services.Products;
 
 namespace EcommWebApi.Data;
 
@@ -33,12 +34,17 @@ public static class ShopSeed
             return;
         }
 
-        var missingImage = db.Products.Where(product => product.Image == "").ToList();
-        foreach (var product in missingImage)
+        var outdated = db.Products
+            .Where(product => product.Image == "" || product.Image.StartsWith("/products/"))
+            .ToList();
+        foreach (var product in outdated)
         {
-            product.Image = $"/products/{product.Sku}.jpg";
+            var fileName = string.IsNullOrWhiteSpace(product.Image)
+                ? $"{product.Sku}.jpg"
+                : Path.GetFileName(product.Image);
+            product.Image = ProductImageStore.PublicPath(string.IsNullOrWhiteSpace(fileName) ? $"{product.Sku}.jpg" : fileName);
         }
-        if (missingImage.Count > 0)
+        if (outdated.Count > 0)
         {
             db.SaveChanges();
         }
@@ -126,7 +132,7 @@ public static class ShopSeed
             CostCents = cents * 67 / 100,
             Stock = stock,
             Blurb = blurb,
-            Image = $"/products/{sku}.jpg",
+            Image = ProductImageStore.PublicPath($"{sku}.jpg"),
         };
         product.Specs.Add(new ProductSpec { Label = "Delivery", Value = "Courier, 2–5 working days" });
         foreach (var spec in specs)

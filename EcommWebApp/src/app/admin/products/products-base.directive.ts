@@ -192,7 +192,7 @@ export class AdminProductsBaseDirective {
     this.submitted.set(false);
     this.saveError.set('');
     this.clearImage();
-    this.imagePreview.set(product.image || `/products/${product.sku}.jpg`);
+    this.imagePreview.set(product.image || `/api/product-images/${product.sku}.jpg`);
     this.suspendPrefix = true;
     this.form.reset({
       name: product.name,

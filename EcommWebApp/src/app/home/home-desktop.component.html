@@ -20,7 +20,7 @@
         [routerLink]="['/product', item.sku]"
         class="relative flex h-105 flex-col justify-end overflow-hidden bg-canvas text-ink">
         <img
-          [src]="item.image || '/products/' + item.sku + '.jpg'"
+          [src]="item.image || '/api/product-images/' + item.sku + '.jpg'"
           [alt]="item.name"
           class="absolute inset-0 h-full w-full object-cover" />
         <div class="relative bg-linear-to-t from-white via-white/90 to-transparent p-8">

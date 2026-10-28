@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SpinnerService } from './services/spinner.service';
 import { LoadingOverlayComponent } from './spinner/loading-overlay.component';
 
 @Component({
@@ -9,8 +8,4 @@ import { LoadingOverlayComponent } from './spinner/loading-overlay.component';
   template: '<router-outlet /><app-loading-overlay />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {
-  constructor() {
-    inject(SpinnerService).show();
-  }
-}
+export class App {}

@@ -1,3 +1,4 @@
+using EcommWebApi.Contracts;
 using EcommWebApi.Data;
 using EcommWebApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -51,5 +52,34 @@ public class PaymentService(ShopDbContext db, IConfiguration configuration)
         }
         await db.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<ShopOutcome<OrderModel>> CompleteLocal(string number)
+    {
+        var merchantId = configuration["PayFast:MerchantId"];
+        if (configuration["PayFast:Mode"] == "payfast" || !string.IsNullOrWhiteSpace(merchantId))
+        {
+            return ShopOutcome<OrderModel>.NotFound();
+        }
+        var order = await db.Orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Number == number);
+        if (order is null)
+        {
+            return ShopOutcome<OrderModel>.NotFound();
+        }
+        var fields = new List<KeyValuePair<string, string>>
+        {
+            new("m_payment_id", order.Number),
+            new("pf_payment_id", $"pf_{order.Id:000000}"),
+            new("payment_status", "COMPLETE"),
+            new("amount_gross", ShopMoney.PayFastAmount(order.TotalCents)),
+        };
+        fields.Add(new("signature", PayFastSignature.Sign(fields, configuration["PayFast:Passphrase"] ?? "")));
+        if (!await ApplyAsync(fields))
+        {
+            return ShopOutcome<OrderModel>.BadRequest("PayFast did not confirm this payment.");
+        }
+        await db.Entry(order).ReloadAsync();
+        await db.Entry(order).Collection(item => item.Lines).LoadAsync();
+        return ShopOutcome<OrderModel>.Ok(OrderMapper.Order(order));
     }
 }

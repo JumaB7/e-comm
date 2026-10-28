@@ -1,26 +1,20 @@
 using EcommWebApi.Contracts;
-using EcommWebApi.Data;
-using EcommWebApi.Services;
+using EcommWebApi.Services.Products;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Controllers;
 
 [ApiController]
 [Route("api/products")]
-public class ProductsController(ShopDbContext db) : ControllerBase
+public class ProductsController(IProductService products) : ControllerBase
 {
     [HttpGet]
-    public async Task<List<ProductModel>> List()
-    {
-        var products = await db.Products.Include(product => product.Specs).OrderBy(product => product.Id).ToListAsync();
-        return products.Select(OrderMapper.Product).ToList();
-    }
+    public Task<List<ProductModel>> List() => products.List();
 
     [HttpGet("{sku}")]
     public async Task<ActionResult<ProductModel>> Get(string sku)
     {
-        var product = await db.Products.Include(item => item.Specs).FirstOrDefaultAsync(item => item.Sku == sku);
-        return product is null ? NotFound() : OrderMapper.Product(product);
+        var product = await products.Get(sku);
+        return product is null ? NotFound() : product;
     }
 }

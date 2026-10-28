@@ -1,6 +1,11 @@
 using System.Text;
 using EcommWebApi.Data;
 using EcommWebApi.Services;
+using EcommWebApi.Services.Auth;
+using EcommWebApi.Services.Cart;
+using EcommWebApi.Services.Orders;
+using EcommWebApi.Services.Products;
+using EcommWebApi.Services.Shop;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +19,11 @@ builder.Services.AddDbContext<ShopDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Shop")));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IShopService, ShopService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not set.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

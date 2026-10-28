@@ -151,6 +151,9 @@ public static class OrderMapper
 
     public static DateTime ShopNow() => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ShopZone);
 
+    public static DateTime ShopDate(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), ShopZone).Date;
+
     public static DateTime ToUtc(DateTime shopTime) => TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(shopTime, DateTimeKind.Unspecified), ShopZone);
 
     private static string Line(OrderLine line)

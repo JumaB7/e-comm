@@ -1,0 +1,47 @@
+using EcommWebApi.Contracts;
+using EcommWebApi.Data;
+using EcommWebApi.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EcommWebApi.Services.Auth;
+
+public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
+{
+    public async Task<ShopOutcome<AuthModel>> Register(RegisterRequest request)
+    {
+        var name = request.Name.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
+        if (name.Length == 0 || email.Length == 0 || request.Password.Length < 8)
+        {
+            return ShopOutcome<AuthModel>.BadRequest("Name, email, and a password of at least 8 characters are required.");
+        }
+        if (await db.Users.AnyAsync(user => user.Email == email))
+        {
+            return ShopOutcome<AuthModel>.Conflict("That email already has an account.");
+        }
+        var user = new ShopUser
+        {
+            Name = name,
+            Email = email,
+            Phone = request.Phone.Trim(),
+            PasswordHash = PasswordBox.Hash(request.Password),
+            Role = "Customer",
+        };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return ShopOutcome<AuthModel>.Ok(Session(user));
+    }
+
+    public async Task<ShopOutcome<AuthModel>> SignIn(SignInRequest request)
+    {
+        var email = request.Email.Trim().ToLowerInvariant();
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Email == email);
+        if (user is null || !PasswordBox.Verify(request.Password, user.PasswordHash))
+        {
+            return ShopOutcome<AuthModel>.Unauthorized("Email or password does not match.");
+        }
+        return ShopOutcome<AuthModel>.Ok(Session(user));
+    }
+
+    private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Role);
+}

@@ -1,0 +1,79 @@
+using EcommWebApi.Contracts;
+using EcommWebApi.Data;
+using EcommWebApi.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EcommWebApi.Services.Products;
+
+public class ProductService(ShopDbContext db) : IProductService
+{
+    public async Task<List<ProductModel>> List()
+    {
+        var products = await db.Products.Include(product => product.Specs).OrderBy(product => product.Id).ToListAsync();
+        return products.Select(OrderMapper.Product).ToList();
+    }
+
+    public async Task<ProductModel?> Get(string sku)
+    {
+        var product = await db.Products.Include(item => item.Specs).FirstOrDefaultAsync(item => item.Sku == sku);
+        return product is null ? null : OrderMapper.Product(product);
+    }
+
+    public async Task<ShopOutcome<ProductModel>> Add(CreateProductRequest request)
+    {
+        var name = request.Name.Trim();
+        var sku = request.Sku.Trim();
+        if (name.Length == 0 || sku.Length == 0 || request.PriceRands < 1 || request.Stock < 0)
+        {
+            return ShopOutcome<ProductModel>.BadRequest("Name, SKU, price, and stock are required.");
+        }
+        if (await db.Products.AnyAsync(product => product.Sku == sku))
+        {
+            return ShopOutcome<ProductModel>.Conflict("That SKU is already in the shop.");
+        }
+        var cents = ShopMoney.RandsToCents(request.PriceRands);
+        var product = new Product
+        {
+            Sku = sku,
+            Name = name,
+            Category = string.IsNullOrWhiteSpace(request.Category) ? "Camp" : request.Category.Trim(),
+            PriceCents = cents,
+            CostCents = cents * 67 / 100,
+            Stock = request.Stock,
+            Blurb = $"{name}. Sold on its own.",
+            Specs = [new ProductSpec { Label = "Delivery", Value = "Courier, 2–5 working days" }],
+        };
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+        return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
+    }
+
+    public async Task<bool> Delete(string sku)
+    {
+        var product = await db.Products.FirstOrDefaultAsync(item => item.Sku == sku);
+        if (product is null)
+        {
+            return false;
+        }
+        db.Products.Remove(product);
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<ShopOutcome<ProductModel>> AdjustStock(StockRequest request)
+    {
+        if (request.Quantity < 1 || request.Direction is not (1 or -1))
+        {
+            return ShopOutcome<ProductModel>.BadRequest("Quantity has to be at least 1.");
+        }
+        var name = request.Name.Trim().ToLowerInvariant();
+        var product = await db.Products.Include(item => item.Specs).FirstOrDefaultAsync(item => item.Name.ToLower() == name);
+        if (product is null)
+        {
+            return ShopOutcome<ProductModel>.NotFound("No product uses that name.");
+        }
+        product.Stock = Math.Max(0, product.Stock + request.Direction * request.Quantity);
+        await db.SaveChangesAsync();
+        return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
+    }
+}

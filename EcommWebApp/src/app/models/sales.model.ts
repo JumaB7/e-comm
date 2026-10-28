@@ -4,9 +4,9 @@ export interface SalesMonth {
 }
 
 export interface SalesReport {
-  totalSalesCents: number;
+  totalSales: string;
   orderCount: number;
-  profitCents: number;
-  thisMonthCents: number;
+  profit: string;
+  thisMonth: string;
   months: SalesMonth[];
 }

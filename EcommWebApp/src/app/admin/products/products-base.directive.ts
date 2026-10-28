@@ -1,6 +1,5 @@
 import { Directive, inject, signal } from '@angular/core';
 import { CatalogService } from '../../services/catalog.service';
-import { Product } from '../../models/product.model';
 
 @Directive()
 export class AdminProductsBaseDirective {
@@ -33,25 +32,20 @@ export class AdminProductsBaseDirective {
   }
 
   saveProduct(): void {
-    const amount = Number(this.draftPrice().replace(/[^\d]/g, ''));
+    const priceRands = Number(this.draftPrice().replace(/[^\d]/g, ''));
     const stock = Number(this.draftStock());
     const name = this.draftName().trim();
     const sku = this.draftSku().trim();
-    if (!name || !sku || !Number.isFinite(amount) || amount < 1 || !Number.isFinite(stock)) {
+    if (!name || !sku || !Number.isFinite(priceRands) || priceRands < 1 || !Number.isFinite(stock)) {
       return;
     }
-    const product: Product = {
-      sku,
+    this.catalog.addProduct({
       name,
+      sku,
       category: this.draftCategory().trim() || 'Camp',
-      price: `R ${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`,
-      amount,
+      priceRands,
       stock,
-      low: stock <= 4,
-      blurb: `${name}. Sold on its own.`,
-      specs: [{ label: 'Delivery', value: 'Courier, 2–5 working days' }],
-    };
-    this.catalog.addProduct(product);
+    });
     this.adding.set(false);
     this.draftName.set('');
     this.draftSku.set('');

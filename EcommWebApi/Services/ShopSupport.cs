@@ -22,6 +22,17 @@ public static class ShopMoney
         return $"R {grouped}";
     }
 
+    public static string RandCompact(int cents)
+    {
+        var rands = CentsToRands(cents);
+        if (rands < 1000)
+        {
+            return Rand(cents);
+        }
+        var thousands = (int)Math.Round(rands / 1000d, MidpointRounding.AwayFromZero);
+        return $"R {thousands}k";
+    }
+
     public static string PayFastAmount(int cents) =>
         (cents / 100m).ToString("0.00", CultureInfo.InvariantCulture);
 

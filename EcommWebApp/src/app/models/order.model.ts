@@ -1,6 +1,7 @@
 export interface OrderSummary {
   today: number;
-  paidTodayCents: number;
+  paidToday: string;
+  paidTodayShort: string;
   awaiting: number;
   lowStock: number;
 }

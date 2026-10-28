@@ -5,9 +5,10 @@ import { CatalogService } from '../../services/catalog.service';
 export class StockBaseDirective {
   private readonly catalog = inject(CatalogService);
   readonly products = this.catalog.products;
-  readonly stockName = signal('10×42 binoculars');
-  readonly stockQty = signal('6');
-  readonly pendingSku = signal('VS-KNF-018');
+  private readonly typedName = signal<string | null>(null);
+  readonly stockName = computed(() => this.typedName() ?? this.products()[0]?.name ?? '');
+  readonly stockQty = signal('1');
+  readonly pendingSku = signal('');
   readonly pending = computed(() => this.products().find((product) => product.sku === this.pendingSku()));
   readonly pendingTitle = computed(() => {
     const product = this.pending();
@@ -15,7 +16,7 @@ export class StockBaseDirective {
   });
 
   setName(event: Event): void {
-    this.stockName.set((event.target as HTMLInputElement).value);
+    this.typedName.set((event.target as HTMLInputElement).value);
   }
 
   setQty(event: Event): void {

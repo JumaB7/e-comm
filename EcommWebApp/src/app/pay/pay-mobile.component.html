@@ -20,7 +20,7 @@
     @for (line of lines(); track line.sku) {
       <p class="mt-2 leading-6">{{ line.name }}</p>
     }
-    @if (courier() === 'R 0') {
+    @if (delivery() === 'collect') {
       <p class="mt-2 text-[13px] leading-4.5 text-muted">Collect from the shop · VAT included</p>
     } @else {
       <p class="mt-2 text-[13px] leading-4.5 text-muted">Courier {{ courier() }} · VAT included</p>

@@ -4,10 +4,10 @@ import { AuthService } from '../services/auth.service';
 @Directive()
 export class RegisterBaseDirective {
   private readonly auth = inject(AuthService);
-  readonly fullName = signal('Thabo Mokoena');
-  readonly email = signal('new.customer@example.co.za');
-  readonly phone = signal('082 555 0142');
-  readonly password = signal('password');
+  readonly fullName = signal('');
+  readonly email = signal('');
+  readonly phone = signal('');
+  readonly password = signal('');
   readonly error = this.auth.error;
 
   constructor() {

@@ -84,15 +84,9 @@ export class CatalogService {
     });
   }
 
-  addProduct(product: Product): void {
+  addProduct(product: { name: string; sku: string; category: string; priceRands: number; stock: number }): void {
     this.http
-      .post<Product>('/api/admin/products', {
-        name: product.name,
-        sku: product.sku,
-        category: product.category,
-        priceRands: product.amount,
-        stock: product.stock,
-      })
+      .post<Product>('/api/admin/products', product)
       .pipe(catchError(() => of(undefined)))
       .subscribe((saved) => {
         if (!saved || this.find(saved.sku)) {

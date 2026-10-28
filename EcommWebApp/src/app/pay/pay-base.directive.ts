@@ -17,6 +17,7 @@ export class PayBaseDirective {
   readonly paying = signal(false);
   readonly error = signal('');
   readonly lines = this.cart.displayLines;
+  readonly delivery = this.cart.delivery;
   readonly courier = this.cart.courierLabel;
   readonly total = this.cart.totalLabel;
 

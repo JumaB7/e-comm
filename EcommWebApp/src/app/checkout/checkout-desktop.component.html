@@ -48,7 +48,7 @@
             type="button"
             class="px-4 py-3.5 text-left"
             [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
-            (click)="delivery.set('courier')">
+            (click)="deliveryChoice.set('courier')">
             <span class="block text-base leading-6">Courier nationwide</span>
             <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days</span>
           </button>
@@ -56,7 +56,7 @@
             type="button"
             class="px-4 py-3.5 text-left"
             [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
-            (click)="delivery.set('collect')">
+            (click)="deliveryChoice.set('collect')">
             <span class="block text-base leading-6">Collect from the shop</span>
             <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
           </button>

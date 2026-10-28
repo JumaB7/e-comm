@@ -1,9 +1,22 @@
 export interface CartLine {
   sku: string;
   name: string;
-  amount: number;
   qty: number;
   detail: string;
+}
+
+export interface CartQuoteLine {
+  sku: string;
+  name: string;
+  price: string;
+}
+
+export interface CartQuote {
+  subtotal: string;
+  courier: string;
+  total: string;
+  courierFee: string;
+  lines: CartQuoteLine[];
 }
 
 export interface CheckoutDetails {

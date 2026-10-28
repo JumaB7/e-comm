@@ -1,26 +1,34 @@
-import { Directive, inject, signal } from '@angular/core';
+import { Directive, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ShopDefaultsService } from '../services/shop-defaults.service';
 
 @Directive()
 export class SignInBaseDirective {
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
-  readonly email = signal('thabo@example.co.za');
-  readonly password = signal('password');
+  private readonly shop = inject(ShopDefaultsService);
+  private readonly adminSignIn = this.route.snapshot.queryParamMap.get('returnUrl')?.startsWith('/admin') ?? false;
+  private readonly typedEmail = signal<string | null>(null);
+  readonly email = computed(() => {
+    const typed = this.typedEmail();
+    if (typed !== null) {
+      return typed;
+    }
+    const defaults = this.shop.defaults();
+    return this.adminSignIn ? defaults.adminEmail : defaults.customerEmail;
+  });
+  readonly password = signal('');
   readonly error = this.auth.error;
 
   constructor() {
     this.auth.error.set('');
-    if (this.route.snapshot.queryParamMap.get('returnUrl')?.startsWith('/admin')) {
-      this.email.set('admin@veldsupply.co.za');
-    }
   }
 
   setField(field: 'email' | 'password', event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     if (field === 'email') {
-      this.email.set(value);
+      this.typedEmail.set(value);
     } else {
       this.password.set(value);
     }

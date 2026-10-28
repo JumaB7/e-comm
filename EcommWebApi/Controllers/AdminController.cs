@@ -30,7 +30,7 @@ public class AdminController(ShopDbContext db) : ControllerBase
         var paidToday = todayOrders.Where(order => order.PaidAt is not null).Sum(order => order.TotalCents);
         var awaiting = orders.Count(order => order.PaidAt is null);
         var lowStock = await db.Products.CountAsync(product => product.Stock <= ShopMoney.LowStockAt);
-        return new OrderSummaryModel(todayOrders.Count, paidToday, awaiting, lowStock);
+        return new OrderSummaryModel(todayOrders.Count, ShopMoney.Rand(paidToday), ShopMoney.RandCompact(paidToday), awaiting, lowStock);
     }
 
     [HttpGet("orders/{number}")]
@@ -138,7 +138,7 @@ public class AdminController(ShopDbContext db) : ControllerBase
                 .Sum(line => (line.UnitPriceCents - line.UnitCostCents) * line.Quantity);
             months.Add(new SalesMonthModel(start.ToString("MMM", CultureInfo.InvariantCulture), monthProfit));
         }
-        return new SalesModel(total, paid.Count, profit, thisMonth, months);
+        return new SalesModel(ShopMoney.Rand(total), paid.Count, ShopMoney.Rand(profit), ShopMoney.Rand(thisMonth), months);
     }
 
     private static DateTime ShopDate(DateTime utc) =>

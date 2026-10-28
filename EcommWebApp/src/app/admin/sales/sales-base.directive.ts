@@ -1,6 +1,5 @@
 import { Directive, computed, inject } from '@angular/core';
 import { salesBarSteps } from '../../models/constants';
-import { formatRand } from '../../models/money';
 import { CatalogService } from '../../services/catalog.service';
 
 @Directive()
@@ -9,10 +8,10 @@ export class SalesBaseDirective {
   readonly stats = computed(() => {
     const sales = this.catalog.sales();
     return [
-      { label: 'Total sales', value: formatRand((sales?.totalSalesCents ?? 0) / 100) },
+      { label: 'Total sales', value: sales?.totalSales ?? 'R 0' },
       { label: 'Orders', value: `${sales?.orderCount ?? 0}` },
-      { label: 'Profit', value: formatRand((sales?.profitCents ?? 0) / 100) },
-      { label: 'This month', value: formatRand((sales?.thisMonthCents ?? 0) / 100) },
+      { label: 'Profit', value: sales?.profit ?? 'R 0' },
+      { label: 'This month', value: sales?.thisMonth ?? 'R 0' },
     ];
   });
   readonly bars = computed(() => {

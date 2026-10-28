@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services;
 
-public class PaymentService(ShopDbContext db, IConfiguration configuration)
+public class PaymentService(ShopDbContext db, IConfiguration configuration, IHostEnvironment environment)
 {
     public async Task<bool> ApplyAsync(IReadOnlyList<KeyValuePair<string, string>> fields)
     {
@@ -57,7 +57,7 @@ public class PaymentService(ShopDbContext db, IConfiguration configuration)
     public async Task<ShopOutcome<OrderModel>> CompleteLocal(string number)
     {
         var merchantId = configuration["PayFast:MerchantId"];
-        if (configuration["PayFast:Mode"] == "payfast" || !string.IsNullOrWhiteSpace(merchantId))
+        if (!environment.IsDevelopment() || configuration["PayFast:Mode"] == "payfast" || !string.IsNullOrWhiteSpace(merchantId))
         {
             return ShopOutcome<OrderModel>.NotFound();
         }

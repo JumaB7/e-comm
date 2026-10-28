@@ -1,6 +1,7 @@
 using EcommWebApi.Contracts;
 using EcommWebApi.Services.Orders;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EcommWebApi.Controllers;
 
@@ -15,6 +16,7 @@ public class OrdersController(IOrderService orders) : ControllerBase
         return order is null ? NotFound() : order;
     }
 
+    [EnableRateLimiting("checkout")]
     [HttpPost]
     public async Task<ActionResult<CheckoutModel>> Create(CreateOrderRequest request) =>
         ShopResults.From(await orders.Create(request));

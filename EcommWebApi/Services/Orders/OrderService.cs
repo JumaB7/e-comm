@@ -83,9 +83,15 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
         await db.SaveChangesAsync();
 
         var merchantId = configuration["PayFast:MerchantId"];
-        if (string.IsNullOrWhiteSpace(merchantId) || environment.IsDevelopment() && configuration["PayFast:Mode"] != "payfast")
+        var localCheckout = environment.IsDevelopment()
+            && (string.IsNullOrWhiteSpace(merchantId) || configuration["PayFast:Mode"] != "payfast");
+        if (localCheckout)
         {
             return ShopOutcome<CheckoutModel>.Ok(new CheckoutModel(OrderMapper.Order(order), order.ReceiptKey, "local", null, null));
+        }
+        if (string.IsNullOrWhiteSpace(merchantId))
+        {
+            return ShopOutcome<CheckoutModel>.BadRequest("Payment is not available.");
         }
 
         var returnBase = configuration["PayFast:ReturnBase"] ?? "http://localhost:4200";

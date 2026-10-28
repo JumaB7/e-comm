@@ -11,6 +11,7 @@ export class SignInBaseDirective {
   private readonly shop = inject(ShopDefaultsService);
   private readonly adminSignIn = this.route.snapshot.queryParamMap.get('returnUrl')?.startsWith('/admin') ?? false;
   readonly submitted = signal(false);
+  readonly passwordVisible = signal(false);
   readonly error = this.auth.error;
   readonly form = new FormGroup({
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
@@ -38,8 +39,8 @@ export class SignInBaseDirective {
     if (this.form.invalid) {
       return;
     }
-    const requested = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/shop';
-    const returnUrl = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/shop';
+    const requested = this.route.snapshot.queryParamMap.get('returnUrl') ?? '';
+    const returnUrl = requested.startsWith('/') && !requested.startsWith('//') ? requested : '';
     this.auth.signIn(this.form.controls.email.value, this.form.controls.password.value, returnUrl);
   }
 }

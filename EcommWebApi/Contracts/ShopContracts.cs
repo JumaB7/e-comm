@@ -28,7 +28,13 @@ public record OrderModel(
     string PaidDetail,
     string PaymentNote,
     string DeliveryNote,
-    List<string> Lines);
+    List<string> Lines,
+    string Placed,
+    string Delivery,
+    string Tracking,
+    string FulfilmentTone,
+    string Alert,
+    string Queue);
 
 public record CheckoutModel(
     OrderModel Order,
@@ -41,14 +47,34 @@ public record AuthModel(string Token, string Name, string Email, string Role);
 
 public record OrderSummaryModel(int Today, string PaidToday, string PaidTodayShort, int Awaiting, int LowStock);
 
-public record SalesMonthModel(string Month, int ProfitCents);
+public record TrackingRequest(string? Tracking);
+
+public record SalesDeltaModel(string Text, bool Up, bool Flat);
+
+public record SalesStatModel(string Label, string Value, SalesDeltaModel Change);
+
+public record SalesMonthPointModel(string Month, int SalesRands, int ProfitRands);
+
+public record SalesCategoryModel(string Name, string Amount, int Share, int AmountRands);
 
 public record SalesModel(
-    string TotalSales,
-    int OrderCount,
-    string Profit,
-    string ThisMonth,
-    List<SalesMonthModel> Months);
+    string Period,
+    string ProfitTotal,
+    string ProfitNote,
+    List<SalesMonthPointModel> Months,
+    string Margin,
+    string MarginNote,
+    bool MarginHealthy,
+    string GrossProfit,
+    string ProductCosts,
+    List<SalesCategoryModel> Categories,
+    string RepeatShare,
+    SalesDeltaModel RepeatChange,
+    int RepeatFilled,
+    int NewCustomers,
+    int ReturningCustomers,
+    string RefundRate,
+    List<SalesStatModel> Stats);
 
 public record CartQuoteLineModel(string Sku, string Name, string Price);
 
@@ -56,7 +82,7 @@ public record CartQuoteModel(string Subtotal, string Courier, string Total, stri
 
 public record CartQuoteRequest(string? Delivery, List<OrderLineRequest>? Lines);
 
-public record CreateProductRequest(string Name, string Sku, string Category, int PriceRands, int Stock);
+public record CreateProductRequest(string Name, string Sku, string Category, int PriceRands, int Stock, List<SpecModel>? Specs);
 
 public record StockRequest(string Name, int Quantity, int Direction);
 

@@ -1,14 +1,20 @@
 <div class="min-h-screen bg-canvas text-ink">
-  <header class="flex items-center justify-between border-b border-line bg-white px-4 py-4">
-    <img src="/kudu-logo.svg" alt="Veld Supply" class="h-9 w-auto" />
-    <p class="text-[13px] font-medium tracking-[0.08em] text-action">ADMIN</p>
+  <header class="flex items-center justify-between bg-inverse px-4 py-4 text-white">
+    <a routerLink="/admin/orders" class="flex items-center gap-3">
+      <img src="/kudu-logo.svg" alt="" class="h-9 w-auto" />
+      <span class="font-display text-[22px] leading-7">Veld Supply</span>
+    </a>
+    <div class="text-right">
+      <p class="text-[13px] font-medium tracking-[0.08em] text-action">ADMIN</p>
+      <button type="button" class="mt-1 border-0 bg-transparent p-0 text-[13px] leading-4.5 text-white" (click)="signOut()">Sign out</button>
+    </div>
   </header>
-  <nav class="grid grid-cols-4 border-b border-line bg-white text-center text-[13px]">
+  <nav class="grid grid-cols-4 bg-inverse text-center text-[13px]">
     @for (link of links; track link.path) {
       <a
         [routerLink]="link.path"
-        routerLinkActive="border-ink text-ink"
-        class="border-b-2 border-transparent py-3 text-muted"
+        routerLinkActive="bg-black"
+        class="py-3 text-white"
         [routerLinkActiveOptions]="{ exact: link.exact }">
         {{ link.label }}
       </a>

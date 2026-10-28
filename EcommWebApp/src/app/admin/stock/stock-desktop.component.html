@@ -1,61 +1,90 @@
 <section>
   <h1 class="font-display text-[40px] leading-11.5">Stock</h1>
-  <p class="mt-4 text-[13px] leading-4.5 text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
-  <form class="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white p-4" [formGroup]="form">
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRODUCT
-      <input class="h-10 w-70 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="name" />
-      @if (form.controls.name.invalid && (form.controls.name.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a product name.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">QUANTITY
-      <input class="h-10 w-16 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="qty" />
-      @if (form.controls.qty.invalid && (form.controls.qty.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">
-          @if (form.controls.qty.errors?.['required']) { Enter a quantity. } @else { Use at least 1. }
-        </span>
-      }
-    </label>
-    <button type="button" class="border-0 bg-transparent p-0" (click)="addStock()">
-      <ecomm-button label="Add stock" />
-    </button>
-    <button type="button" class="border-0 bg-transparent p-0" (click)="removeStock()">
-      <ecomm-button label="Remove stock" variant="secondary" />
-    </button>
-  </form>
-  <div class="mt-4 border border-line bg-white">
-    <div class="grid grid-cols-[1.6fr_160px_120px_160px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+  <p class="mt-4 text-[13px] leading-4.5 text-muted">Change a count on the row. Delete takes the product off the shop. Past orders stay.</p>
+  @if (menuSku()) {
+    <button type="button" class="fixed inset-0 z-10 cursor-default border-0 bg-transparent p-0" aria-label="Close menu" (click)="closeMenu()"></button>
+  }
+  <div class="mt-6 border border-line bg-white">
+    <div class="grid grid-cols-[1.6fr_160px_180px_120px_48px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
       <span>PRODUCT</span>
       <span>SKU</span>
       <span>ON HAND</span>
       <span>STATE</span>
+      <span></span>
     </div>
     @for (product of products(); track product.sku) {
-      <button
-        type="button"
-        class="grid w-full grid-cols-[1.6fr_160px_120px_160px] border-b border-line px-4 py-3 text-left last:border-b-0"
-        (click)="choose(product.sku)">
+      @let row = rowView()[product.sku];
+      <div class="relative grid grid-cols-[1.6fr_160px_180px_120px_48px] items-center border-b border-line px-4 py-3 last:border-b-0" [ngClass]="{ 'z-20': row.menuOpen }">
         <span>{{ product.name }}</span>
         <span class="text-[13px] leading-4.5 text-muted">{{ product.sku }}</span>
-        <span class="text-[13px] leading-4.5">{{ product.stock }}</span>
+        <span class="flex items-center gap-2">
+          @if (row.editing) {
+            <input
+              #count
+              class="h-8 w-16 rounded-sm border bg-white px-2 text-center text-base font-normal tracking-normal text-ink"
+              [ngClass]="row.invalid ? 'border-danger' : 'border-line'"
+              inputmode="numeric"
+              [value]="draft()"
+              (input)="setDraft(count.value)"
+              (focus)="count.select()"
+              (keydown.enter)="commit(product)"
+              (keydown.escape)="cancelEdit()"
+              (blur)="commit(product)" />
+          } @else {
+            <button
+              type="button"
+              class="h-8 min-w-10 rounded-sm border border-line bg-white px-2 text-center text-base text-ink disabled:opacity-40"
+              [disabled]="row.busy"
+              (click)="startEdit(product)">
+              {{ row.shown }}
+            </button>
+          }
+          <span class="flex flex-col">
+            <button
+              type="button"
+              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+              aria-label="Increase stock"
+              [disabled]="row.busy"
+              (mousedown)="holdStep($event)"
+              (click)="step(product, 1)">
+              ▲
+            </button>
+            <button
+              type="button"
+              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+              aria-label="Decrease stock"
+              [disabled]="!row.canDecrease"
+              (mousedown)="holdStep($event)"
+              (click)="step(product, -1)">
+              ▼
+            </button>
+          </span>
+        </span>
         <span class="text-[13px] leading-4.5 text-danger">@if (product.low) { Low }</span>
-      </button>
+        <span class="relative justify-self-end">
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center border-0 bg-transparent p-0 text-ink"
+            aria-label="Actions"
+            [attr.aria-expanded]="row.menuOpen"
+            (click)="toggleMenu(product.sku)">
+            <svg viewBox="0 0 16 16" class="h-4 w-4" aria-hidden="true">
+              <circle cx="8" cy="3" r="1.3" fill="currentColor" />
+              <circle cx="8" cy="8" r="1.3" fill="currentColor" />
+              <circle cx="8" cy="13" r="1.3" fill="currentColor" />
+            </svg>
+          </button>
+          @if (row.menuOpen) {
+            <div class="absolute right-0 top-8 z-20 min-w-32 border border-line bg-white">
+              <button type="button" class="block w-full border-0 bg-transparent px-4 py-2.5 text-left text-base text-ink hover:bg-canvas" (click)="editProduct(product.sku)">Edit</button>
+              <button type="button" class="block w-full border-0 bg-transparent px-4 py-2.5 text-left text-base text-ink hover:bg-canvas" (click)="deleteProduct(product.sku)">Delete</button>
+            </div>
+          }
+        </span>
+      </div>
+      @if (row.invalid) {
+        <p class="px-4 pb-2 text-[13px] leading-4.5 text-danger">Use a whole number.</p>
+      }
     }
   </div>
-  @if (pending(); as item) {
-    <div class="mt-4 flex items-center justify-between gap-4 border border-danger bg-white p-4">
-      <div>
-        <p class="text-lg leading-6.5">{{ pendingTitle() }}</p>
-        <p class="text-[13px] leading-4.5 text-muted">It leaves the shop. Orders that already include it stay in the history.</p>
-      </div>
-      <div class="flex gap-2">
-        <button type="button" class="border-0 bg-transparent p-0" (click)="keep()">
-          <ecomm-button label="Keep" variant="secondary" />
-        </button>
-        <button type="button" class="border-0 bg-transparent p-0" (click)="deleteProduct()">
-          <ecomm-button label="Delete" />
-        </button>
-      </div>
-    </div>
-  }
 </section>

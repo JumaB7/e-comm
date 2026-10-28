@@ -9,24 +9,58 @@
       </li>
     }
   </ul>
-  <div class="mt-6 border border-line bg-white">
-    <div class="grid grid-cols-[140px_1.4fr_120px_180px_160px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
-      <span>ORDER</span>
-      <span>CUSTOMER</span>
-      <span>TOTAL</span>
-      <span>PAYMENT</span>
-      <span>FULFILMENT</span>
+  @if (alerts().length) {
+    <div class="mt-6 border border-line bg-white px-4 py-4">
+      <p class="text-[13px] font-medium tracking-[0.08em] text-muted">NEEDS ATTENTION</p>
+      @for (order of alerts(); track order.id) {
+        <a [routerLink]="['/admin/orders', order.id]" class="mt-2 block text-[13px] leading-4.5 text-danger">
+          {{ order.id }} · {{ order.alert }}
+        </a>
+      }
     </div>
-    @for (order of orders(); track order.id) {
-      <a
-        [routerLink]="['/admin/orders', order.id]"
-        class="grid grid-cols-[140px_1.4fr_120px_180px_160px] items-center border-b border-line px-4 py-3 last:border-b-0">
-        <span class="font-medium">{{ order.id }}</span>
-        <span>{{ order.customer }}</span>
-        <span>{{ order.total }}</span>
-        <ecomm-status-pill [label]="order.status" [tone]="order.tone" />
-        <span class="text-[13px] leading-4.5 text-muted">{{ order.fulfilment }}</span>
-      </a>
-    }
-  </div>
+  }
+  @for (section of sections(); track section.queue) {
+    <section class="mt-8">
+      <h2 class="font-display text-[28px] leading-8">{{ section.title }}</h2>
+      <p class="mt-1 text-[13px] leading-4.5 text-muted">{{ section.detail }}</p>
+      @if (section.orders.length === 0) {
+        <p class="mt-3 border border-line bg-white px-4 py-3 text-[13px] leading-4.5 text-muted">Nothing in this queue.</p>
+      } @else {
+        <div class="mt-3 overflow-x-auto border border-line bg-white">
+          <div class="min-w-[820px]">
+          <div class="grid grid-cols-[100px_120px_minmax(160px,1.4fr)_100px_140px_150px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+            <span>ORDER</span>
+            <span>PLACED</span>
+            <span>CUSTOMER</span>
+            <span>TOTAL</span>
+            <span>PAYMENT</span>
+            <span>FULFILMENT</span>
+          </div>
+          @for (order of section.orders; track order.id) {
+            <a
+              [routerLink]="['/admin/orders', order.id]"
+              class="block border-b border-line last:border-b-0">
+              <span class="grid grid-cols-[100px_120px_minmax(160px,1.4fr)_100px_140px_150px] items-center px-4 py-3">
+                <span class="font-medium">{{ order.id }}</span>
+                <span class="whitespace-nowrap text-[13px] leading-4.5 text-muted">{{ order.placed }}</span>
+                <span>{{ order.customer }}</span>
+                <span class="whitespace-nowrap">{{ order.total }}</span>
+                <ecomm-status-pill [label]="order.status" [tone]="order.tone" />
+                <span class="grid justify-items-start gap-1">
+                  <ecomm-status-pill [label]="order.fulfilment" [tone]="order.fulfilmentTone" />
+                  @if (order.tracking) {
+                    <span class="text-[13px] leading-4.5 text-muted">{{ order.tracking }}</span>
+                  }
+                </span>
+              </span>
+              @if (order.alert) {
+                <span class="block px-4 pb-3 text-[13px] leading-4.5 text-danger">{{ order.alert }}</span>
+              }
+            </a>
+          }
+          </div>
+        </div>
+      }
+    </section>
+  }
 </section>

@@ -11,7 +11,12 @@
       }
     </label>
     <label class="mt-4 grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PASSWORD
-      <input type="password" class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="password" />
+      <span class="relative block">
+        <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 pr-16 text-base font-normal tracking-normal text-ink" [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+        <button type="button" class="absolute top-1/2 right-3 -translate-y-1/2 border-0 bg-transparent p-0 text-[13px] font-normal tracking-normal text-ink" (click)="passwordVisible.update(visible => !visible)">
+          {{ passwordVisible() ? 'Hide' : 'Show' }}
+        </button>
+      </span>
       @if (form.controls.password.invalid && (form.controls.password.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter your password.</span>
       }

@@ -1,48 +1,91 @@
 <section class="px-4 py-5">
   <h1 class="font-display text-[40px] leading-11.5">Stock</h1>
-  <p class="mt-3 text-[13px] leading-4.5 text-muted">Add or remove units. Delete takes it off the shop.</p>
-  <div class="mt-4 grid gap-4" [formGroup]="form">
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRODUCT
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="name" />
-      @if (form.controls.name.invalid && (form.controls.name.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a product name.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">QUANTITY
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="qty" />
-      @if (form.controls.qty.invalid && (form.controls.qty.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">
-          @if (form.controls.qty.errors?.['required']) { Enter a quantity. } @else { Use at least 1. }
-        </span>
-      }
-    </label>
-  </div>
-  <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="addStock()">
-    <ecomm-button label="Add stock" [full]="true" />
-  </button>
-  <button type="button" class="mt-3 w-full border-0 bg-transparent p-0" (click)="removeStock()">
-    <ecomm-button label="Remove stock" variant="secondary" [full]="true" />
-  </button>
+  <p class="mt-3 text-[13px] leading-4.5 text-muted">Change a count on the row. Delete takes it off the shop. Past orders stay.</p>
+  @if (menuSku()) {
+    <button type="button" class="fixed inset-0 z-10 cursor-default border-0 bg-transparent p-0" aria-label="Close menu" (click)="closeMenu()"></button>
+  }
   <ul class="mt-4 grid gap-2">
     @for (product of products(); track product.sku) {
-      <li>
-        <button type="button" class="w-full border border-line bg-white p-4 text-left" (click)="choose(product.sku)">
-          <span class="block text-lg leading-6.5">{{ product.name }}</span>
-          <span class="mt-1 block text-[13px] leading-4.5 text-muted">{{ product.sku }} · {{ product.stock }} on hand</span>
-        </button>
+      @let row = rowView()[product.sku];
+      <li class="relative border border-line bg-white p-4" [ngClass]="{ 'z-20': row.menuOpen }">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-lg leading-6.5">{{ product.name }}</p>
+            <p class="mt-1 text-[13px] leading-4.5 text-muted">{{ product.sku }}</p>
+          </div>
+          <span class="relative">
+            <button
+              type="button"
+              class="flex h-8 w-8 items-center justify-center border-0 bg-transparent p-0 text-ink"
+              aria-label="Actions"
+              [attr.aria-expanded]="row.menuOpen"
+              (click)="toggleMenu(product.sku)">
+              <svg viewBox="0 0 16 16" class="h-4 w-4" aria-hidden="true">
+                <circle cx="8" cy="3" r="1.3" fill="currentColor" />
+                <circle cx="8" cy="8" r="1.3" fill="currentColor" />
+                <circle cx="8" cy="13" r="1.3" fill="currentColor" />
+              </svg>
+            </button>
+            @if (row.menuOpen) {
+              <div class="absolute right-0 top-8 z-20 min-w-32 border border-line bg-white">
+                <button type="button" class="block w-full border-0 bg-transparent px-4 py-2.5 text-left text-base text-ink hover:bg-canvas" (click)="editProduct(product.sku)">Edit</button>
+                <button type="button" class="block w-full border-0 bg-transparent px-4 py-2.5 text-left text-base text-ink hover:bg-canvas" (click)="deleteProduct(product.sku)">Delete</button>
+              </div>
+            }
+          </span>
+        </div>
+        <div class="mt-3 flex items-center gap-3">
+          <span class="flex items-center gap-2">
+            @if (row.editing) {
+              <input
+                #count
+                class="h-10 w-16 rounded-sm border bg-white px-2 text-center text-base font-normal tracking-normal text-ink"
+                [ngClass]="row.invalid ? 'border-danger' : 'border-line'"
+                inputmode="numeric"
+                [value]="draft()"
+                (input)="setDraft(count.value)"
+                (focus)="count.select()"
+                (keydown.enter)="commit(product)"
+                (keydown.escape)="cancelEdit()"
+                (blur)="commit(product)" />
+            } @else {
+              <button
+                type="button"
+                class="h-10 min-w-12 rounded-sm border border-line bg-white px-2 text-center text-base text-ink disabled:opacity-40"
+                [disabled]="row.busy"
+                (click)="startEdit(product)">
+                {{ row.shown }}
+              </button>
+            }
+            <span class="flex flex-col">
+              <button
+                type="button"
+                class="flex h-5 w-7 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+                aria-label="Increase stock"
+                [disabled]="row.busy"
+                (mousedown)="holdStep($event)"
+                (click)="step(product, 1)">
+                ▲
+              </button>
+              <button
+                type="button"
+                class="flex h-5 w-7 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+                aria-label="Decrease stock"
+                [disabled]="!row.canDecrease"
+                (mousedown)="holdStep($event)"
+                (click)="step(product, -1)">
+                ▼
+              </button>
+            </span>
+          </span>
+          @if (product.low) {
+            <span class="text-[13px] leading-4.5 text-danger">Low</span>
+          }
+        </div>
+        @if (row.invalid) {
+          <p class="mt-2 text-[13px] leading-4.5 text-danger">Use a whole number.</p>
+        }
       </li>
     }
   </ul>
-  @if (pending()) {
-    <div class="mt-4 border border-danger bg-white p-4">
-      <p class="text-lg leading-6.5">Delete this product?</p>
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">It leaves the shop. Past orders stay.</p>
-      <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="deleteProduct()">
-        <ecomm-button label="Delete" [full]="true" />
-      </button>
-      <button type="button" class="mt-3 w-full border-0 bg-transparent p-0" (click)="keep()">
-        <ecomm-button label="Keep" variant="secondary" [full]="true" />
-      </button>
-    </div>
-  }
 </section>

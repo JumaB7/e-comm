@@ -31,9 +31,21 @@ public class AdminController(IOrderService orders, IProductService products) : C
         return order is null ? NotFound() : order;
     }
 
+    [HttpPost("orders/{number}/ship")]
+    public async Task<ActionResult<OrderModel>> Ship(string number, TrackingRequest request) =>
+        ShopResults.From(await orders.Ship(number, request.Tracking));
+
+    [HttpPost("orders/{number}/complete")]
+    public async Task<ActionResult<OrderModel>> Complete(string number) =>
+        ShopResults.From(await orders.Complete(number));
+
     [HttpPost("products")]
     public async Task<ActionResult<ProductModel>> AddProduct(CreateProductRequest request) =>
         ShopResults.From(await products.Add(request));
+
+    [HttpPut("products/{sku}")]
+    public async Task<ActionResult<ProductModel>> UpdateProduct(string sku, CreateProductRequest request) =>
+        ShopResults.From(await products.Update(sku, request));
 
     [HttpDelete("products/{sku}")]
     public async Task<IActionResult> DeleteProduct(string sku) =>

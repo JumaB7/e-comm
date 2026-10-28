@@ -11,6 +11,7 @@ export class ButtonComponent {
   readonly label = input('');
   readonly variant = input<'primary' | 'secondary' | 'inverse'>('primary');
   readonly full = input(false);
+  readonly chevron = input(false);
   protected readonly classes = computed(() => {
     const width = this.full() ? 'w-full' : '';
     const base =
@@ -20,7 +21,7 @@ export class ButtonComponent {
         ? 'border border-ink bg-white text-ink'
         : this.variant() === 'inverse'
           ? 'border border-white bg-transparent text-white'
-          : 'bg-action text-ink';
+          : 'bg-action text-white';
     return `${base} ${width} ${look}`;
   });
 }

@@ -54,8 +54,12 @@ public class ShopOrder
     public string PayFastReference { get; set; } = "";
     public string PaymentMethod { get; set; } = "";
     public string PaymentNote { get; set; } = "Paid only after the PayFast signature matches.";
+    public string TrackingNumber { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public DateTime? PaidAt { get; set; }
+    public DateTime? PackedAt { get; set; }
+    public DateTime? ShippedAt { get; set; }
+    public DateTime? DeliveredAt { get; set; }
     public List<OrderLine> Lines { get; set; } = [];
 }
 

@@ -1,11 +1,10 @@
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { ButtonComponent } from 'ecomm-components';
 import { StockBaseDirective } from './stock-base.directive';
 
 @Component({
   selector: 'app-stock-desktop',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [NgClass],
   templateUrl: './stock-desktop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

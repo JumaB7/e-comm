@@ -1,0 +1,24 @@
+@if (loading()) {
+  <div
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(20,20,20,0.42)] p-6 backdrop-blur-[2px]"
+    role="status"
+    aria-live="polite">
+    <div class="flex flex-col items-center">
+      <svg class="h-20 w-20" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+        <circle cx="40" cy="40" r="35" stroke="#141414" stroke-width="3" />
+        <circle cx="40" cy="40" r="29" stroke="#5c5c5c" stroke-width="1.5" />
+        <path d="M40 1V16M40 64V79M1 40H16M64 40H79" stroke="#141414" stroke-width="2" stroke-linecap="round" />
+        <circle cx="40" cy="40" r="2.5" fill="#FF4B1F" />
+        <g class="origin-[40px_40px] animate-scope-spin [transform-box:view-box]">
+          <path
+            d="M58.76 10.44 A 35 35 0 0 1 69.56 21.24M69.56 58.76 A 35 35 0 0 1 58.76 69.56M21.24 69.56 A 35 35 0 0 1 10.44 58.76M10.44 21.24 A 35 35 0 0 1 21.24 10.44"
+            stroke="#FF4B1F"
+            stroke-width="3"
+            stroke-linecap="round" />
+        </g>
+      </svg>
+      <p class="mt-5 text-center text-[20px] leading-6.5 font-semibold text-ink">Loading</p>
+      <p class="mt-1.5 max-w-[250px] text-center text-[13px] leading-4.5 text-muted">Please wait a moment.</p>
+    </div>
+  </div>
+}

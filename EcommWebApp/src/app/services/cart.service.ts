@@ -6,6 +6,7 @@ import { CartLine, CartQuote, CheckoutDetails } from '../models/cart.model';
 import { emptyCartQuote } from '../models/constants';
 import { Product } from '../models/product.model';
 import { ShopDefaultsService } from './shop-defaults.service';
+import { SpinnerService } from './spinner.service';
 
 function readBag(): CartLine[] | null {
   try {
@@ -24,6 +25,7 @@ function readBag(): CartLine[] | null {
 export class CartService {
   private readonly http = inject(HttpClient);
   private readonly shop = inject(ShopDefaultsService);
+  private readonly spinner = inject(SpinnerService);
   readonly bagChoice = signal<CartLine[] | null>(readBag());
   readonly lines = computed(() => this.bagChoice() ?? this.shop.defaults().bag);
   readonly deliveryChoice = signal<'courier' | 'collect' | null>(null);
@@ -58,7 +60,11 @@ export class CartService {
         lines: this.lines().map((line) => ({ sku: line.sku, qty: line.qty, detail: line.detail })),
       })),
     ).pipe(
-      switchMap((body) => this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote)))),
+      switchMap((body) =>
+        this.spinner.pending(
+          this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote))),
+        ),
+      ),
     ),
     { initialValue: emptyCartQuote },
   );

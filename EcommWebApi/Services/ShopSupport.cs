@@ -132,17 +132,113 @@ public static class OrderMapper
             ShopMoney.Rand(order.TotalCents),
             order.Status,
             order.Tone,
-            order.Fulfilment,
-            order.FulfilmentNote,
+            FulfilmentLabel(order),
+            FulfilmentNote(order),
             order.PayFastReference,
             PaidDetail(order),
             order.PaymentNote,
             DeliveryNote(order),
-            lines);
+            lines,
+            Placed(order),
+            order.Delivery,
+            order.TrackingNumber,
+            FulfilmentTone(order),
+            Alert(order),
+            Queue(order));
+    }
+
+    public static string Placed(ShopOrder order)
+    {
+        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(order.CreatedAt, DateTimeKind.Utc), ShopZone);
+        return local.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
+    }
+
+    public static string Queue(ShopOrder order) => FulfilmentLabel(order) switch
+    {
+        "To pack" => "pack",
+        "To ship" => "ship",
+        "To collect" => "collect",
+        "Packed" => order.Delivery == "collect" ? "collect" : "ship",
+        "Out for delivery" or "Shipped" => "delivery",
+        "Delivered" or "Collected" => "done",
+        _ => "waiting",
+    };
+
+    // Delivery decides the path. A collection is never a shipment, even if an older row still says "To ship".
+    public static string FulfilmentLabel(ShopOrder order)
+    {
+        if (order.Delivery == "collect" && order.Fulfilment is "To ship" or "Packed")
+        {
+            return "To collect";
+        }
+        if (order.Delivery == "collect" && order.Fulfilment is "Out for delivery" or "Shipped")
+        {
+            return "Collected";
+        }
+        if (order.Delivery == "courier" && order.Fulfilment == "To collect")
+        {
+            return "To ship";
+        }
+        return order.Fulfilment;
+    }
+
+    public static string FulfilmentNote(ShopOrder order)
+    {
+        if (order.Delivery == "collect" && order.Fulfilment is "To ship" or "Packed")
+        {
+            return "Packed. Waiting for collection.";
+        }
+        if (order.Delivery == "collect" && order.Fulfilment is "Out for delivery" or "Shipped")
+        {
+            return "Collected from the shop.";
+        }
+        if (order.Delivery == "courier" && order.Fulfilment == "To collect")
+        {
+            return "Packed. Add a tracking number to send it.";
+        }
+        return order.FulfilmentNote;
+    }
+
+    public static string FulfilmentTone(ShopOrder order) => Queue(order) switch
+    {
+        "pack" => "packed",
+        "ship" => "ship",
+        "collect" => "collect",
+        "delivery" => "paid",
+        _ => "awaiting",
+    };
+
+    public static string Alert(ShopOrder order)
+    {
+        var today = ShopNow().Date;
+        var placedDays = (today - ShopDate(order.CreatedAt)).Days;
+        if (order.Fulfilment == "To pack" && placedDays >= 2)
+        {
+            return $"Waiting to be packed for {placedDays} days.";
+        }
+        if (Queue(order) is "ship" or "collect")
+        {
+            var since = order.PackedAt is null ? placedDays : (today - ShopDate(order.PackedAt.Value)).Days;
+            if (since >= 2)
+            {
+                return Queue(order) == "collect"
+                    ? $"Waiting for collection for {since} days."
+                    : $"Packed and not shipped for {since} days.";
+            }
+        }
+        if (Queue(order) == "delivery" && order.ShippedAt is not null)
+        {
+            var since = (today - ShopDate(order.ShippedAt.Value)).Days;
+            if (since >= 10)
+            {
+                return $"Shipped {since} days ago and not marked delivered.";
+            }
+        }
+        return "";
     }
 
     public static string Address(ShopOrder order) =>
-        string.Join(", ", new[] { order.Street, order.Suburb, order.City, order.PostalCode }.Where(part => part.Length > 0));
+        string.Join(", ", new[] { order.Street, order.Suburb, order.City, order.Province, order.PostalCode }.Where(part => part.Length > 0));
 
     public static string DeliveryNote(ShopOrder order) =>
         order.Delivery == "courier"

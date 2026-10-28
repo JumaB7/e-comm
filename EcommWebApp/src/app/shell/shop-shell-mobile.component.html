@@ -4,7 +4,17 @@
     <a routerLink="/" aria-label="Veld Supply" class="block">
       <img src="/kudu-logo.svg" alt="" class="h-9 w-auto" />
     </a>
-    <a routerLink="/checkout" class="text-[13px] font-medium tracking-[0.08em]">BAG {{ bagCount() }}</a>
+    <div class="flex items-center gap-4 text-[13px] font-medium tracking-[0.08em]">
+      @if (accountName()) {
+        @if (accountRole() === 'Admin') {
+          <a routerLink="/admin">ADMIN</a>
+        }
+        <button type="button" class="border-0 bg-transparent p-0" (click)="signOut()">SIGN OUT</button>
+      } @else {
+        <a routerLink="/sign-in">ACCOUNT</a>
+      }
+      <a routerLink="/checkout">BAG {{ bagCount() }}</a>
+    </div>
   </header>
   @if (showSearch()) {
     <div class="bg-white px-4 pb-3">

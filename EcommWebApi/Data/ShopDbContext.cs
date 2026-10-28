@@ -47,6 +47,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             order.Property(item => item.Status).HasMaxLength(40);
             order.Property(item => item.Tone).HasMaxLength(20);
             order.Property(item => item.Fulfilment).HasMaxLength(40);
+            order.Property(item => item.TrackingNumber).HasMaxLength(40);
             order.HasMany(item => item.Lines).WithOne().HasForeignKey(line => line.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
 

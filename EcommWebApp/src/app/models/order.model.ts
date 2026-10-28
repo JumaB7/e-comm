@@ -30,4 +30,10 @@ export interface ShopOrder {
   paymentNote: string;
   deliveryNote: string;
   lines: string[];
+  placed: string;
+  delivery: string;
+  tracking: string;
+  fulfilmentTone: 'paid' | 'packed' | 'awaiting' | 'low' | 'ship' | 'collect';
+  alert: string;
+  queue: string;
 }

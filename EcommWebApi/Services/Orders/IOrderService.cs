@@ -14,6 +14,10 @@ public interface IOrderService
 
     Task<OrderModel?> Pack(string number);
 
+    Task<ShopOutcome<OrderModel>> Ship(string number, string? tracking);
+
+    Task<ShopOutcome<OrderModel>> Complete(string number);
+
     Task<OrderSummaryModel> Summary();
 
     Task<SalesModel> Sales();

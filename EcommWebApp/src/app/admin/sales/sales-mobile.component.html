@@ -1,24 +1,73 @@
 <section class="px-4 py-5">
   <h1 class="font-display text-[40px] leading-11.5">Sales</h1>
   <p class="mt-3 text-[13px] leading-4.5 text-muted">Paid orders only. Profit is sales minus product cost.</p>
+  <p class="mt-3 text-[13px] font-medium tracking-[0.08em] text-muted">REPORTING PERIOD</p>
+  <p class="text-sm font-semibold leading-5">{{ period() }}</p>
   <ul class="mt-4 grid grid-cols-2 gap-2">
     @for (stat of stats(); track stat.label) {
       <li class="border border-line bg-white p-3">
         <p class="text-[13px] font-medium tracking-[0.08em] text-muted uppercase">{{ stat.label }}</p>
-        <p class="mt-1 text-[22px] leading-6.5">{{ stat.value }}</p>
+        <p class="mt-1 text-[20px] font-semibold leading-6.5">{{ stat.value }}</p>
+        <p class="mt-1 flex items-center gap-1 text-[12px] leading-4" [ngClass]="stat.tone">
+          <span>{{ stat.mark }}</span>
+          <span>{{ stat.change.text }}</span>
+        </p>
       </li>
     }
   </ul>
-  <div class="mt-4 border border-line bg-white p-3">
+  <div class="mt-3 border border-line bg-white p-3">
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">PROFIT, LAST 6 MONTHS</p>
-    <ul class="mt-4 flex items-end justify-between">
-      @for (bar of bars(); track bar.month) {
-        <li class="flex w-10 flex-col items-center">
-          <div class="w-5.5 rounded-sm bg-action" [ngClass]="bar.mobileClass"></div>
-          <span class="mt-2 text-[13px] leading-4.5 text-muted">{{ bar.month }}</span>
-        </li>
+    <p class="mt-1 text-[22px] leading-6.5">{{ profitTotal() }}</p>
+    <app-sales-chart kind="profit" [months]="months()" />
+    <p class="text-[13px] leading-4.5 text-muted">{{ profitNote() }}</p>
+  </div>
+  <div class="mt-3 border border-line bg-white p-3">
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">PROFIT MARGIN</p>
+    <p class="mt-3 text-[28px] font-semibold leading-8">{{ margin() }} <span class="text-base font-normal text-muted">of sales</span></p>
+    <p class="mt-2 flex items-center gap-2 text-sm">
+      <span class="h-2 w-2 rounded-full" [ngClass]="marginHealthy() ? 'bg-success' : 'bg-danger'"></span>
+      {{ marginHealthy() ? 'Healthy margin' : 'Lower margin' }}
+    </p>
+    <p class="mt-1 text-[13px] leading-4.5 text-muted">{{ marginNote() }}</p>
+    <div class="mt-4 grid grid-cols-2 border-t border-line pt-3">
+      <div>
+        <p class="text-[13px] leading-4.5 text-muted">Gross profit</p>
+        <p class="mt-1 font-semibold">{{ grossProfit() }}</p>
+      </div>
+      <div class="border-l border-line pl-3">
+        <p class="text-[13px] leading-4.5 text-muted">Product costs</p>
+        <p class="mt-1 font-semibold">{{ productCosts() }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="mt-3 border border-line bg-white p-3">
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">SALES VS PROFIT</p>
+    <p class="mt-1 text-[13px] leading-4.5 text-muted">Monthly performance</p>
+    <app-sales-chart kind="trend" [months]="months()" />
+  </div>
+  <div class="mt-3 border border-line bg-white p-3">
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">SALES BY CATEGORY</p>
+    <p class="mt-1 text-[13px] leading-4.5 text-muted">Last 6 months</p>
+    @if (categories().length === 0) {
+      <p class="mt-3 text-[13px] leading-4.5 text-muted">No paid sales in this period.</p>
+    } @else {
+      <app-sales-chart kind="category" [categories]="categories()" />
+    }
+  </div>
+  <div class="mt-3 border border-line bg-white p-3">
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">CUSTOMER HEALTH</p>
+    <p class="mt-3 text-[13px] leading-4.5 text-muted">Repeat customers</p>
+    <p class="text-[32px] font-semibold leading-9">{{ repeatShare() }}</p>
+    <p class="text-[13px] leading-4.5" [ngClass]="repeatChange().tone">{{ repeatChange().mark }}{{ repeatChange().text }}</p>
+    <div class="mt-3 flex gap-1">
+      @for (filled of blocks(); track $index) {
+        <span class="h-2 flex-1" [ngClass]="filled ? 'bg-action' : 'bg-line'"></span>
       }
-    </ul>
-    <p class="mt-3 text-[13px] leading-4.5 text-muted">{{ tallest() }} is the tallest bar.</p>
+    </div>
+    <div class="mt-4 grid gap-3 border-t border-line pt-3">
+      <p class="flex items-center justify-between text-sm"><span class="text-muted">New customers</span> <span class="font-semibold">{{ newCustomers() }}</span></p>
+      <p class="flex items-center justify-between text-sm"><span class="text-muted">Returning</span> <span class="font-semibold">{{ returningCustomers() }}</span></p>
+      <p class="flex items-center justify-between text-sm"><span class="text-muted">Refund rate</span> <span class="font-semibold">{{ refundRate() }}</span></p>
+    </div>
   </div>
 </section>

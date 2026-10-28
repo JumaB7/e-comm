@@ -9,7 +9,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class StatusPillComponent {
   readonly label = input('');
-  readonly tone = input<'paid' | 'packed' | 'awaiting' | 'low'>('paid');
+  readonly tone = input<'paid' | 'packed' | 'awaiting' | 'low' | 'ship' | 'collect'>('paid');
   protected readonly classes = computed(() => {
     const base = 'inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium leading-4';
     switch (this.tone()) {
@@ -17,6 +17,10 @@ export class StatusPillComponent {
         return `${base} bg-success text-white`;
       case 'packed':
         return `${base} bg-action text-white`;
+      case 'ship':
+        return `${base} bg-ink text-white`;
+      case 'collect':
+        return `${base} border border-ink bg-white text-ink`;
       case 'low':
         return `${base} bg-danger text-white`;
       default:

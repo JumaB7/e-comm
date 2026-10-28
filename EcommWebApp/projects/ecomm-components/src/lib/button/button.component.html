@@ -1,1 +1,8 @@
-<span [ngClass]="classes()">{{ label() }}</span>
+<span [ngClass]="classes()">
+  @if (chevron()) {
+    <svg viewBox="0 0 16 16" class="mr-2 h-4 w-4 shrink-0" aria-hidden="true">
+      <path d="M10 3.5 5.5 8 10 12.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+    </svg>
+  }
+  {{ label() }}
+</span>

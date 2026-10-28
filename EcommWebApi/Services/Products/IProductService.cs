@@ -10,6 +10,8 @@ public interface IProductService
 
     Task<ShopOutcome<ProductModel>> Add(CreateProductRequest request);
 
+    Task<ShopOutcome<ProductModel>> Update(string sku, CreateProductRequest request);
+
     Task<bool> Delete(string sku);
 
     Task<ShopOutcome<ProductModel>> AdjustStock(StockRequest request);

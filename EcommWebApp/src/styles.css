@@ -17,6 +17,7 @@
   --animate-scope-reticle: scope-reticle 4.6s ease both;
   --animate-scope-fade: scope-fade 4.6s linear both;
   --animate-site-pop: site-pop 4.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scope-spin: scope-spin 14s linear infinite;
 }
 
 @keyframes scope-drift {
@@ -96,12 +97,19 @@
   }
 }
 
+@keyframes scope-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-scope-drift,
   .animate-scope-ring,
   .animate-scope-reticle,
   .animate-scope-fade,
-  .animate-site-pop {
+  .animate-site-pop,
+  .animate-scope-spin {
     animation: none;
   }
 }

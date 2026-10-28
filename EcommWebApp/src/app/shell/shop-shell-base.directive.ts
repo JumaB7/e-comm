@@ -2,14 +2,18 @@ import { Directive, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
 
 @Directive()
 export class ShopShellBaseDirective {
+  private readonly auth = inject(AuthService);
   private readonly cart = inject(CartService);
   private readonly catalog = inject(CatalogService);
   private readonly router = inject(Router);
+  readonly accountName = this.auth.name;
+  readonly accountRole = this.auth.role;
   readonly bagCount = this.cart.count;
   readonly search = this.catalog.search;
   readonly links = [
@@ -38,6 +42,10 @@ export class ShopShellBaseDirective {
     }
     return this.router.parseUrl(this.url()).queryParams['category'] ?? 'Shop';
   });
+
+  signOut(): void {
+    this.auth.signOut();
+  }
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;

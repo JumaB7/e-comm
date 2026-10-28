@@ -1,4 +1,4 @@
-<section class="px-4 py-4">
+<section class="px-4 py-4" [formGroup]="form">
   <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
   <aside class="mt-4 border border-line bg-white p-4">
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
@@ -15,28 +15,56 @@
   </aside>
   <div class="mt-6 grid gap-4">
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="email()" (input)="setContact('email', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" />
+      @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.email.errors?.['email']) { Enter a valid email address. } @else { Enter an email address. }
+        </span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="phone()" (input)="setContact('phone', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" />
+      @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a phone number.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="fullName()" (input)="setContact('fullName', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" />
+      @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter the name for delivery.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="street()" (input)="setContact('street', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" />
+      @if (form.controls.street.invalid && (form.controls.street.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a street address.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="suburb()" (input)="setContact('suburb', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
+      @if (form.controls.suburb.invalid && (form.controls.suburb.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a suburb.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="city()" (input)="setContact('city', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
+      @if (form.controls.city.invalid && (form.controls.city.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a city.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="province()" (input)="setContact('province', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
+      @if (form.controls.province.invalid && (form.controls.province.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a province.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="postalCode()" (input)="setContact('postalCode', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" />
+      @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.postalCode.errors?.['required']) { Enter a postal code. } @else { Use a 4 digit postal code. }
+        </span>
+      }
     </label>
   </div>
   <button
@@ -56,9 +84,9 @@
     <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
   </button>
   @if (hasLines() > 0) {
-    <a routerLink="/pay" class="mt-4 block">
+    <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="continue()">
       <ecomm-button label="Continue to PayFast" [full]="true" />
-    </a>
+    </button>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">Card, Instant EFT, or Capitec Pay on PayFast.</p>
   }
 </section>

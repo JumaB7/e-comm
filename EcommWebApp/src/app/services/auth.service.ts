@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, of, tap } from 'rxjs';
 import { AuthSession } from '../models/auth.model';
-import { apiMessage } from './auth.interceptor';
+import { apiMessage } from './api-message';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,12 +21,16 @@ export class AuthService {
     this.submit('/api/auth/register', { name, email, phone, password }, '/shop');
   }
 
-  signOut(): void {
+  clearSession(): void {
     sessionStorage.removeItem('veld-token');
     sessionStorage.removeItem('veld-role');
     sessionStorage.removeItem('veld-name');
     this.name.set('');
     this.role.set('');
+  }
+
+  signOut(): void {
+    this.clearSession();
     void this.router.navigateByUrl('/');
   }
 

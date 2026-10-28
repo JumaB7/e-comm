@@ -1,4 +1,5 @@
-import { Directive, computed, inject, signal } from '@angular/core';
+import { Directive, effect, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { ShopDefaultsService } from '../services/shop-defaults.service';
@@ -9,34 +10,36 @@ export class SignInBaseDirective {
   private readonly route = inject(ActivatedRoute);
   private readonly shop = inject(ShopDefaultsService);
   private readonly adminSignIn = this.route.snapshot.queryParamMap.get('returnUrl')?.startsWith('/admin') ?? false;
-  private readonly typedEmail = signal<string | null>(null);
-  readonly email = computed(() => {
-    const typed = this.typedEmail();
-    if (typed !== null) {
-      return typed;
-    }
-    const defaults = this.shop.defaults();
-    return this.adminSignIn ? defaults.adminEmail : defaults.customerEmail;
-  });
-  readonly password = signal('');
+  readonly submitted = signal(false);
   readonly error = this.auth.error;
+  readonly form = new FormGroup({
+    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  });
 
   constructor() {
     this.auth.error.set('');
-  }
-
-  setField(field: 'email' | 'password', event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (field === 'email') {
-      this.typedEmail.set(value);
-    } else {
-      this.password.set(value);
-    }
+    effect(() => {
+      const defaults = this.shop.defaults();
+      const email = this.adminSignIn ? defaults.adminEmail : defaults.customerEmail;
+      const control = this.form.controls.email;
+      if (control.dirty || !email) {
+        return;
+      }
+      control.setValue(email);
+      control.markAsPristine();
+    });
   }
 
   submit(event: Event): void {
     event.preventDefault();
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/shop';
-    this.auth.signIn(this.email(), this.password(), returnUrl);
+    this.submitted.set(true);
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      return;
+    }
+    const requested = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/shop';
+    const returnUrl = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/shop';
+    this.auth.signIn(this.form.controls.email.value, this.form.controls.password.value, returnUrl);
   }
 }

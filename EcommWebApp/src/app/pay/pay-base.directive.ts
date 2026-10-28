@@ -1,5 +1,6 @@
 import { Directive, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { checkoutForm } from '../checkout/checkout.form';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
 
@@ -27,6 +28,22 @@ export class PayBaseDirective {
     }
     if (this.cart.count() === 0) {
       this.error.set('The bag is empty.');
+      return;
+    }
+    const details = this.cart.checkout();
+    const contact = checkoutForm();
+    contact.setValue({
+      email: details.email,
+      phone: details.phone,
+      fullName: details.name,
+      street: details.street,
+      suburb: details.suburb,
+      city: details.city,
+      province: details.province,
+      postalCode: details.postalCode,
+    });
+    if (contact.invalid) {
+      this.error.set('Go back and complete the delivery details.');
       return;
     }
     this.paying.set(true);

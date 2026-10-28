@@ -1,12 +1,12 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from 'ecomm-components';
 import { CheckoutBaseDirective } from './checkout-base.directive';
 
 @Component({
   selector: 'app-checkout-desktop',
-  imports: [NgClass, RouterLink, ButtonComponent],
+  imports: [NgClass, ReactiveFormsModule, ButtonComponent],
   templateUrl: './checkout-desktop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

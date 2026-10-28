@@ -1,12 +1,20 @@
 <section>
   <h1 class="font-display text-[40px] leading-11.5">Stock</h1>
   <p class="mt-4 text-[13px] leading-4.5 text-muted">Add or remove units. Delete removes the product from the shop. Past orders stay.</p>
-  <form class="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white p-4">
+  <form class="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white p-4" [formGroup]="form">
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRODUCT
-      <input class="h-10 w-70 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockName()" (input)="setName($event)" />
+      <input class="h-10 w-70 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="name" />
+      @if (form.controls.name.invalid && (form.controls.name.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a product name.</span>
+      }
     </label>
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">QUANTITY
-      <input class="h-10 w-16 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="stockQty()" (input)="setQty($event)" />
+      <input class="h-10 w-16 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="qty" />
+      @if (form.controls.qty.invalid && (form.controls.qty.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.qty.errors?.['required']) { Enter a quantity. } @else { Use at least 1. }
+        </span>
+      }
     </label>
     <button type="button" class="border-0 bg-transparent p-0" (click)="addStock()">
       <ecomm-button label="Add stock" />

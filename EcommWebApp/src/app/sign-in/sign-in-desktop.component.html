@@ -1,12 +1,20 @@
 <section class="px-6 py-16">
-  <form class="mx-auto w-full max-w-110 border border-line bg-white px-7 py-8" (submit)="submit($event)">
+  <form class="mx-auto w-full max-w-110 border border-line bg-white px-7 py-8" [formGroup]="form" (submit)="submit($event)">
     <h1 class="font-display text-[40px] leading-11.5">Sign in</h1>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">Use the same account for orders and delivery.</p>
     <label class="mt-4 grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="email()" (input)="setField('email', $event)" />
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" />
+      @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.email.errors?.['email']) { Enter a valid email address. } @else { Enter an email address. }
+        </span>
+      }
     </label>
     <label class="mt-4 grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PASSWORD
-      <input type="password" class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" [value]="password()" (input)="setField('password', $event)" />
+      <input type="password" class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="password" />
+      @if (form.controls.password.invalid && (form.controls.password.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter your password.</span>
+      }
     </label>
     @if (error()) {
       <p class="mt-3 text-[13px] leading-4.5 text-danger">{{ error() }}</p>

@@ -7,15 +7,26 @@
   </div>
   <p class="mt-2 text-[13px] leading-4.5 text-muted">SKU matches the till later.</p>
   @if (adding()) {
-    <form class="mt-4 grid gap-3 border border-line bg-white p-3">
+    <form class="mt-4 grid gap-3 border border-line bg-white p-3" [formGroup]="form">
       <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">NAME
-        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftName()" (input)="setDraft('name', $event)" />
+        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="name" />
+        @if (form.controls.name.invalid && (form.controls.name.touched || submitted())) {
+          <span class="font-normal tracking-normal text-danger">Enter a name.</span>
+        }
       </label>
       <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SKU
-        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftSku()" (input)="setDraft('sku', $event)" />
+        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="sku" />
+        @if (form.controls.sku.invalid && (form.controls.sku.touched || submitted())) {
+          <span class="font-normal tracking-normal text-danger">Enter a SKU.</span>
+        }
       </label>
       <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PRICE
-        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" [value]="draftPrice()" (input)="setDraft('price', $event)" />
+        <input class="h-12.5 rounded-sm border border-line bg-white px-3 text-base font-normal tracking-normal text-ink" formControlName="price" />
+        @if (form.controls.price.invalid && (form.controls.price.touched || submitted())) {
+          <span class="font-normal tracking-normal text-danger">
+            @if (form.controls.price.errors?.['required']) { Enter a price. } @else if (form.controls.price.errors?.['min']) { Use at least R 1. } @else { Use a whole rand amount. }
+          </span>
+        }
       </label>
       <button type="button" class="border-0 bg-transparent p-0" (click)="saveProduct()">
         <ecomm-button label="Save product" [full]="true" />

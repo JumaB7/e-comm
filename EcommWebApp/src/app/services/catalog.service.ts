@@ -6,7 +6,7 @@ import { emptyOrderSummary } from '../models/constants';
 import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model';
 import { Product } from '../models/product.model';
 import { SalesReport } from '../models/sales.model';
-import { apiMessage } from './auth.interceptor';
+import { apiMessage } from './api-message';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {

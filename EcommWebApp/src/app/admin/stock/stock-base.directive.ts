@@ -1,13 +1,16 @@
-import { Directive, computed, inject, signal } from '@angular/core';
+import { Directive, computed, effect, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CatalogService } from '../../services/catalog.service';
 
 @Directive()
 export class StockBaseDirective {
   private readonly catalog = inject(CatalogService);
   readonly products = this.catalog.products;
-  private readonly typedName = signal<string | null>(null);
-  readonly stockName = computed(() => this.typedName() ?? this.products()[0]?.name ?? '');
-  readonly stockQty = signal('1');
+  readonly submitted = signal(false);
+  readonly form = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    qty: new FormControl('1', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)] }),
+  });
   readonly pendingSku = signal('');
   readonly pending = computed(() => this.products().find((product) => product.sku === this.pendingSku()));
   readonly pendingTitle = computed(() => {
@@ -15,20 +18,24 @@ export class StockBaseDirective {
     return product ? `Delete ${product.name.toLowerCase()}?` : '';
   });
 
-  setName(event: Event): void {
-    this.typedName.set((event.target as HTMLInputElement).value);
-  }
-
-  setQty(event: Event): void {
-    this.stockQty.set((event.target as HTMLInputElement).value);
+  constructor() {
+    effect(() => {
+      const name = this.products()[0]?.name ?? '';
+      const control = this.form.controls.name;
+      if (control.dirty || !name) {
+        return;
+      }
+      control.setValue(name);
+      control.markAsPristine();
+    });
   }
 
   addStock(): void {
-    this.catalog.adjustStock(this.stockName(), Number(this.stockQty()), 1);
+    this.adjust(1);
   }
 
   removeStock(): void {
-    this.catalog.adjustStock(this.stockName(), Number(this.stockQty()), -1);
+    this.adjust(-1);
   }
 
   choose(sku: string): void {
@@ -46,5 +53,14 @@ export class StockBaseDirective {
     }
     this.catalog.removeProduct(product.sku);
     this.pendingSku.set('');
+  }
+
+  private adjust(direction: 1 | -1): void {
+    this.submitted.set(true);
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      return;
+    }
+    this.catalog.adjustStock(this.form.controls.name.value, Number(this.form.controls.qty.value), direction);
   }
 }

@@ -1,4 +1,5 @@
 import { Directive, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CatalogService } from '../../services/catalog.service';
 
 @Directive()
@@ -6,50 +7,36 @@ export class AdminProductsBaseDirective {
   private readonly catalog = inject(CatalogService);
   readonly products = this.catalog.products;
   readonly adding = signal(false);
-  readonly draftName = signal('');
-  readonly draftSku = signal('');
-  readonly draftCategory = signal('Camp');
-  readonly draftPrice = signal('');
-  readonly draftStock = signal('1');
+  readonly submitted = signal(false);
+  readonly form = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    sku: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    category: new FormControl('Camp', { nonNullable: true }),
+    price: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d+$/), Validators.min(1)] }),
+    stock: new FormControl('1', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d+$/)] }),
+  });
 
   toggleAdd(): void {
     this.adding.update((open) => !open);
-  }
-
-  setDraft(field: 'name' | 'sku' | 'category' | 'price' | 'stock', event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (field === 'name') {
-      this.draftName.set(value);
-    } else if (field === 'sku') {
-      this.draftSku.set(value);
-    } else if (field === 'category') {
-      this.draftCategory.set(value);
-    } else if (field === 'price') {
-      this.draftPrice.set(value);
-    } else {
-      this.draftStock.set(value);
-    }
+    this.submitted.set(false);
   }
 
   saveProduct(): void {
-    const priceRands = Number(this.draftPrice().replace(/[^\d]/g, ''));
-    const stock = Number(this.draftStock());
-    const name = this.draftName().trim();
-    const sku = this.draftSku().trim();
-    if (!name || !sku || !Number.isFinite(priceRands) || priceRands < 1 || !Number.isFinite(stock)) {
+    this.submitted.set(true);
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
       return;
     }
+    const value = this.form.getRawValue();
     this.catalog.addProduct({
-      name,
-      sku,
-      category: this.draftCategory().trim() || 'Camp',
-      priceRands,
-      stock,
+      name: value.name.trim(),
+      sku: value.sku.trim(),
+      category: value.category.trim() || 'Camp',
+      priceRands: Number(value.price),
+      stock: Number(value.stock),
     });
     this.adding.set(false);
-    this.draftName.set('');
-    this.draftSku.set('');
-    this.draftPrice.set('');
-    this.draftStock.set('1');
+    this.submitted.set(false);
+    this.form.reset({ name: '', sku: '', category: 'Camp', price: '', stock: '1' });
   }
 }

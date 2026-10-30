@@ -11,11 +11,14 @@ import { CatalogService } from './catalog.service';
 import { SessionStoreService } from './session-store.service';
 
 function readBag(store: SessionStoreService): CartLine[] | null {
+  return parseBagRaw(store.getBag());
+}
+
+function parseBagRaw(raw: string | null): CartLine[] | null {
+  if (!raw) {
+    return null;
+  }
   try {
-    const raw = store.getBag();
-    if (!raw) {
-      return null;
-    }
     const parsed = JSON.parse(raw) as CartLine[];
     return Array.isArray(parsed) ? parsed : null;
   } catch {
@@ -44,6 +47,8 @@ export class CartService {
   private readonly provinceChoice = signal<string | null>(null);
   private readonly postalChoice = signal<string | null>(null);
   private readonly profileLoadedFor = signal('');
+  /** Email whose bag is currently active; used to stash/restore across sign-out. */
+  private readonly bagOwnerEmail = signal<string | null>(null);
   readonly savedProfile = signal<CheckoutProfile | undefined>(undefined);
   readonly hasSavedDelivery = computed(() => !!this.savedProfile());
   readonly email = computed(() => this.emailChoice() ?? '');
@@ -112,26 +117,23 @@ export class CartService {
     effect(() => {
       const user = this.auth.userData();
       const token = this.auth.token();
-      if (!user?.email || !token) {
-        untracked(() => {
-          if (this.profileLoadedFor()) {
-            this.clearContact();
-          }
-        });
+      const email = user?.email && token ? user.email : null;
+      untracked(() => this.syncBagOwner(email));
+      if (!email) {
         return;
       }
-      if (this.profileLoadedFor() === user.email) {
+      if (this.profileLoadedFor() === email) {
         return;
       }
       untracked(() => {
-        this.profileLoadedFor.set(user.email);
+        this.profileLoadedFor.set(email);
         if (!this.emailChoice()) {
-          this.emailChoice.set(user.email);
+          this.emailChoice.set(email);
         }
-        if (!this.nameChoice() && user.name) {
+        if (!this.nameChoice() && user?.name) {
           this.nameChoice.set(user.name);
         }
-        if (!this.phoneChoice() && user.phone) {
+        if (!this.phoneChoice() && user?.phone) {
           this.phoneChoice.set(user.phone);
         }
         this.auth.profile().subscribe((profile) => {
@@ -156,6 +158,29 @@ export class CartService {
         });
       });
     });
+  }
+
+  /**
+   * On sign-out: stash that user's bag and clear the active bag.
+   * On sign-in: restore their stash (guest lines kept if the stash is empty).
+   */
+  private syncBagOwner(email: string | null): void {
+    const previous = this.bagOwnerEmail();
+    if (previous === email) {
+      return;
+    }
+    if (previous) {
+      this.session.stashBagFor(previous, JSON.stringify(this.bagChoice()));
+      this.bagChoice.set([]);
+      this.clearContact();
+    }
+    if (email) {
+      const stashed = parseBagRaw(this.session.takeStashedBag(email));
+      if (stashed?.length) {
+        this.bagChoice.set(stashed);
+      }
+    }
+    this.bagOwnerEmail.set(email);
   }
 
   /** Fills checkout contact from the saved account profile. When force is false, only empty fields. */

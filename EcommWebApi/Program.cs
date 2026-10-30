@@ -115,7 +115,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Dev: keep HTTP :5156 usable (proxy / PayFast notify). Redirect drops Authorization.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors("EcommWebApp");

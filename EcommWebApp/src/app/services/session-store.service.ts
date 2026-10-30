@@ -5,6 +5,8 @@ import { Injectable } from '@angular/core';
 export class SessionStoreService {
   private readonly tokenKey = 'veld-token';
   private readonly bagKey = 'veld-bag';
+  /** Signed-out users' bags, keyed by email — restored on the next sign-in. */
+  private readonly bagsByEmailKey = 'veld-bags-by-email';
   private readonly receiptKey = 'veld-receipt';
   private readonly legacyProfileKeys = ['veld-name', 'veld-email', 'veld-phone', 'veld-role'] as const;
 
@@ -32,6 +34,30 @@ export class SessionStoreService {
     sessionStorage.removeItem(this.bagKey);
   }
 
+  stashBagFor(email: string, raw: string): void {
+    const key = email.trim().toLowerCase();
+    if (!key) {
+      return;
+    }
+    const map = this.readBagsByEmail();
+    map[key] = raw;
+    sessionStorage.setItem(this.bagsByEmailKey, JSON.stringify(map));
+  }
+
+  takeStashedBag(email: string): string | null {
+    const key = email.trim().toLowerCase();
+    if (!key) {
+      return null;
+    }
+    const map = this.readBagsByEmail();
+    const raw = map[key] ?? null;
+    if (raw !== null) {
+      delete map[key];
+      sessionStorage.setItem(this.bagsByEmailKey, JSON.stringify(map));
+    }
+    return raw;
+  }
+
   getReceipt(): string | null {
     return sessionStorage.getItem(this.receiptKey);
   }
@@ -54,5 +80,18 @@ export class SessionStoreService {
   clearAuth(): void {
     this.clearToken();
     this.scrubLegacyProfileKeys();
+  }
+
+  private readBagsByEmail(): Record<string, string> {
+    try {
+      const raw = sessionStorage.getItem(this.bagsByEmailKey);
+      if (!raw) {
+        return {};
+      }
+      const parsed = JSON.parse(raw) as Record<string, string>;
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
   }
 }

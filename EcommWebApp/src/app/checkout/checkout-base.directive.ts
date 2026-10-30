@@ -1,12 +1,28 @@
 import { computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { merge } from 'rxjs';
 import { CartService } from '../services/cart.service';
+import { CatalogService } from '../services/catalog.service';
+import { ToastService } from '../services/toast.service';
 import { CheckoutForm, checkoutForm } from './checkout.form';
+
+const checkoutFieldLabels: Record<keyof CheckoutForm['controls'], string> = {
+  email: 'Email',
+  phone: 'Phone',
+  fullName: 'Full name',
+  street: 'Street',
+  suburb: 'Suburb',
+  city: 'City',
+  province: 'Province',
+  postalCode: 'Postal code',
+};
 
 /** Shared checkout state for desktop/mobile. Plain class so template type-check sees members. */
 export class CheckoutBaseDirective {
   private readonly cart = inject(CartService);
+  private readonly catalog = inject(CatalogService);
+  private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   readonly lines = this.cart.displayLines;
   readonly subtotal = this.cart.subtotalLabel;
@@ -19,6 +35,8 @@ export class CheckoutBaseDirective {
   readonly submitted = signal(false);
   readonly form: CheckoutForm = checkoutForm();
   private readonly qtyEdits = signal<Record<string, number>>({});
+  readonly invalidFields = signal<string[]>([]);
+  readonly showValidationSummary = computed(() => this.submitted() && this.invalidFields().length > 0);
   readonly bagRows = computed(() =>
     this.lines().map((line) => ({
       ...line,
@@ -40,6 +58,13 @@ export class CheckoutBaseDirective {
       this.cart.setContact('province', value.province ?? '');
       this.cart.setContact('postalCode', value.postalCode ?? '');
     });
+    merge(this.form.valueChanges, this.form.statusChanges)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.submitted()) {
+          this.refreshInvalidFields();
+        }
+      });
     effect(() => {
       this.fill(this.form.controls.email, this.cart.email());
       this.fill(this.form.controls.phone, this.cart.phone());
@@ -75,19 +100,32 @@ export class CheckoutBaseDirective {
   }
 
   bumpQty(sku: string, delta: number): void {
-    this.qtyEdits.update((edits) => {
-      const current = edits[sku] ?? 1;
-      return { ...edits, [sku]: Math.max(1, current + delta) };
-    });
+    const stock = this.catalog.find(sku)?.stock;
+    const current = this.qtyEdits()[sku] ?? 1;
+    const next = Math.max(1, current + delta);
+    if (stock !== undefined && next > stock) {
+      this.toast.show(`Only ${stock} in stock.`);
+      this.qtyEdits.update((edits) => ({ ...edits, [sku]: stock }));
+      return;
+    }
+    this.qtyEdits.update((edits) => ({ ...edits, [sku]: next }));
   }
 
   updateBag(): void {
-    this.cart.applyQuantities(this.qtyEdits());
+    const before = this.qtyEdits();
+    this.cart.applyQuantities(before);
     const next: Record<string, number> = {};
+    let capped = false;
     for (const line of this.cart.lines()) {
       next[line.sku] = line.qty;
+      if ((before[line.sku] ?? line.qty) > line.qty) {
+        capped = true;
+      }
     }
     this.qtyEdits.set(next);
+    if (capped) {
+      this.toast.show('Bag updated to match available stock.');
+    }
   }
 
   remove(sku: string): void {
@@ -97,10 +135,21 @@ export class CheckoutBaseDirective {
   continue(): void {
     this.submitted.set(true);
     this.form.markAllAsTouched();
+    this.refreshInvalidFields();
     if (this.form.invalid || this.hasLines() === 0) {
       return;
     }
     void this.router.navigate(['/pay']);
+  }
+
+  private refreshInvalidFields(): void {
+    const fields = (Object.keys(checkoutFieldLabels) as (keyof CheckoutForm['controls'])[])
+      .filter((key) => this.form.controls[key].invalid)
+      .map((key) => checkoutFieldLabels[key]);
+    if (this.hasLines() === 0) {
+      fields.push('Your bag');
+    }
+    this.invalidFields.set(fields);
   }
 
   private fill(control: CheckoutForm['controls'][keyof CheckoutForm['controls']], value: string): void {

@@ -18,13 +18,21 @@ export class ProductBaseDirective {
   readonly product = computed(() => this.catalog.find(this.sku()));
   readonly related = computed(() => this.catalog.products().filter((product) => product.sku !== this.sku()).slice(0, 3));
   readonly quantity = signal(1);
+  readonly remaining = computed(() => {
+    const product = this.product();
+    return product ? this.cart.remainingStock(product) : 0;
+  });
 
   decrease(): void {
     this.quantity.update((value) => Math.max(1, value - 1));
   }
 
   increase(): void {
-    this.quantity.update((value) => value + 1);
+    const max = this.remaining();
+    if (max < 1) {
+      return;
+    }
+    this.quantity.update((value) => Math.min(value + 1, max));
   }
 
   addToBag(): void {
@@ -32,8 +40,19 @@ export class ProductBaseDirective {
     if (!product) {
       return;
     }
-    const qty = this.quantity();
-    this.cart.add(product, qty);
-    this.toast.show(`${qty} × ${product.name} added to your bag.`);
+    const requested = this.quantity();
+    const added = this.cart.add(product, requested);
+    if (added < 1) {
+      this.toast.show(
+        product.stock < 1 ? `${product.name} is out of stock.` : `Only ${product.stock} of ${product.name} in stock.`,
+      );
+      return;
+    }
+    if (added < requested) {
+      this.toast.show(`Only ${added} added — ${product.stock} of ${product.name} in stock.`);
+    } else {
+      this.toast.show(`${added} × ${product.name} added to your bag.`);
+    }
+    this.quantity.set(1);
   }
 }

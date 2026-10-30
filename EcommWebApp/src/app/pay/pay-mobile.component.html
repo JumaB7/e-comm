@@ -10,12 +10,7 @@
           [attr.aria-pressed]="selected() === method.id"
           [ngClass]="selected() === method.id ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
           (click)="selected.set(method.id)">
-          <span class="flex items-center justify-between gap-3">
-            <span class="block text-lg leading-6.5">{{ method.title }}</span>
-            @if (selected() === method.id) {
-              <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
-            }
-          </span>
+          <span class="block text-lg leading-6.5">{{ method.title }}</span>
           <span class="mt-1 block text-[13px] leading-4.5 text-muted">{{ method.detail }}</span>
         </button>
       </li>

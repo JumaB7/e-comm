@@ -6,6 +6,7 @@ import { CartLine, CartQuote, CheckoutDetails } from '../models/cart.model';
 import { emptyCartQuote } from '../models/constants';
 import { Product } from '../models/product.model';
 import { AuthService } from './auth.service';
+import { CatalogService } from './catalog.service';
 
 function readBag(): CartLine[] | null {
   try {
@@ -26,6 +27,7 @@ type ContactField = 'email' | 'phone' | 'fullName' | 'street' | 'suburb' | 'city
 export class CartService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly catalog = inject(CatalogService);
   readonly bagChoice = signal<CartLine[]>(readBag() ?? []);
   readonly lines = computed(() => this.bagChoice());
   readonly deliveryChoice = signal<'courier' | 'collect' | null>(null);
@@ -183,16 +185,30 @@ export class CartService {
     }
   }
 
-  add(product: Product, qty: number, detail = ''): void {
+  qtyOf(sku: string): number {
+    return this.lines().find((line) => line.sku === sku)?.qty ?? 0;
+  }
+
+  remainingStock(product: Product): number {
+    return Math.max(0, product.stock - this.qtyOf(product.sku));
+  }
+
+  /** Adds up to available stock. Returns how many were actually added. */
+  add(product: Product, qty: number, detail = ''): number {
     if (qty < 1) {
-      return;
+      return 0;
+    }
+    const take = Math.min(qty, this.remainingStock(product));
+    if (take < 1) {
+      return 0;
     }
     const lines = this.lines();
     const existing = lines.find((line) => line.sku === product.sku);
     const next = !existing
-      ? [...lines, { sku: product.sku, name: product.name, qty, detail }]
-      : lines.map((line) => (line.sku === product.sku ? { ...line, qty: line.qty + qty } : line));
+      ? [...lines, { sku: product.sku, name: product.name, qty: take, detail }]
+      : lines.map((line) => (line.sku === product.sku ? { ...line, qty: line.qty + take } : line));
     this.bagChoice.set(next);
+    return take;
   }
 
   remove(sku: string): void {
@@ -203,7 +219,12 @@ export class CartService {
     const next = this.lines()
       .map((line) => {
         const qty = updates[line.sku] ?? line.qty;
-        return { ...line, qty: Number.isFinite(qty) ? Math.floor(qty) : line.qty };
+        let nextQty = Number.isFinite(qty) ? Math.floor(qty) : line.qty;
+        const product = this.catalog.find(line.sku);
+        if (product) {
+          nextQty = Math.min(nextQty, product.stock);
+        }
+        return { ...line, qty: nextQty };
       })
       .filter((line) => line.qty >= 1);
     this.bagChoice.set(next);

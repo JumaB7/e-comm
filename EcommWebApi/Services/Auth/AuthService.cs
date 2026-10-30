@@ -36,6 +36,7 @@ public class AuthService(
             Phone = request.Phone.Trim(),
             PasswordHash = PasswordBox.Hash(request.Password),
             Role = "Customer",
+            PrefillCheckout = true,
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
@@ -117,20 +118,77 @@ public class AuthService(
         {
             return ShopOutcome<CheckoutProfileModel>.Unauthorized("Sign in again.");
         }
-        var order = await db.Orders.AsNoTracking()
-            .Where(item => item.Email == email)
-            .OrderByDescending(item => item.CreatedAt)
-            .FirstOrDefaultAsync();
-        return ShopOutcome<CheckoutProfileModel>.Ok(new CheckoutProfileModel(
+        return ShopOutcome<CheckoutProfileModel>.Ok(await MapProfile(user));
+    }
+
+    public async Task<ShopOutcome<ProfileUpdateModel>> UpdateProfile(string currentEmail, UpdateProfileRequest request)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Email == currentEmail);
+        if (user is null)
+        {
+            return ShopOutcome<ProfileUpdateModel>.Unauthorized("Sign in again.");
+        }
+        var name = request.Name.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
+        var phone = request.Phone.Trim();
+        if (name.Length == 0 || email.Length == 0)
+        {
+            return ShopOutcome<ProfileUpdateModel>.BadRequest("Name and email are required.");
+        }
+        if (email != user.Email && await db.Users.AnyAsync(item => item.Email == email))
+        {
+            return ShopOutcome<ProfileUpdateModel>.Conflict("That email already has an account.");
+        }
+        var delivery = request.Delivery == "collect" ? "collect" : "courier";
+        user.Name = name;
+        user.Email = email;
+        user.Phone = phone;
+        user.Street = request.Street.Trim();
+        user.Suburb = request.Suburb.Trim();
+        user.City = request.City.Trim();
+        user.Province = request.Province.Trim();
+        user.PostalCode = request.PostalCode.Trim();
+        user.Delivery = delivery;
+        user.PrefillCheckout = request.PrefillCheckout;
+        await db.SaveChangesAsync();
+        return ShopOutcome<ProfileUpdateModel>.Ok(new ProfileUpdateModel(Session(user), await MapProfile(user)));
+    }
+
+    private async Task<CheckoutProfileModel> MapProfile(ShopUser user)
+    {
+        var street = user.Street;
+        var suburb = user.Suburb;
+        var city = user.City;
+        var province = user.Province;
+        var postalCode = user.PostalCode;
+        var delivery = user.Delivery == "collect" ? "collect" : "courier";
+        if (street.Length == 0 && suburb.Length == 0 && city.Length == 0)
+        {
+            var order = await db.Orders.AsNoTracking()
+                .Where(item => item.Email == user.Email)
+                .OrderByDescending(item => item.CreatedAt)
+                .FirstOrDefaultAsync();
+            if (order is not null)
+            {
+                street = order.Street;
+                suburb = order.Suburb;
+                city = order.City;
+                province = order.Province;
+                postalCode = order.PostalCode;
+                delivery = order.Delivery == "collect" ? "collect" : "courier";
+            }
+        }
+        return new CheckoutProfileModel(
             user.Name,
             user.Email,
             user.Phone,
-            order?.Street ?? "",
-            order?.Suburb ?? "",
-            order?.City ?? "",
-            order?.Province ?? "",
-            order?.PostalCode ?? "",
-            order?.Delivery == "collect" ? "collect" : "courier"));
+            street,
+            suburb,
+            city,
+            province,
+            postalCode,
+            delivery,
+            user.PrefillCheckout);
     }
 
     private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Phone, user.Role);

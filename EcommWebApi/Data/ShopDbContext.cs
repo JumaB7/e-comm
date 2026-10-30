@@ -35,6 +35,12 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             user.Property(item => item.Phone).HasMaxLength(40);
             user.Property(item => item.Role).HasMaxLength(20);
             user.Property(item => item.PasswordResetTokenHash).HasMaxLength(128);
+            user.Property(item => item.Street).HasMaxLength(160);
+            user.Property(item => item.Suburb).HasMaxLength(80);
+            user.Property(item => item.City).HasMaxLength(80);
+            user.Property(item => item.Province).HasMaxLength(80);
+            user.Property(item => item.PostalCode).HasMaxLength(10);
+            user.Property(item => item.Delivery).HasMaxLength(20);
         });
 
         modelBuilder.Entity<ShopOrder>(order =>

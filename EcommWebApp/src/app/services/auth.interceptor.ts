@@ -3,9 +3,10 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
+import { SessionStoreService } from './session-store.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const token = sessionStorage.getItem('veld-token');
+  const token = inject(SessionStoreService).getToken();
   const router = inject(Router);
   const auth = inject(AuthService);
   const authForm =

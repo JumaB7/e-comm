@@ -32,6 +32,7 @@ export class CheckoutBaseDirective {
   readonly delivery = this.cart.delivery;
   readonly deliveryChoice = this.cart.deliveryChoice;
   readonly hasLines = this.cart.count;
+  readonly hasSavedDelivery = this.cart.hasSavedDelivery;
   readonly submitted = signal(false);
   readonly form: CheckoutForm = checkoutForm();
   private readonly qtyEdits = signal<Record<string, number>>({});
@@ -130,6 +131,26 @@ export class CheckoutBaseDirective {
 
   remove(sku: string): void {
     this.cart.remove(sku);
+  }
+
+  useSavedDetails(): void {
+    const profile = this.cart.savedProfile();
+    if (!profile) {
+      return;
+    }
+    this.cart.applySavedProfile(true);
+    this.form.patchValue({
+      email: profile.email,
+      phone: profile.phone,
+      fullName: profile.name,
+      street: profile.street,
+      suburb: profile.suburb,
+      city: profile.city,
+      province: profile.province,
+      postalCode: profile.postalCode,
+    });
+    this.form.markAsPristine();
+    this.toast.show('Saved account details applied.');
   }
 
   continue(): void {

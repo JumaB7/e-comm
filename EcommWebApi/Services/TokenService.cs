@@ -19,6 +19,7 @@ public class TokenService(IConfiguration configuration)
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.MobilePhone, user.Phone ?? ""),
                 new Claim(ClaimTypes.Role, user.Role),
             ],
             expires: DateTime.UtcNow.AddHours(8),

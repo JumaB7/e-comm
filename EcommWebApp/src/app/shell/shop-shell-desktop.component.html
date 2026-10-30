@@ -16,9 +16,9 @@
             {{ link.label }}
           </a>
         }
-        @if (accountName(); as name) {
-          <span class="text-[13px] font-medium tracking-[0.08em] text-ink">{{ name }}</span>
-          @if (accountRole() === 'Admin') {
+        @if (userData(); as user) {
+          <span class="text-[13px] font-medium tracking-[0.08em] text-ink">{{ user.name }}</span>
+          @if (user.role === 'Admin') {
             <a routerLink="/admin" class="text-[13px] font-medium tracking-[0.08em] uppercase text-muted">Admin</a>
           }
           <button type="button" class="border-0 bg-transparent p-0 text-[13px] font-medium tracking-[0.08em] uppercase text-muted" (click)="signOut()">Sign out</button>

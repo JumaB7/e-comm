@@ -55,7 +55,22 @@ public record CheckoutProfileModel(
     string City,
     string Province,
     string PostalCode,
-    string Delivery);
+    string Delivery,
+    bool PrefillCheckout);
+
+public record UpdateProfileRequest(
+    string Name,
+    string Email,
+    string Phone,
+    string Street,
+    string Suburb,
+    string City,
+    string Province,
+    string PostalCode,
+    string Delivery,
+    bool PrefillCheckout);
+
+public record ProfileUpdateModel(AuthModel Session, CheckoutProfileModel Profile);
 
 public record OrderSummaryModel(int Today, string PaidToday, string PaidTodayShort, int Awaiting, int LowStock);
 

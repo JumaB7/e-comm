@@ -2,15 +2,17 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
+import { CheckoutProfile } from '../models/auth.model';
 import { CartLine, CartQuote, CheckoutDetails } from '../models/cart.model';
 import { emptyCartQuote } from '../models/constants';
 import { Product } from '../models/product.model';
 import { AuthService } from './auth.service';
 import { CatalogService } from './catalog.service';
+import { SessionStoreService } from './session-store.service';
 
-function readBag(): CartLine[] | null {
+function readBag(store: SessionStoreService): CartLine[] | null {
   try {
-    const raw = sessionStorage.getItem('veld-bag');
+    const raw = store.getBag();
     if (!raw) {
       return null;
     }
@@ -28,7 +30,8 @@ export class CartService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly catalog = inject(CatalogService);
-  readonly bagChoice = signal<CartLine[]>(readBag() ?? []);
+  private readonly session = inject(SessionStoreService);
+  readonly bagChoice = signal<CartLine[]>(readBag(inject(SessionStoreService)) ?? []);
   readonly lines = computed(() => this.bagChoice());
   readonly deliveryChoice = signal<'courier' | 'collect' | null>(null);
   readonly delivery = computed<'courier' | 'collect'>(() => this.deliveryChoice() ?? 'courier');
@@ -41,6 +44,8 @@ export class CartService {
   private readonly provinceChoice = signal<string | null>(null);
   private readonly postalChoice = signal<string | null>(null);
   private readonly profileLoadedFor = signal('');
+  readonly savedProfile = signal<CheckoutProfile | undefined>(undefined);
+  readonly hasSavedDelivery = computed(() => !!this.savedProfile());
   readonly email = computed(() => this.emailChoice() ?? '');
   readonly phone = computed(() => this.phoneChoice() ?? '');
   readonly fullName = computed(() => this.nameChoice() ?? '');
@@ -102,12 +107,12 @@ export class CartService {
 
   constructor() {
     effect(() => {
-      sessionStorage.setItem('veld-bag', JSON.stringify(this.bagChoice()));
+      this.session.setBag(JSON.stringify(this.bagChoice()));
     });
     effect(() => {
-      const email = this.auth.email();
-      const token = sessionStorage.getItem('veld-token');
-      if (!email || !token) {
+      const user = this.auth.userData();
+      const token = this.auth.token();
+      if (!user?.email || !token) {
         untracked(() => {
           if (this.profileLoadedFor()) {
             this.clearContact();
@@ -115,19 +120,19 @@ export class CartService {
         });
         return;
       }
-      if (this.profileLoadedFor() === email) {
+      if (this.profileLoadedFor() === user.email) {
         return;
       }
       untracked(() => {
-        this.profileLoadedFor.set(email);
+        this.profileLoadedFor.set(user.email);
         if (!this.emailChoice()) {
-          this.emailChoice.set(email);
+          this.emailChoice.set(user.email);
         }
-        if (!this.nameChoice() && this.auth.name()) {
-          this.nameChoice.set(this.auth.name());
+        if (!this.nameChoice() && user.name) {
+          this.nameChoice.set(user.name);
         }
-        if (!this.phoneChoice() && this.auth.phone()) {
-          this.phoneChoice.set(this.auth.phone());
+        if (!this.phoneChoice() && user.phone) {
+          this.phoneChoice.set(user.phone);
         }
         this.auth.profile().subscribe((profile) => {
           if (!profile) {
@@ -135,6 +140,7 @@ export class CartService {
             this.profileLoadedFor.set('');
             return;
           }
+          this.savedProfile.set(profile);
           if (!this.emailChoice()) {
             this.emailChoice.set(profile.email);
           }
@@ -144,27 +150,47 @@ export class CartService {
           if (!this.phoneChoice()) {
             this.phoneChoice.set(profile.phone);
           }
-          if (!this.streetChoice()) {
-            this.streetChoice.set(profile.street);
-          }
-          if (!this.suburbChoice()) {
-            this.suburbChoice.set(profile.suburb);
-          }
-          if (!this.cityChoice()) {
-            this.cityChoice.set(profile.city);
-          }
-          if (!this.provinceChoice()) {
-            this.provinceChoice.set(profile.province);
-          }
-          if (!this.postalChoice()) {
-            this.postalChoice.set(profile.postalCode);
-          }
-          if (!this.deliveryChoice()) {
-            this.deliveryChoice.set(profile.delivery);
+          if (profile.prefillCheckout !== false) {
+            this.applySavedProfile(false);
           }
         });
       });
     });
+  }
+
+  /** Fills checkout contact from the saved account profile. When force is false, only empty fields. */
+  applySavedProfile(force = true): void {
+    const profile = this.savedProfile();
+    if (!profile) {
+      return;
+    }
+    if (force || !this.emailChoice()) {
+      this.emailChoice.set(profile.email);
+    }
+    if (force || !this.nameChoice()) {
+      this.nameChoice.set(profile.name);
+    }
+    if (force || !this.phoneChoice()) {
+      this.phoneChoice.set(profile.phone);
+    }
+    if (force || !this.streetChoice()) {
+      this.streetChoice.set(profile.street);
+    }
+    if (force || !this.suburbChoice()) {
+      this.suburbChoice.set(profile.suburb);
+    }
+    if (force || !this.cityChoice()) {
+      this.cityChoice.set(profile.city);
+    }
+    if (force || !this.provinceChoice()) {
+      this.provinceChoice.set(profile.province);
+    }
+    if (force || !this.postalChoice()) {
+      this.postalChoice.set(profile.postalCode);
+    }
+    if (force || !this.deliveryChoice()) {
+      this.deliveryChoice.set(profile.delivery);
+    }
   }
 
   setContact(field: ContactField, value: string): void {
@@ -246,6 +272,7 @@ export class CartService {
     this.provinceChoice.set(null);
     this.postalChoice.set(null);
     this.deliveryChoice.set(null);
+    this.savedProfile.set(undefined);
     this.profileLoadedFor.set('');
   }
 }

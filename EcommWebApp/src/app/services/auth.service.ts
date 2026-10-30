@@ -1,9 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, finalize, of, tap } from 'rxjs';
-import { AuthSession, CheckoutProfile } from '../models/auth.model';
+import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
+import { AuthSession, CheckoutProfile, ProfileUpdate, UpdateProfileRequest, UserData } from '../models/auth.model';
 import { apiMessage } from './api-message';
+import { readAuthClaims } from './jwt-claims';
+import { SessionStoreService } from './session-store.service';
 import { SpinnerService } from './spinner.service';
 
 @Injectable({ providedIn: 'root' })
@@ -11,13 +14,33 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly spinner = inject(SpinnerService);
-  readonly name = signal(sessionStorage.getItem('veld-name') ?? '');
-  readonly email = signal(sessionStorage.getItem('veld-email') ?? '');
-  readonly phone = signal(sessionStorage.getItem('veld-phone') ?? '');
-  readonly role = signal(sessionStorage.getItem('veld-role') ?? '');
+  private readonly session = inject(SessionStoreService);
+  /** Memory-only identity from JWT — same idea as AO userData, not sessionStorage PII. */
+  private readonly userDataState = signal<UserData | undefined>(undefined);
+  private readonly userData$ = toObservable(this.userDataState);
+  readonly userData = this.userDataState.asReadonly();
   readonly error = signal('');
   readonly notice = signal('');
   readonly busy = signal(false);
+  private profile$: Observable<CheckoutProfile | undefined> | undefined;
+
+  constructor() {
+    this.session.scrubLegacyProfileKeys();
+    this.hydrateFromToken();
+  }
+
+  /** AO-style accessor: Observable of the signed-in user (or undefined). */
+  getUserData(): Observable<UserData | undefined> {
+    return this.userData$;
+  }
+
+  token(): string | null {
+    return this.session.getToken();
+  }
+
+  signedIn(): boolean {
+    return !!this.userDataState();
+  }
 
   signIn(email: string, password: string, returnUrl: string): void {
     this.submit('/api/auth/sign-in', { email, password }, returnUrl);
@@ -82,15 +105,9 @@ export class AuthService {
   }
 
   clearSession(): void {
-    sessionStorage.removeItem('veld-token');
-    sessionStorage.removeItem('veld-role');
-    sessionStorage.removeItem('veld-name');
-    sessionStorage.removeItem('veld-email');
-    sessionStorage.removeItem('veld-phone');
-    this.name.set('');
-    this.email.set('');
-    this.phone.set('');
-    this.role.set('');
+    this.session.clearAuth();
+    this.profile$ = undefined;
+    this.userDataState.set(undefined);
   }
 
   signOut(): void {
@@ -98,8 +115,48 @@ export class AuthService {
     void this.router.navigateByUrl('/');
   }
 
-  profile() {
-    return this.http.get<CheckoutProfile>('/api/auth/profile').pipe(catchError(() => of(undefined)));
+  profile(): Observable<CheckoutProfile | undefined> {
+    if (!this.profile$) {
+      this.profile$ = this.http.get<CheckoutProfile>('/api/auth/profile').pipe(
+        catchError(() => of(undefined)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+    }
+    return this.profile$;
+  }
+
+  updateProfile(body: UpdateProfileRequest): Observable<CheckoutProfile | undefined> {
+    if (this.busy()) {
+      return of(undefined);
+    }
+    this.error.set('');
+    this.notice.set('');
+    this.busy.set(true);
+    return this.spinner
+      .pending(
+        this.http.put<ProfileUpdate>('/api/auth/profile', body).pipe(
+          tap((result) => {
+            this.store(result.session);
+            this.profile$ = of(result.profile).pipe(shareReplay({ bufferSize: 1, refCount: false }));
+          }),
+          map((result) => result.profile),
+          catchError((error: HttpErrorResponse) => {
+            this.error.set(apiMessage(error));
+            return of(undefined);
+          }),
+        ),
+      )
+      .pipe(finalize(() => this.busy.set(false)));
+  }
+
+  private hydrateFromToken(): void {
+    const claims = readAuthClaims(this.session.getToken());
+    if (!claims) {
+      this.session.clearAuth();
+      this.userDataState.set(undefined);
+      return;
+    }
+    this.userDataState.set(claims);
   }
 
   private submit(url: string, body: object, returnUrl: string): void {
@@ -142,14 +199,17 @@ export class AuthService {
   }
 
   private store(session: AuthSession): void {
-    sessionStorage.setItem('veld-token', session.token);
-    sessionStorage.setItem('veld-role', session.role);
-    sessionStorage.setItem('veld-name', session.name);
-    sessionStorage.setItem('veld-email', session.email);
-    sessionStorage.setItem('veld-phone', session.phone ?? '');
-    this.role.set(session.role);
-    this.name.set(session.name);
-    this.email.set(session.email);
-    this.phone.set(session.phone ?? '');
+    this.session.setToken(session.token);
+    this.session.scrubLegacyProfileKeys();
+    this.profile$ = undefined;
+    const claims = readAuthClaims(session.token);
+    this.userDataState.set(
+      claims ?? {
+        name: session.name,
+        email: session.email,
+        phone: session.phone ?? '',
+        role: session.role,
+      },
+    );
   }
 }

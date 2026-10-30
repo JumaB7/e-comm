@@ -80,13 +80,13 @@ export class CatalogService {
   }
 
   removeProduct(sku: string): void {
-    this.spinner.pending(this.http.delete(`/api/admin/products/${sku}`)).subscribe({
+    this.spinner.pending(this.http.delete(`/api/admin/products/${sku}`), { immediate: true }).subscribe({
       next: () => this.products.update((products) => products.filter((product) => product.sku !== sku)),
     });
   }
 
   addProduct(product: ProductWrite): Observable<Product> {
-    return this.spinner.pending(this.http.post<Product>('/api/admin/products', product)).pipe(
+    return this.spinner.pending(this.http.post<Product>('/api/admin/products', product), { immediate: true }).pipe(
       tap((saved) => {
         if (!this.find(saved.sku)) {
           this.products.update((products) => [...products, saved]);
@@ -96,26 +96,34 @@ export class CatalogService {
   }
 
   updateProduct(sku: string, product: ProductWrite): Observable<Product> {
-    return this.spinner.pending(this.http.put<Product>(`/api/admin/products/${encodeURIComponent(sku)}`, product)).pipe(
-      tap((saved) => {
-        this.products.update((products) => products.map((item) => (item.sku === sku ? saved : item)));
-      }),
-    );
+    return this.spinner
+      .pending(this.http.put<Product>(`/api/admin/products/${encodeURIComponent(sku)}`, product), { immediate: true })
+      .pipe(
+        tap((saved) => {
+          this.products.update((products) => products.map((item) => (item.sku === sku ? saved : item)));
+        }),
+      );
   }
 
   uploadProductImage(sku: string, file: File): Observable<Product> {
     const body = new FormData();
     body.append('file', file);
-    return this.spinner.pending(this.http.post<Product>(`/api/admin/products/${encodeURIComponent(sku)}/image`, body)).pipe(
-      tap((saved) => {
-        this.products.update((products) => products.map((item) => (item.sku === saved.sku ? saved : item)));
-      }),
-    );
+    return this.spinner
+      .pending(this.http.post<Product>(`/api/admin/products/${encodeURIComponent(sku)}/image`, body), {
+        immediate: true,
+      })
+      .pipe(
+        tap((saved) => {
+          this.products.update((products) => products.map((item) => (item.sku === saved.sku ? saved : item)));
+        }),
+      );
   }
 
   markPacked(id: string): void {
     this.spinner
-      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${id}/pack`, {}).pipe(catchError(() => of(undefined))))
+      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${id}/pack`, {}).pipe(catchError(() => of(undefined))), {
+        immediate: true,
+      })
       .subscribe((order) => {
         if (!order) {
           return;
@@ -126,28 +134,35 @@ export class CatalogService {
 
   ship(id: string, tracking: string): Observable<ShopOrder> {
     return this.spinner
-      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${encodeURIComponent(id)}/ship`, { tracking }))
+      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${encodeURIComponent(id)}/ship`, { tracking }), {
+        immediate: true,
+      })
       .pipe(tap((order) => this.replaceOrder(order)));
   }
 
   complete(id: string): Observable<ShopOrder> {
     return this.spinner
-      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${encodeURIComponent(id)}/complete`, {}))
+      .pending(this.http.post<ShopOrder>(`/api/admin/orders/${encodeURIComponent(id)}/complete`, {}), {
+        immediate: true,
+      })
       .pipe(tap((order) => this.replaceOrder(order)));
   }
 
   pay(details: CheckoutDetails): Observable<ShopOrder | null> {
-    return this.spinner.pending(this.http.post<CheckoutResponse>('/api/orders', details).pipe(
-      switchMap((result) => {
-        sessionStorage.setItem('veld-receipt', result.receiptKey);
-        if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
-          submitPayFast(result.payFastUrl, result.fields);
-          return of(null);
-        }
-        return this.http.post<ShopOrder>(`/api/payfast/local/${result.order.id}`, {});
-      }),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(apiMessage(error)))),
-    ));
+    return this.spinner.pending(
+      this.http.post<CheckoutResponse>('/api/orders', details).pipe(
+        switchMap((result) => {
+          sessionStorage.setItem('veld-receipt', result.receiptKey);
+          if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
+            submitPayFast(result.payFastUrl, result.fields);
+            return of(null);
+          }
+          return this.http.post<ShopOrder>(`/api/payfast/local/${result.order.id}`, {});
+        }),
+        catchError((error: HttpErrorResponse) => throwError(() => new Error(apiMessage(error)))),
+      ),
+      { immediate: true },
+    );
   }
 
   loadReceipt(key: string): void {

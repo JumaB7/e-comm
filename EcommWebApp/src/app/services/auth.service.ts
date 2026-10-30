@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, finalize, of, tap } from 'rxjs';
 import { AuthSession, CheckoutProfile } from '../models/auth.model';
 import { apiMessage } from './api-message';
 import { SpinnerService } from './spinner.service';
@@ -16,6 +16,7 @@ export class AuthService {
   readonly phone = signal(sessionStorage.getItem('veld-phone') ?? '');
   readonly role = signal(sessionStorage.getItem('veld-role') ?? '');
   readonly error = signal('');
+  readonly busy = signal(false);
 
   signIn(email: string, password: string, returnUrl: string): void {
     this.submit('/api/auth/sign-in', { email, password }, returnUrl);
@@ -47,23 +48,33 @@ export class AuthService {
   }
 
   private submit(url: string, body: object, returnUrl: string): void {
+    if (this.busy()) {
+      return;
+    }
     this.error.set('');
-    this.spinner.pending(this.http.post<AuthSession>(url, body).pipe(
-      tap((session) => this.store(session)),
-      catchError((error: HttpErrorResponse) => {
-        this.error.set(apiMessage(error));
-        return of(null);
-      }),
-    )).subscribe((session) => {
-      if (!session) {
-        return;
-      }
-      if (returnUrl.startsWith('/admin') && session.role !== 'Admin') {
-        this.error.set('This account is not an admin.');
-        return;
-      }
-      void this.router.navigateByUrl(this.destination(session.role, returnUrl));
-    });
+    this.busy.set(true);
+    this.spinner
+      .pending(
+        this.http.post<AuthSession>(url, body).pipe(
+          tap((session) => this.store(session)),
+          catchError((error: HttpErrorResponse) => {
+            this.error.set(apiMessage(error));
+            return of(null);
+          }),
+        ),
+        { immediate: true },
+      )
+      .pipe(finalize(() => this.busy.set(false)))
+      .subscribe((session) => {
+        if (!session) {
+          return;
+        }
+        if (returnUrl.startsWith('/admin') && session.role !== 'Admin') {
+          this.error.set('This account is not an admin.');
+          return;
+        }
+        void this.router.navigateByUrl(this.destination(session.role, returnUrl));
+      });
   }
 
   private destination(role: string, returnUrl: string): string {

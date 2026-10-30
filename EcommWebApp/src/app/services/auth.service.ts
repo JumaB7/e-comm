@@ -27,7 +27,7 @@ export class AuthService {
     this.submit('/api/auth/register', { name, email, phone, password }, '/shop');
   }
 
-  resetPassword(email: string, phone: string, password: string): void {
+  requestPasswordReset(email: string): void {
     if (this.busy()) {
       return;
     }
@@ -36,7 +36,35 @@ export class AuthService {
     this.busy.set(true);
     this.spinner
       .pending(
-        this.http.post<{ message: string }>('/api/auth/reset-password', { email, phone, password }).pipe(
+        this.http
+          .post<{ message: string; resetLink?: string }>('/api/auth/forgot-password', { email })
+          .pipe(
+            catchError((error: HttpErrorResponse) => {
+              this.error.set(apiMessage(error));
+              return of(null);
+            }),
+          ),
+      )
+      .pipe(finalize(() => this.busy.set(false)))
+      .subscribe((result) => {
+        if (!result) {
+          return;
+        }
+        const extra = result.resetLink ? ` Dev link: ${result.resetLink}` : '';
+        this.notice.set((result.message || 'If that email is on an account, we sent a reset link.') + extra);
+      });
+  }
+
+  confirmPasswordReset(token: string, password: string): void {
+    if (this.busy()) {
+      return;
+    }
+    this.error.set('');
+    this.notice.set('');
+    this.busy.set(true);
+    this.spinner
+      .pending(
+        this.http.post<{ message: string }>('/api/auth/reset-password', { token, password }).pipe(
           catchError((error: HttpErrorResponse) => {
             this.error.set(apiMessage(error));
             return of(null);
@@ -78,6 +106,8 @@ export class AuthService {
     if (this.busy()) {
       return;
     }
+    // Drop any previous session before sign-in/register so profile calls stop 401-ing.
+    this.clearSession();
     this.error.set('');
     this.busy.set(true);
     this.spinner

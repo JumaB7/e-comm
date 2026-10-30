@@ -1,12 +1,22 @@
+using System.Security.Cryptography;
+using System.Text;
 using EcommWebApi.Contracts;
 using EcommWebApi.Data;
 using EcommWebApi.Models;
+using EcommWebApi.Services.Email;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services.Auth;
 
-public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
+public class AuthService(
+    ShopDbContext db,
+    TokenService tokens,
+    IEmailSender emailSender,
+    IConfiguration configuration,
+    IHostEnvironment environment) : IAuthService
 {
+    private static readonly TimeSpan ResetLifetime = TimeSpan.FromHours(1);
+
     public async Task<ShopOutcome<AuthModel>> Register(RegisterRequest request)
     {
         var name = request.Name.Trim();
@@ -43,20 +53,59 @@ public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
         return ShopOutcome<AuthModel>.Ok(Session(user));
     }
 
-    public async Task<ShopOutcome<MessageModel>> ResetPassword(ResetPasswordRequest request)
+    public async Task<ShopOutcome<MessageModel>> RequestPasswordReset(ForgotPasswordRequest request)
     {
         var email = request.Email.Trim().ToLowerInvariant();
-        var phone = Digits(request.Phone);
-        if (email.Length == 0 || phone.Length == 0 || request.Password.Length < 8)
+        // Always the same response — do not reveal whether the account exists.
+        const string generic = "If that email is on an account, we sent a reset link. Check your inbox.";
+        if (email.Length == 0 || !email.Contains('@'))
         {
-            return ShopOutcome<MessageModel>.BadRequest("Email, phone, and a password of at least 8 characters are required.");
+            return ShopOutcome<MessageModel>.BadRequest("Enter a valid email address.");
         }
+
         var user = await db.Users.FirstOrDefaultAsync(item => item.Email == email);
-        if (user is null || Digits(user.Phone) != phone)
+        if (user is null)
         {
-            return ShopOutcome<MessageModel>.Unauthorized("Email or phone does not match an account.");
+            return ShopOutcome<MessageModel>.Ok(new MessageModel(generic));
         }
+
+        var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        user.PasswordResetTokenHash = HashToken(rawToken);
+        user.PasswordResetExpiresAt = DateTime.UtcNow.Add(ResetLifetime);
+        await db.SaveChangesAsync();
+
+        var appBase = (configuration["App:PublicUrl"] ?? configuration["PayFast:ReturnBase"] ?? "http://localhost:4200")
+            .TrimEnd('/');
+        var resetLink = $"{appBase}/reset-password?token={Uri.EscapeDataString(rawToken)}";
+        await emailSender.SendPasswordReset(
+            user.Email,
+            user.Name,
+            resetLink,
+            $"pwd-reset-{user.PasswordResetTokenHash}");
+
+        // Dev only: surface the link in the API response so local testing works without SMTP.
+        var linkForDev = environment.IsDevelopment() ? resetLink : null;
+        return ShopOutcome<MessageModel>.Ok(new MessageModel(generic, linkForDev));
+    }
+
+    public async Task<ShopOutcome<MessageModel>> ConfirmPasswordReset(ConfirmPasswordResetRequest request)
+    {
+        var token = request.Token.Trim();
+        if (token.Length == 0 || request.Password.Length < 8)
+        {
+            return ShopOutcome<MessageModel>.BadRequest("A valid reset link and a password of at least 8 characters are required.");
+        }
+
+        var hash = HashToken(token);
+        var user = await db.Users.FirstOrDefaultAsync(item => item.PasswordResetTokenHash == hash);
+        if (user is null || user.PasswordResetExpiresAt is null || user.PasswordResetExpiresAt < DateTime.UtcNow)
+        {
+            return ShopOutcome<MessageModel>.BadRequest("That reset link is invalid or has expired. Request a new one.");
+        }
+
         user.PasswordHash = PasswordBox.Hash(request.Password);
+        user.PasswordResetTokenHash = null;
+        user.PasswordResetExpiresAt = null;
         await db.SaveChangesAsync();
         return ShopOutcome<MessageModel>.Ok(new MessageModel("Password updated. Sign in with the new password."));
     }
@@ -86,5 +135,9 @@ public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
 
     private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Phone, user.Role);
 
-    private static string Digits(string value) => new([.. value.Where(char.IsDigit)]);
+    private static string HashToken(string rawToken)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
 }

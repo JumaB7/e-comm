@@ -22,9 +22,14 @@ public class AuthController(IAuthService auth) : ControllerBase
         ShopResults.From(await auth.SignIn(request));
 
     [EnableRateLimiting("auth")]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<MessageModel>> ForgotPassword(ForgotPasswordRequest request) =>
+        ShopResults.From(await auth.RequestPasswordReset(request));
+
+    [EnableRateLimiting("auth")]
     [HttpPost("reset-password")]
-    public async Task<ActionResult<MessageModel>> ResetPassword(ResetPasswordRequest request) =>
-        ShopResults.From(await auth.ResetPassword(request));
+    public async Task<ActionResult<MessageModel>> ResetPassword(ConfirmPasswordResetRequest request) =>
+        ShopResults.From(await auth.ConfirmPasswordReset(request));
 
     [Authorize]
     [HttpGet("profile")]

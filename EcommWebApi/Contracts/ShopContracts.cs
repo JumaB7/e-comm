@@ -117,9 +117,11 @@ public record RegisterRequest(string Name, string Email, string Phone, string Pa
 
 public record SignInRequest(string Email, string Password);
 
-public record ResetPasswordRequest(string Email, string Phone, string Password);
+public record ForgotPasswordRequest(string Email);
 
-public record MessageModel(string Message);
+public record ConfirmPasswordResetRequest(string Token, string Password);
+
+public record MessageModel(string Message, string? ResetLink = null);
 
 public record HealthResponse(string Status);
 

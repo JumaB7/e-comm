@@ -8,7 +8,9 @@ public interface IAuthService
 
     Task<ShopOutcome<AuthModel>> SignIn(SignInRequest request);
 
-    Task<ShopOutcome<MessageModel>> ResetPassword(ResetPasswordRequest request);
+    Task<ShopOutcome<MessageModel>> RequestPasswordReset(ForgotPasswordRequest request);
+
+    Task<ShopOutcome<MessageModel>> ConfirmPasswordReset(ConfirmPasswordResetRequest request);
 
     Task<ShopOutcome<CheckoutProfileModel>> Profile(string email);
 }

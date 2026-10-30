@@ -30,6 +30,8 @@ public class ShopUser
     public string Phone { get; set; } = "";
     public string PasswordHash { get; set; } = "";
     public string Role { get; set; } = "Customer";
+    public string? PasswordResetTokenHash { get; set; }
+    public DateTime? PasswordResetExpiresAt { get; set; }
 }
 
 public class ShopOrder

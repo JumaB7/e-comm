@@ -34,6 +34,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             user.Property(item => item.Name).HasMaxLength(120);
             user.Property(item => item.Phone).HasMaxLength(40);
             user.Property(item => item.Role).HasMaxLength(20);
+            user.Property(item => item.PasswordResetTokenHash).HasMaxLength(128);
         });
 
         modelBuilder.Entity<ShopOrder>(order =>

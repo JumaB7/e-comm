@@ -131,6 +131,8 @@ export class CartService {
         }
         this.auth.profile().subscribe((profile) => {
           if (!profile) {
+            // Allow a later retry after sign-in replaces a bad token.
+            this.profileLoadedFor.set('');
             return;
           }
           if (!this.emailChoice()) {

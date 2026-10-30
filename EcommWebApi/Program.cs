@@ -5,6 +5,7 @@ using EcommWebApi.Data;
 using EcommWebApi.Services;
 using EcommWebApi.Services.Auth;
 using EcommWebApi.Services.Cart;
+using EcommWebApi.Services.Email;
 using EcommWebApi.Services.Orders;
 using EcommWebApi.Services.Products;
 using EcommWebApi.Services.Shop;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,22 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+var resendApiKey = builder.Configuration["Resend:ApiKey"]
+    ?? builder.Configuration["RESEND_API_KEY"]
+    ?? Environment.GetEnvironmentVariable("RESEND_API_KEY");
+if (!string.IsNullOrWhiteSpace(resendApiKey))
+{
+    builder.Services.AddResend(options =>
+    {
+        options.ApiToken = resendApiKey;
+        options.ThrowExceptions = false;
+    });
+    builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
+}
+else
+{
+    builder.Services.AddSingleton<IEmailSender, LoggingEmailSender>();
+}
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not set.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

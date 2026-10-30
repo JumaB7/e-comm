@@ -49,7 +49,12 @@ export class ShopShellBaseDirective {
     if (path.startsWith('/account')) {
       return 'Orders';
     }
-    if (path.startsWith('/sign-in') || path.startsWith('/register') || path.startsWith('/forgot-password')) {
+    if (
+      path.startsWith('/sign-in') ||
+      path.startsWith('/register') ||
+      path.startsWith('/forgot-password') ||
+      path.startsWith('/reset-password')
+    ) {
       return 'Account';
     }
     if (path.startsWith('/checkout') || path.startsWith('/pay') || path.startsWith('/paid')) {

@@ -11,4 +11,6 @@ public interface IAuthService
     Task<ShopOutcome<MessageModel>> ResetPassword(ResetPasswordRequest request);
 
     Task<ShopOutcome<CheckoutProfileModel>> Profile(string email);
+
+    Task<ShopOutcome<ProfileUpdateModel>> UpdateProfile(string currentEmail, UpdateProfileRequest request);
 }

@@ -1,0 +1,111 @@
+<form class="mx-auto max-w-360 px-16 py-10" [formGroup]="form" (submit)="save($event)">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-[40px] leading-11.5">Account</h1>
+      <p class="mt-2 text-[13px] leading-4.5 text-muted">
+        Personal and delivery details for checkout. Update your email here any time.
+      </p>
+    </div>
+    <a routerLink="/account/orders" class="text-[13px] font-medium tracking-[0.08em] uppercase">Your orders</a>
+  </div>
+
+  @if (ready()) {
+    <div class="mt-8 grid max-w-180 gap-8">
+      <section>
+        <h2 class="text-xl font-semibold leading-6.5">Personal information</h2>
+        <div class="mt-4 grid grid-cols-2 items-start gap-3">
+          <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
+            <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" autocomplete="name" />
+            @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
+              <span class="font-normal tracking-normal text-danger">Enter your name.</span>
+            }
+          </label>
+          <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
+            <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" />
+            @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
+              <span class="font-normal tracking-normal text-danger">
+                @if (form.controls.phone.errors?.['mobile']) {
+                  Enter a valid SA mobile number (e.g. 082 123 4567).
+                } @else {
+                  Enter a mobile number.
+                }
+              </span>
+            }
+          </label>
+        </div>
+        <label class="mt-3 grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
+          <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" autocomplete="email" />
+          @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
+            <span class="font-normal tracking-normal text-danger">
+              @if (form.controls.email.errors?.['email']) { Enter a valid email address. } @else { Enter an email address. }
+            </span>
+          }
+        </label>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold leading-6.5">Delivery information</h2>
+        <p class="mt-2 text-[13px] leading-4.5 text-muted">Saved for next time. You can still change details on the checkout page.</p>
+        <div class="mt-4 grid gap-4">
+          <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
+            <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" autocomplete="street-address" />
+          </label>
+          <div class="grid grid-cols-2 items-start gap-3">
+            <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
+              <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
+            </label>
+            <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
+              <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
+            </label>
+          </div>
+          <div class="grid grid-cols-2 items-start gap-3">
+            <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
+              <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
+            </label>
+            <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
+              <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" inputmode="numeric" />
+              @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
+                <span class="font-normal tracking-normal text-danger">Use a 4 digit postal code.</span>
+              }
+            </label>
+          </div>
+        </div>
+        <h3 class="mt-6 text-[13px] font-medium tracking-[0.08em] text-muted">PREFERRED DELIVERY</h3>
+        <div class="mt-3 grid max-w-70 gap-3">
+          <button
+            type="button"
+            class="px-4 py-3.5 text-left"
+            [attr.aria-pressed]="form.controls.delivery.value === 'courier'"
+            [ngClass]="form.controls.delivery.value === 'courier' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
+            (click)="setDelivery('courier')">
+            <span class="block text-base leading-6">Courier nationwide</span>
+            <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days</span>
+          </button>
+          <button
+            type="button"
+            class="px-4 py-3.5 text-left"
+            [attr.aria-pressed]="form.controls.delivery.value === 'collect'"
+            [ngClass]="form.controls.delivery.value === 'collect' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
+            (click)="setDelivery('collect')">
+            <span class="block text-base leading-6">Collect from the shop</span>
+            <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
+          </button>
+        </div>
+        <label class="mt-6 flex cursor-pointer items-start gap-3 text-base leading-6">
+          <input class="mt-1 h-4 w-4 accent-ink" type="checkbox" formControlName="prefillCheckout" />
+          <span>Fill these details automatically at checkout</span>
+        </label>
+        <p class="mt-2 text-[13px] leading-4.5 text-muted">
+          If this is off, checkout stays blank until you choose “Use saved details”.
+        </p>
+      </section>
+
+      @if (error()) {
+        <p class="text-[13px] leading-4.5 text-danger">{{ error() }}</p>
+      }
+      <button type="submit" class="w-fit border-0 bg-transparent p-0" [disabled]="busy()">
+        <ecomm-button [label]="busy() ? 'Saving…' : 'Save account'" />
+      </button>
+    </div>
+  }
+</form>

@@ -33,4 +33,12 @@ public class AuthController(IAuthService auth) : ControllerBase
         var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
         return ShopResults.From(await auth.Profile(email));
     }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<ProfileUpdateModel>> UpdateProfile(UpdateProfileRequest request)
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
+        return ShopResults.From(await auth.UpdateProfile(email, request));
+    }
 }

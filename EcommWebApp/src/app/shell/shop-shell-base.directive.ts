@@ -12,18 +12,19 @@ export class ShopShellBaseDirective {
   private readonly cart = inject(CartService);
   private readonly catalog = inject(CatalogService);
   private readonly router = inject(Router);
-  readonly accountName = this.auth.name;
-  readonly accountRole = this.auth.role;
+  /** Same pattern as AO: getUserData() → toSignal at the consumer. */
+  readonly userData = toSignal(this.auth.getUserData(), { initialValue: undefined });
   readonly bagCount = this.cart.count;
   readonly search = this.catalog.search;
   readonly links = computed(() => {
-    const signedIn = !!this.accountName();
+    const signedIn = !!this.userData();
     return [
       { label: 'Home', path: '/' },
       { label: 'Shop', path: '/shop' },
       signedIn
-        ? { label: 'Orders', path: '/account/orders' }
+        ? { label: 'Account', path: '/account' }
         : { label: 'Account', path: '/sign-in' },
+      ...(signedIn ? [{ label: 'Orders', path: '/account/orders' }] : []),
     ];
   });
   private readonly url = toSignal(
@@ -46,7 +47,10 @@ export class ShopShellBaseDirective {
     if (path.startsWith('/shop') || path.startsWith('/product')) {
       return 'Shop';
     }
-    if (path.startsWith('/account')) {
+    if (path === '/account') {
+      return 'Account';
+    }
+    if (path.startsWith('/account/orders')) {
       return 'Orders';
     }
     if (path.startsWith('/sign-in') || path.startsWith('/register') || path.startsWith('/forgot-password')) {

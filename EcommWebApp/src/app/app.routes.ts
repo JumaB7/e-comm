@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AccountOrderContainerComponent } from './account/order/account-order-container.component';
 import { AccountOrdersContainerComponent } from './account/orders/account-orders-container.component';
+import { AccountProfileContainerComponent } from './account/profile/account-profile-container.component';
 import { AdminProductsContainerComponent } from './admin/products/products-container.component';
 import { OrderContainerComponent } from './admin/order/order-container.component';
 import { OrdersContainerComponent } from './admin/orders/orders-container.component';
@@ -29,6 +30,7 @@ export const routes: Routes = [
       { path: 'shop', component: ShopContainerComponent },
       { path: 'product/:sku', component: ProductContainerComponent },
       { path: 'checkout', component: CheckoutContainerComponent },
+      { path: 'account', component: AccountProfileContainerComponent, canActivate: [authGuard] },
       { path: 'account/orders', component: AccountOrdersContainerComponent, canActivate: [authGuard] },
       { path: 'account/orders/:id', component: AccountOrderContainerComponent, canActivate: [authGuard] },
       { path: 'sign-in', component: SignInContainerComponent },

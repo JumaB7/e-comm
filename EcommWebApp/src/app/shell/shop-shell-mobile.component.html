@@ -17,9 +17,9 @@
       @for (link of links(); track link.label) {
         <a [routerLink]="link.path" [ngClass]="activeLabel() === link.label ? 'text-ink' : 'text-muted'">{{ link.label }}</a>
       }
-      @if (accountName(); as name) {
-        <span class="text-ink">{{ name }}</span>
-        @if (accountRole() === 'Admin') {
+      @if (userData(); as user) {
+        <span class="text-ink">{{ user.name }}</span>
+        @if (user.role === 'Admin') {
           <a routerLink="/admin" class="text-muted">ADMIN</a>
         }
         <button type="button" class="border-0 bg-transparent p-0 text-muted" (click)="signOut()">SIGN OUT</button>

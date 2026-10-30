@@ -2,6 +2,12 @@
   <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
   <p class="mt-2 text-[13px] leading-4.5 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
 
+  @if (hasSavedDelivery()) {
+    <button type="button" class="mt-4 border-0 bg-transparent p-0 text-[13px] font-medium tracking-[0.08em] uppercase text-ink" (click)="useSavedDetails()">
+      Use saved details
+    </button>
+  }
+
   <div class="mt-6 grid gap-4">
     <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" autocomplete="email" />

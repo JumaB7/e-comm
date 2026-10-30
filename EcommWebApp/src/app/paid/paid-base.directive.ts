@@ -1,6 +1,7 @@
 import { Directive, computed, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CatalogService } from '../services/catalog.service';
+import { SessionStoreService } from '../services/session-store.service';
 
 @Directive()
 export class PaidBaseDirective {
@@ -16,7 +17,8 @@ export class PaidBaseDirective {
   });
 
   constructor() {
-    const key = inject(ActivatedRoute).snapshot.queryParamMap.get('receipt') ?? sessionStorage.getItem('veld-receipt') ?? '';
+    const key =
+      inject(ActivatedRoute).snapshot.queryParamMap.get('receipt') ?? inject(SessionStoreService).getReceipt() ?? '';
     if (key) {
       this.catalog.loadReceipt(key);
       return;

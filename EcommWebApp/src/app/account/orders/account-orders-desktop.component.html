@@ -1,6 +1,11 @@
 <section class="mx-auto max-w-360 px-16 py-10">
-  <h1 class="font-display text-[40px] leading-11.5">Your orders</h1>
-  <p class="mt-2 text-[13px] leading-4.5 text-muted">Track packing, shipping, and collection for every order on this account.</p>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-[40px] leading-11.5">Your orders</h1>
+      <p class="mt-2 text-[13px] leading-4.5 text-muted">Track packing, shipping, and collection for every order on this account.</p>
+    </div>
+    <a routerLink="/account" class="text-[13px] font-medium tracking-[0.08em] uppercase">Account details</a>
+  </div>
   @if (ready() && orders().length === 0) {
     <p class="mt-8 border border-line bg-white px-4 py-4 text-[13px] leading-4.5 text-muted">No orders yet.</p>
     <a routerLink="/shop" class="mt-4 inline-block text-[13px] font-medium tracking-[0.08em] uppercase text-ink">Shop gear</a>

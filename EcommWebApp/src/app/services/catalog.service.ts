@@ -7,12 +7,14 @@ import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model
 import { Product } from '../models/product.model';
 import { SalesReport } from '../models/sales.model';
 import { apiMessage } from './api-message';
+import { SessionStoreService } from './session-store.service';
 import { SpinnerService } from './spinner.service';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
   private readonly http = inject(HttpClient);
   private readonly spinner = inject(SpinnerService);
+  private readonly session = inject(SessionStoreService);
   readonly search = signal('');
   readonly products = signal<Product[]>([]);
   readonly featured = computed(() => this.products().slice(0, 4));
@@ -152,7 +154,7 @@ export class CatalogService {
     return this.spinner.pending(
       this.http.post<CheckoutResponse>('/api/orders', details).pipe(
         switchMap((result) => {
-          sessionStorage.setItem('veld-receipt', result.receiptKey);
+          this.session.setReceipt(result.receiptKey);
           if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
             submitPayFast(result.payFastUrl, result.fields);
             return of(null);

@@ -3,11 +3,13 @@ import { Router } from '@angular/router';
 import { checkoutForm } from '../checkout/checkout.form';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
+import { SessionStoreService } from '../services/session-store.service';
 
 @Directive()
 export class PayBaseDirective {
   private readonly cart = inject(CartService);
   private readonly catalog = inject(CatalogService);
+  private readonly session = inject(SessionStoreService);
   private readonly router = inject(Router);
   readonly methods = [
     { id: 'card', title: 'Card', detail: 'Visa or Mastercard on PayFast' },
@@ -54,7 +56,7 @@ export class PayBaseDirective {
           return;
         }
         this.cart.clear();
-        void this.router.navigate(['/paid'], { queryParams: { receipt: sessionStorage.getItem('veld-receipt') ?? '' } });
+        void this.router.navigate(['/paid'], { queryParams: { receipt: this.session.getReceipt() ?? '' } });
       },
       error: (error: Error) => {
         this.paying.set(false);

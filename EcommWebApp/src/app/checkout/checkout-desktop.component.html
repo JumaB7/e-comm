@@ -4,7 +4,14 @@
   <div class="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
     <div class="order-1 grid gap-8">
       <div>
-        <h2 class="text-xl font-semibold leading-6.5">Contact</h2>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h2 class="text-xl font-semibold leading-6.5">Contact</h2>
+          @if (hasSavedDelivery()) {
+            <button type="button" class="border-0 bg-transparent p-0 text-[13px] font-medium tracking-[0.08em] uppercase text-ink" (click)="useSavedDetails()">
+              Use saved details
+            </button>
+          }
+        </div>
         <div class="mt-4 grid grid-cols-2 items-start gap-3">
           <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
             <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" />

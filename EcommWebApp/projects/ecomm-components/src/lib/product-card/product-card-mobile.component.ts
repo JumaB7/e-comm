@@ -1,9 +1,15 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ProductCardBaseDirective } from './product-card-base.directive';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'ecomm-product-card-mobile',
   templateUrl: './product-card-mobile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductCardMobileComponent extends ProductCardBaseDirective {}
+export class ProductCardMobileComponent {
+  readonly name = input('');
+  readonly category = input('');
+  readonly price = input('');
+  readonly sku = input('');
+  readonly image = input('');
+  readonly photo = computed(() => this.image());
+}

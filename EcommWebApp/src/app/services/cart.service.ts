@@ -127,15 +127,6 @@ export class CartService {
       }
       untracked(() => {
         this.profileLoadedFor.set(email);
-        if (!this.emailChoice()) {
-          this.emailChoice.set(email);
-        }
-        if (!this.nameChoice() && user?.name) {
-          this.nameChoice.set(user.name);
-        }
-        if (!this.phoneChoice() && user?.phone) {
-          this.phoneChoice.set(user.phone);
-        }
         this.auth.profile().subscribe((profile) => {
           if (!profile) {
             // Allow a later retry after sign-in replaces a bad token.
@@ -143,18 +134,20 @@ export class CartService {
             return;
           }
           this.savedProfile.set(profile);
+          if (profile.prefillCheckout === false) {
+            // Preference is off: leave checkout blank until “Use saved details”.
+            return;
+          }
           if (!this.emailChoice()) {
-            this.emailChoice.set(profile.email);
+            this.emailChoice.set(profile.email || email);
           }
           if (!this.nameChoice()) {
-            this.nameChoice.set(profile.name);
+            this.nameChoice.set(profile.name || user?.name || '');
           }
           if (!this.phoneChoice()) {
-            this.phoneChoice.set(profile.phone);
+            this.phoneChoice.set(profile.phone || user?.phone || '');
           }
-          if (profile.prefillCheckout !== false) {
-            this.applySavedProfile(false);
-          }
+          this.applySavedProfile(false);
         });
       });
     });
@@ -287,7 +280,8 @@ export class CartService {
     this.bagChoice.set([]);
   }
 
-  clearContact(): void {
+  /** Clears checkout fields but keeps the saved account profile for “Use saved details”. */
+  clearCheckoutFields(): void {
     this.emailChoice.set(null);
     this.phoneChoice.set(null);
     this.nameChoice.set(null);
@@ -297,6 +291,10 @@ export class CartService {
     this.provinceChoice.set(null);
     this.postalChoice.set(null);
     this.deliveryChoice.set(null);
+  }
+
+  clearContact(): void {
+    this.clearCheckoutFields();
     this.savedProfile.set(undefined);
     this.profileLoadedFor.set('');
   }

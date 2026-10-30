@@ -174,7 +174,7 @@ export class CheckoutBaseDirective {
   }
 
   private fill(control: CheckoutForm['controls'][keyof CheckoutForm['controls']], value: string): void {
-    if (control.dirty || !value) {
+    if (control.dirty || control.value === value) {
       return;
     }
     control.setValue(value, { emitEvent: false });

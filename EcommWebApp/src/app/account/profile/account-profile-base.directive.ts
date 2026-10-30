@@ -79,6 +79,11 @@ export class AccountProfileBaseDirective {
           return;
         }
         this.cart.savedProfile.set(profile);
+        if (profile.prefillCheckout === false) {
+          this.cart.clearCheckoutFields();
+        } else {
+          this.cart.applySavedProfile(true);
+        }
         this.form.markAsPristine();
         this.toast.show('Account details saved.');
       });

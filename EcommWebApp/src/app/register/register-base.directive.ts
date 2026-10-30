@@ -1,5 +1,6 @@
 import { Directive, inject, signal } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { saMobileValidator } from '../forms/sa-mobile.validator';
 import { AuthService } from '../services/auth.service';
 
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
@@ -18,7 +19,7 @@ export class RegisterBaseDirective {
   readonly form = new FormGroup({
     fullName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    phone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    phone: new FormControl('', { nonNullable: true, validators: [saMobileValidator()] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
     confirmPassword: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   }, { validators: [passwordsMatch] });

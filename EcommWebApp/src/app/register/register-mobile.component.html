@@ -19,7 +19,13 @@
     <label class="mt-4 grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" />
       @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a phone number.</span>
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.phone.errors?.['mobile']) {
+            Enter a valid SA mobile number (e.g. 082 123 4567).
+          } @else {
+            Enter a mobile number.
+          }
+        </span>
       }
     </label>
     <label class="mt-4 grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PASSWORD

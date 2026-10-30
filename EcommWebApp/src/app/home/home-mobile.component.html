@@ -23,9 +23,12 @@
         <a
           routerLink="/shop"
           [queryParams]="{ category: category.name }"
-          class="block border border-line bg-white px-3 py-4">
-          <p class="text-[13px] leading-4.5 text-muted">{{ category.short }}</p>
-          <p class="text-lg leading-6.5">{{ category.name }}</p>
+          class="relative flex min-h-28 flex-col justify-end overflow-hidden border border-line bg-ink px-3 py-4 text-white">
+          <img [src]="category.image" [alt]="" class="absolute inset-0 h-full w-full object-cover opacity-70" />
+          <div class="relative">
+            <p class="text-[13px] leading-4.5 text-white/80">{{ category.short }}</p>
+            <p class="text-lg leading-6.5">{{ category.name }}</p>
+          </div>
         </a>
       </li>
     }

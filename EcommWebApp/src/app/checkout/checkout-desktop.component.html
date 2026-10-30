@@ -1,8 +1,8 @@
 <section class="mx-auto max-w-360 px-16 py-10" [formGroup]="form">
   <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
   <p class="mt-4 text-base leading-6 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
-  <div class="mt-8 grid grid-cols-[minmax(0,1fr)_400px] items-start gap-8">
-    <div class="grid gap-8">
+  <div class="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+    <div class="order-1 grid gap-8">
       <div>
         <h2 class="text-xl font-semibold leading-6.5">Contact</h2>
         <div class="mt-4 grid grid-cols-2 items-start gap-3">
@@ -15,9 +15,15 @@
             }
           </label>
           <label class="grid min-w-0 gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
-            <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" />
+            <input class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" />
             @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
-              <span class="font-normal tracking-normal text-danger">Enter a phone number.</span>
+              <span class="font-normal tracking-normal text-danger">
+                @if (form.controls.phone.errors?.['mobile']) {
+                  Enter a valid SA mobile number (e.g. 082 123 4567).
+                } @else {
+                  Enter a mobile number.
+                }
+              </span>
             }
           </label>
         </div>
@@ -75,23 +81,35 @@
           <button
             type="button"
             class="px-4 py-3.5 text-left"
-            [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
+            [attr.aria-pressed]="delivery() === 'courier'"
+            [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
             (click)="deliveryChoice.set('courier')">
-            <span class="block text-base leading-6">Courier nationwide</span>
+            <span class="flex items-center justify-between gap-3">
+              <span class="block text-base leading-6">Courier nationwide</span>
+              @if (delivery() === 'courier') {
+                <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
+              }
+            </span>
             <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days</span>
           </button>
           <button
             type="button"
             class="px-4 py-3.5 text-left"
-            [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
+            [attr.aria-pressed]="delivery() === 'collect'"
+            [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
             (click)="deliveryChoice.set('collect')">
-            <span class="block text-base leading-6">Collect from the shop</span>
+            <span class="flex items-center justify-between gap-3">
+              <span class="block text-base leading-6">Collect from the shop</span>
+              @if (delivery() === 'collect') {
+                <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
+              }
+            </span>
             <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
           </button>
         </div>
       </div>
     </div>
-    <aside class="border border-line bg-white p-6">
+    <aside class="order-2 border border-line bg-white p-6">
       <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
       @if (hasLines() === 0) {
         <p class="mt-4 text-muted">Your bag is empty.</p>

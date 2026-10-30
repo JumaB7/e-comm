@@ -1,6 +1,99 @@
-<section class="px-4 py-4" [formGroup]="form">
+<form class="px-4 py-4" [formGroup]="form">
   <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
-  <aside class="mt-4 border border-line bg-white p-4">
+  <p class="mt-2 text-[13px] leading-4.5 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
+
+  <div class="mt-6 grid gap-4">
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" autocomplete="email" />
+      @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.email.errors?.['email']) { Enter a valid email address. } @else { Enter an email address. }
+        </span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" />
+      @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.phone.errors?.['mobile']) {
+            Enter a valid SA mobile number (e.g. 082 123 4567).
+          } @else {
+            Enter a mobile number.
+          }
+        </span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" autocomplete="name" />
+      @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter the name for delivery.</span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" autocomplete="street-address" />
+      @if (form.controls.street.invalid && (form.controls.street.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a street address.</span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
+      @if (form.controls.suburb.invalid && (form.controls.suburb.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a suburb.</span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
+      @if (form.controls.city.invalid && (form.controls.city.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a city.</span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
+      @if (form.controls.province.invalid && (form.controls.province.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">Enter a province.</span>
+      }
+    </label>
+    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
+      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" inputmode="numeric" />
+      @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
+        <span class="font-normal tracking-normal text-danger">
+          @if (form.controls.postalCode.errors?.['required']) { Enter a postal code. } @else { Use a 4 digit postal code. }
+        </span>
+      }
+    </label>
+  </div>
+
+  <h2 class="mt-6 text-lg leading-6.5">Delivery</h2>
+  <button
+    type="button"
+    class="mt-3 w-full px-4 py-3.5 text-left"
+    [attr.aria-pressed]="delivery() === 'courier'"
+    [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
+    (click)="deliveryChoice.set('courier')">
+    <span class="flex items-center justify-between gap-3">
+      <span class="block leading-6">Courier nationwide</span>
+      @if (delivery() === 'courier') {
+        <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
+      }
+    </span>
+    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days · {{ courierFee() }}</span>
+  </button>
+  <button
+    type="button"
+    class="mt-3 w-full px-4 py-3.5 text-left"
+    [attr.aria-pressed]="delivery() === 'collect'"
+    [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
+    (click)="deliveryChoice.set('collect')">
+    <span class="flex items-center justify-between gap-3">
+      <span class="block leading-6">Collect from the shop</span>
+      @if (delivery() === 'collect') {
+        <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
+      }
+    </span>
+    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
+  </button>
+
+  <aside class="mt-6 border border-line bg-white p-4">
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
     @for (line of bagRows(); track line.sku) {
       <div class="mt-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
@@ -36,80 +129,11 @@
     <p class="mt-2 text-lg leading-6.5">Total {{ total() }}</p>
     <p class="mt-1 text-[13px] leading-4.5 text-muted">VAT included</p>
   </aside>
-  <div class="mt-6 grid gap-4">
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" />
-      @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">
-          @if (form.controls.email.errors?.['email']) { Enter a valid email address. } @else { Enter an email address. }
-        </span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" />
-      @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a phone number.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" />
-      @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter the name for delivery.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" />
-      @if (form.controls.street.invalid && (form.controls.street.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a street address.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
-      @if (form.controls.suburb.invalid && (form.controls.suburb.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a suburb.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
-      @if (form.controls.city.invalid && (form.controls.city.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a city.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
-      @if (form.controls.province.invalid && (form.controls.province.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">Enter a province.</span>
-      }
-    </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
-      <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" />
-      @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
-        <span class="font-normal tracking-normal text-danger">
-          @if (form.controls.postalCode.errors?.['required']) { Enter a postal code. } @else { Use a 4 digit postal code. }
-        </span>
-      }
-    </label>
-  </div>
-  <button
-    type="button"
-    class="mt-4 w-full px-4 py-3.5 text-left"
-    [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
-    (click)="deliveryChoice.set('courier')">
-    <span class="block leading-6">Courier nationwide</span>
-    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days · {{ courierFee() }}</span>
-  </button>
-  <button
-    type="button"
-    class="mt-3 w-full px-4 py-3.5 text-left"
-    [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border border-line bg-white'"
-    (click)="deliveryChoice.set('collect')">
-    <span class="block leading-6">Collect from the shop</span>
-    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
-  </button>
+
   @if (hasLines() > 0) {
     <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="continue()">
       <ecomm-button label="Continue to PayFast" [full]="true" />
     </button>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">Card, Instant EFT, or Capitec Pay on PayFast.</p>
   }
-</section>
+</form>

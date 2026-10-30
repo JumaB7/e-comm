@@ -3,25 +3,31 @@
   <p class="mt-4 max-w-3xl text-base leading-6 text-muted">
     Choose how to pay. PayFast takes the card or bank login. This shop does not.
   </p>
-  <div class="mt-8 grid grid-cols-[minmax(0,1fr)_380px] items-start gap-8">
-    <div>
+  <div class="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+    <div class="order-1">
       <h2 class="text-xl font-semibold leading-6.5">Payment method</h2>
       <ul class="mt-4 grid gap-3">
         @for (method of methods; track method.id) {
           <li>
             <button
               type="button"
-              class="w-full bg-white px-4 py-4 text-left"
-              [ngClass]="selected() === method.id ? 'border-2 border-ink' : 'border border-line'"
+              class="w-full px-4 py-4 text-left"
+              [attr.aria-pressed]="selected() === method.id"
+              [ngClass]="selected() === method.id ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
               (click)="selected.set(method.id)">
-              <span class="block text-lg leading-6.5">{{ method.title }}</span>
+              <span class="flex items-center justify-between gap-3">
+                <span class="block text-lg leading-6.5">{{ method.title }}</span>
+                @if (selected() === method.id) {
+                  <span class="shrink-0 text-[13px] font-medium tracking-[0.08em] text-action">SELECTED</span>
+                }
+              </span>
               <span class="mt-1 block text-[13px] leading-4.5 text-muted">{{ method.detail }}</span>
             </button>
           </li>
         }
       </ul>
     </div>
-    <aside class="border border-line bg-white p-5">
+    <aside class="order-2 border border-line bg-white p-5">
       <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR ORDER</p>
       @for (line of lines(); track line.sku) {
         <p class="mt-2 leading-6">{{ line.name }}</p>

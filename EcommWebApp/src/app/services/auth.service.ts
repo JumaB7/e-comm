@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, finalize, of, tap } from 'rxjs';
 import { AuthSession, CheckoutProfile } from '../models/auth.model';
 import { apiMessage } from './api-message';
 import { SpinnerService } from './spinner.service';
@@ -16,6 +16,8 @@ export class AuthService {
   readonly phone = signal(sessionStorage.getItem('veld-phone') ?? '');
   readonly role = signal(sessionStorage.getItem('veld-role') ?? '');
   readonly error = signal('');
+  readonly notice = signal('');
+  readonly busy = signal(false);
 
   signIn(email: string, password: string, returnUrl: string): void {
     this.submit('/api/auth/sign-in', { email, password }, returnUrl);
@@ -23,6 +25,32 @@ export class AuthService {
 
   register(name: string, email: string, phone: string, password: string): void {
     this.submit('/api/auth/register', { name, email, phone, password }, '/shop');
+  }
+
+  resetPassword(email: string, phone: string, password: string): void {
+    if (this.busy()) {
+      return;
+    }
+    this.error.set('');
+    this.notice.set('');
+    this.busy.set(true);
+    this.spinner
+      .pending(
+        this.http.post<{ message: string }>('/api/auth/reset-password', { email, phone, password }).pipe(
+          catchError((error: HttpErrorResponse) => {
+            this.error.set(apiMessage(error));
+            return of(null);
+          }),
+        ),
+      )
+      .pipe(finalize(() => this.busy.set(false)))
+      .subscribe((result) => {
+        if (!result) {
+          return;
+        }
+        this.notice.set(result.message || 'Password updated. Sign in with the new password.');
+        void this.router.navigateByUrl('/sign-in');
+      });
   }
 
   clearSession(): void {

@@ -117,6 +117,8 @@ public record RegisterRequest(string Name, string Email, string Phone, string Pa
 
 public record SignInRequest(string Email, string Password);
 
+public record ResetPasswordRequest(string Email, string Phone, string Password);
+
 public record MessageModel(string Message);
 
 public record HealthResponse(string Status);

@@ -43,6 +43,24 @@ public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
         return ShopOutcome<AuthModel>.Ok(Session(user));
     }
 
+    public async Task<ShopOutcome<MessageModel>> ResetPassword(ResetPasswordRequest request)
+    {
+        var email = request.Email.Trim().ToLowerInvariant();
+        var phone = Digits(request.Phone);
+        if (email.Length == 0 || phone.Length == 0 || request.Password.Length < 8)
+        {
+            return ShopOutcome<MessageModel>.BadRequest("Email, phone, and a password of at least 8 characters are required.");
+        }
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Email == email);
+        if (user is null || Digits(user.Phone) != phone)
+        {
+            return ShopOutcome<MessageModel>.Unauthorized("Email or phone does not match an account.");
+        }
+        user.PasswordHash = PasswordBox.Hash(request.Password);
+        await db.SaveChangesAsync();
+        return ShopOutcome<MessageModel>.Ok(new MessageModel("Password updated. Sign in with the new password."));
+    }
+
     public async Task<ShopOutcome<CheckoutProfileModel>> Profile(string email)
     {
         var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Email == email);
@@ -67,4 +85,6 @@ public class AuthService(ShopDbContext db, TokenService tokens) : IAuthService
     }
 
     private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Phone, user.Role);
+
+    private static string Digits(string value) => new([.. value.Where(char.IsDigit)]);
 }

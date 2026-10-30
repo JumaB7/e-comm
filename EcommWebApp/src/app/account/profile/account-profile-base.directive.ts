@@ -17,26 +17,31 @@ export class AccountProfileBaseDirective {
 
   constructor() {
     this.auth.error.set('');
-    this.auth.profile().subscribe((profile) => {
-      if (!profile) {
+    this.auth.profile().subscribe({
+      next: (profile) => {
+        if (profile) {
+          this.form.patchValue({
+            fullName: profile.name,
+            email: profile.email,
+            phone: profile.phone,
+            street: profile.street,
+            suburb: profile.suburb,
+            city: profile.city,
+            province: profile.province,
+            postalCode: profile.postalCode,
+            delivery: profile.delivery === 'collect' ? 'collect' : 'courier',
+            prefillCheckout: profile.prefillCheckout ?? true,
+          });
+          this.form.markAsPristine();
+          this.cart.savedProfile.set({
+            ...profile,
+            prefillCheckout: profile.prefillCheckout ?? true,
+            delivery: profile.delivery === 'collect' ? 'collect' : 'courier',
+          });
+        }
         this.ready.set(true);
-        return;
-      }
-      this.form.setValue({
-        fullName: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        street: profile.street,
-        suburb: profile.suburb,
-        city: profile.city,
-        province: profile.province,
-        postalCode: profile.postalCode,
-        delivery: profile.delivery,
-        prefillCheckout: profile.prefillCheckout,
-      });
-      this.form.markAsPristine();
-      this.cart.savedProfile.set(profile);
-      this.ready.set(true);
+      },
+      error: () => this.ready.set(true),
     });
   }
 

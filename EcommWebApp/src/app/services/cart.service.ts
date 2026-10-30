@@ -148,7 +148,7 @@ export class CartService {
           if (!this.phoneChoice()) {
             this.phoneChoice.set(profile.phone);
           }
-          if (profile.prefillCheckout) {
+          if (profile.prefillCheckout !== false) {
             this.applySavedProfile(false);
           }
         });

@@ -24,7 +24,8 @@ export interface CheckoutProfile {
   province: string;
   postalCode: string;
   delivery: 'courier' | 'collect';
-  prefillCheckout: boolean;
+  /** Optional while older APIs omit it; default true on the client. */
+  prefillCheckout?: boolean;
 }
 
 export interface ProfileUpdate {

@@ -42,8 +42,8 @@
       @if (error()) {
         <p class="mt-3 text-[13px] leading-4.5 text-danger">{{ error() }}</p>
       }
-      <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="pay()">
-        <ecomm-button [label]="paying() ? 'Sending to PayFast' : 'Continue to PayFast'" [full]="true" />
+      <button type="button" class="mt-4 w-full border-0 bg-transparent p-0 disabled:opacity-50" [disabled]="paying()" (click)="pay()">
+        <ecomm-button [label]="paying() ? 'Sending to PayFast…' : 'Continue to PayFast'" [full]="true" />
       </button>
     </aside>
   </div>

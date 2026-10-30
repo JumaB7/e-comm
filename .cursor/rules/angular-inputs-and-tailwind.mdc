@@ -1,0 +1,46 @@
+---
+description: Avoid NG8002 inherited inputs and non-canonical Tailwind arbitrary classes
+alwaysApply: true
+---
+
+# Angular inputs and Tailwind classes
+
+## Signal inputs belong on the `@Component` class
+
+Do not put `input()` / `input.required()` only on a base `@Directive()` that the component extends. The Angular language service often reports NG8002 ("Can't bind to 'x'") for inherited signal inputs even when runtime works.
+
+```typescript
+// Wrong — LS may not see image on ecomm-product-card-desktop
+@Directive()
+export class ProductCardBaseDirective {
+  readonly image = input('');
+}
+@Component({ selector: 'ecomm-product-card-desktop', ... })
+export class ProductCardDesktopComponent extends ProductCardBaseDirective {}
+
+// Right — inputs on the component (match ecomm-button)
+@Component({ selector: 'ecomm-product-card-desktop', ... })
+export class ProductCardDesktopComponent {
+  readonly image = input('');
+}
+```
+
+Shared behaviour: extract helpers/functions, or duplicate small `input()`/`computed()` blocks on desktop and mobile components. Prefer the same pattern as `ButtonComponent` / `StatusPillComponent`.
+
+Before binding a new `[prop]` in an app template, confirm that prop is declared with `input()` on the imported component class itself (not only a base directive).
+
+## Desktop/mobile base classes
+
+For app `*BaseDirective` classes shared by desktop/mobile components: prefer a **plain TypeScript class** (no `@Directive()`) when the base only holds `inject()` / signals / methods. Empty `@Directive()` bases often make the language service report NG8002 / “property does not exist” on the subclass template even though `ng build` is clean.
+
+Keep `[formGroup]` on a `<form>` (or an element that ReactiveFormsModule clearly owns), and import `ReactiveFormsModule` on the concrete `@Component`.
+
+## Prefer canonical Tailwind utilities
+
+When Tailwind IntelliSense suggests a canonical class (`suggestCanonicalClasses`), use it.
+
+- Prefer `min-w-180` over `min-w-[720px]` (divide px by 4 for the spacing scale)
+- Prefer `z-70` over `z-[70]`, `z-60` over `z-[60]`
+- Prefer `max-w-62.5` over `max-w-[250px]` when it matches the scale
+
+Keep arbitrary values only when there is no scale token (unusual colours, one-off shadows, complex animations). Do not expand every `text-[13px]` in the repo unless IntelliSense flags it and a project token exists.

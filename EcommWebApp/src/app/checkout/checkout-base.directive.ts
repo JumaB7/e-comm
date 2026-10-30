@@ -1,10 +1,10 @@
-import { Directive, computed, effect, inject, signal, untracked } from '@angular/core';
+import { computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CheckoutForm, checkoutForm } from './checkout.form';
 
-@Directive()
+/** Shared checkout state for desktop/mobile. Plain class so template type-check sees members. */
 export class CheckoutBaseDirective {
   private readonly cart = inject(CartService);
   private readonly router = inject(Router);

@@ -15,6 +15,7 @@ import { RegisterContainerComponent } from './register/register-container.compon
 import { ShopContainerComponent } from './shop/shop-container.component';
 import { AdminShellContainerComponent } from './shell/admin-shell-container.component';
 import { ShopShellContainerComponent } from './shell/shop-shell-container.component';
+import { ForgotPasswordContainerComponent } from './forgot-password/forgot-password-container.component';
 import { SignInContainerComponent } from './sign-in/sign-in-container.component';
 import { adminGuard } from './services/admin.guard';
 import { authGuard } from './services/auth.guard';
@@ -31,6 +32,7 @@ export const routes: Routes = [
       { path: 'account/orders', component: AccountOrdersContainerComponent, canActivate: [authGuard] },
       { path: 'account/orders/:id', component: AccountOrderContainerComponent, canActivate: [authGuard] },
       { path: 'sign-in', component: SignInContainerComponent },
+      { path: 'forgot-password', component: ForgotPasswordContainerComponent },
       { path: 'register', component: RegisterContainerComponent },
       { path: 'pay', component: PayContainerComponent },
       { path: 'paid', component: PaidContainerComponent },

@@ -11,7 +11,10 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const authed = token ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : request;
   return next(authed).pipe(
     catchError((error: HttpErrorResponse) => {
-      const authForm = request.url.includes('/api/auth/sign-in') || request.url.includes('/api/auth/register');
+      const authForm =
+        request.url.includes('/api/auth/sign-in') ||
+        request.url.includes('/api/auth/register') ||
+        request.url.includes('/api/auth/reset-password');
       if (!authForm && (error.status === 401 || (error.status === 403 && request.url.includes('/api/admin')))) {
         auth.clearSession();
         const returnUrl = router.url.startsWith('/sign-in') ? undefined : router.url;

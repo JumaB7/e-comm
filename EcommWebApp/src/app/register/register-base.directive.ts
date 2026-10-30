@@ -16,6 +16,7 @@ export class RegisterBaseDirective {
   readonly passwordVisible = signal(false);
   readonly confirmVisible = signal(false);
   readonly error = this.auth.error;
+  readonly busy = this.auth.busy;
   readonly form = new FormGroup({
     fullName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
@@ -30,6 +31,9 @@ export class RegisterBaseDirective {
 
   submit(event: Event): void {
     event.preventDefault();
+    if (this.busy()) {
+      return;
+    }
     this.submitted.set(true);
     this.form.markAllAsTouched();
     if (this.form.invalid) {

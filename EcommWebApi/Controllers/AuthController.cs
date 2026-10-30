@@ -21,6 +21,11 @@ public class AuthController(IAuthService auth) : ControllerBase
     public async Task<ActionResult<AuthModel>> SignIn(SignInRequest request) =>
         ShopResults.From(await auth.SignIn(request));
 
+    [EnableRateLimiting("auth")]
+    [HttpPost("reset-password")]
+    public async Task<ActionResult<MessageModel>> ResetPassword(ResetPasswordRequest request) =>
+        ShopResults.From(await auth.ResetPassword(request));
+
     [Authorize]
     [HttpGet("profile")]
     public async Task<ActionResult<CheckoutProfileModel>> Profile()

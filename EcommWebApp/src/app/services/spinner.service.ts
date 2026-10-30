@@ -10,9 +10,17 @@ export class SpinnerService {
   private wait: ReturnType<typeof setTimeout> | undefined;
   readonly isLoading = computed(() => this.visible());
 
-  show(): void {
+  show(immediate = false): void {
     const idle = this.count() === 0;
     this.count.update((count) => count + 1);
+    if (immediate) {
+      if (this.wait !== undefined) {
+        clearTimeout(this.wait);
+        this.wait = undefined;
+      }
+      this.visible.set(true);
+      return;
+    }
     if (!idle || this.visible() || this.wait !== undefined) {
       return;
     }
@@ -40,9 +48,9 @@ export class SpinnerService {
     });
   }
 
-  pending<T>(source: Observable<T>): Observable<T> {
+  pending<T>(source: Observable<T>, options?: { immediate?: boolean }): Observable<T> {
     return defer(() => {
-      this.show();
+      this.show(options?.immediate === true);
       return source.pipe(finalize(() => this.hide()));
     });
   }

@@ -173,6 +173,7 @@ export class CheckoutBaseDirective {
     this.invalidFields.set(fields);
   }
 
+  /** Sync cart → form for pristine controls only (incl. clearing when prefill is turned off). */
   private fill(control: CheckoutForm['controls'][keyof CheckoutForm['controls']], value: string): void {
     if (control.dirty || control.value === value) {
       return;

@@ -93,6 +93,7 @@ jobs:
       - name: Download the build
         uses: actions/download-artifact@v4
 
+      # TODO: replace stub with azure/webapps-deploy (or equivalent) once PRODUCTION_HOST + publish profile exist.
       - name: Publish to production
         env:
           PRODUCTION_HOST: ${{ vars.PRODUCTION_HOST }}

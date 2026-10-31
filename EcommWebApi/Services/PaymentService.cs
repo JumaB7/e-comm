@@ -27,13 +27,14 @@ public class PaymentService(ShopDbContext db, IConfiguration configuration, IHos
         {
             return false;
         }
+        // Reject ITNs whose amount does not match the order we created (anti-tamper).
         if (amount != order.TotalCents / 100m)
         {
             return false;
         }
         if (order.PaidAt is not null)
         {
-            return true;
+            return true; // idempotent replay
         }
         order.PaidAt = DateTime.UtcNow;
         order.PayFastReference = values.GetValueOrDefault("pf_payment_id") ?? "";

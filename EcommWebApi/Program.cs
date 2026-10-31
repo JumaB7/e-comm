@@ -44,6 +44,7 @@ if (!string.IsNullOrWhiteSpace(resendApiKey))
 }
 else
 {
+    // TODO: set Resend__ApiKey on Azure UAT — without it, password-reset only logs the link.
     builder.Services.AddSingleton<IEmailSender, LoggingEmailSender>();
 }
 

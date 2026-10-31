@@ -70,6 +70,7 @@ public class AuthService(
             return ShopOutcome<MessageModel>.Ok(new MessageModel(generic));
         }
 
+        // Email the raw token; only the hash is stored.
         var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
         user.PasswordResetTokenHash = HashToken(rawToken);
         user.PasswordResetExpiresAt = DateTime.UtcNow.Add(ResetLifetime);
@@ -84,7 +85,7 @@ public class AuthService(
             resetLink,
             $"pwd-reset-{user.PasswordResetTokenHash}");
 
-        // Dev only: surface the link in the API response so local testing works without SMTP.
+        // Dev only: include the link in JSON so local testing works without inbox delivery.
         var linkForDev = environment.IsDevelopment() ? resetLink : null;
         return ShopOutcome<MessageModel>.Ok(new MessageModel(generic, linkForDev));
     }

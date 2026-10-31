@@ -60,6 +60,7 @@ export class CartService {
   readonly province = computed(() => this.provinceChoice() ?? '');
   readonly postalCode = computed(() => this.postalChoice() ?? '');
   readonly count = computed(() => this.lines().reduce((sum, line) => sum + line.qty, 0));
+  // Bag/delivery → HTTP quote; switchMap drops an in-flight quote when the bag changes again.
   private readonly quote = toSignal(
     toObservable(
       computed(() => ({

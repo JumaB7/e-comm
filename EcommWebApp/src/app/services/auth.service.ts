@@ -15,7 +15,7 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly spinner = inject(SpinnerService);
   private readonly session = inject(SessionStoreService);
-  /** Memory-only identity from JWT — same idea as AO userData, not sessionStorage PII. */
+  /** Memory-only identity from JWT claims — do not mirror PII into sessionStorage. */
   private readonly userDataState = signal<UserData | undefined>(undefined);
   private readonly userData$ = toObservable(this.userDataState);
   readonly userData = this.userDataState.asReadonly();

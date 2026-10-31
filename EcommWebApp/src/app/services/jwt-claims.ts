@@ -1,5 +1,6 @@
 import { UserData } from '../models/auth.model';
 
+// .NET JwtSecurityToken writes these long claim type URIs (and sometimes short aliases).
 const emailClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
 const nameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
 const roleClaim = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';

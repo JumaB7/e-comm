@@ -83,12 +83,14 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
         await db.SaveChangesAsync();
 
         var merchantId = configuration["PayFast:MerchantId"];
+        // Local-only shortcut when no PayFast merchant is configured in Development.
         var localCheckout = environment.IsDevelopment()
             && (string.IsNullOrWhiteSpace(merchantId) || configuration["PayFast:Mode"] != "payfast");
         if (localCheckout)
         {
             return ShopOutcome<CheckoutModel>.Ok(new CheckoutModel(OrderMapper.Order(order), order.ReceiptKey, "local", null, null));
         }
+        // TODO: ensure UAT/production always have PayFast merchant settings (otherwise checkout fails here).
         if (string.IsNullOrWhiteSpace(merchantId))
         {
             return ShopOutcome<CheckoutModel>.BadRequest("Payment is not available.");

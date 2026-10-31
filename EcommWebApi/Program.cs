@@ -49,6 +49,11 @@ else
 }
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not set.");
+const string developmentJwtKey = "LOCAL_DEV_JWT_KEY_REPLACE_ME_32CHARS";
+if (!builder.Environment.IsDevelopment() && jwtKey == developmentJwtKey)
+{
+    throw new InvalidOperationException("Jwt:Key must not use the development signing key outside Development.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -107,7 +112,11 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
     db.Database.Migrate();
-    ShopSeed.Apply(db);
+    // Seed users use the well-known local password — Development only.
+    if (app.Environment.IsDevelopment())
+    {
+        ShopSeed.Apply(db);
+    }
 }
 
 if (app.Environment.IsDevelopment())

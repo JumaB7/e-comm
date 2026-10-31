@@ -117,6 +117,7 @@ public static class ShopSeed
         Email = email,
         Phone = phone,
         Role = role,
+        // Local demo only (ShopSeed runs in Development). Change immediately on any shared environment.
         PasswordHash = PasswordBox.Hash("password"),
     };
 

@@ -8,3 +8,17 @@
 *.user
 .DS_Store
 Thumbs.db
+
+# Secrets and local overrides — never commit
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/appsettings.*.local.json
+**/appsettings.Local.json
+**/Properties/PublishProfiles/**
+**/*.publishsettings
+**/*.pfx
+**/*.pem
+**/*.key
+**/user-secrets.json

@@ -61,11 +61,18 @@ On that App Service, keep these as **Environment variables** / connection string
 | Name | Notes |
 | --- | --- |
 | Connection string `Shop` | SQL Azure string for `EcommUat` |
-| `Jwt__Key` | At least 32 characters, not the local dev key |
+| `Jwt__Key` | At least 32 characters, **not** `LOCAL_DEV_JWT_KEY_REPLACE_ME_32CHARS` |
 | `Jwt__Issuer` / `Jwt__Audience` | `veld-supply` |
-| PayFast merchant settings | Optional until real sandbox checkout is wired |
+| `Resend__ApiKey` | Sending key from Resend (never commit) |
+| PayFast merchant settings | `PayFast__MerchantId` / `MerchantKey` / `Passphrase` when sandbox/live is wired |
 
 `PayFast:ReturnBase`, `PayFast:NotifyBase`, and CORS origins for that host live in `appsettings.json` and can be overridden on Azure if the hostname changes.
+
+### Secret hygiene (before making the repo public)
+
+Never commit Resend keys, UAT/prod JWT keys, Azure SQL strings, PayFast live keys, or publish profiles. Those belong in user secrets / Azure / GitHub Actions secrets.
+
+Local seed accounts (`admin@veldsupply.co.za` / `thabo@example.co.za`, password `password`) are created **only in Development**. If UAT was seeded earlier with those users, change or delete those passwords on Azure before the repo goes public.
 
 ## Branches
 

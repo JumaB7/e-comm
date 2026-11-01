@@ -1,4 +1,4 @@
-<div class="flex min-h-screen flex-col bg-canvas text-ink">
+<div class="flex min-h-dvh flex-col bg-canvas text-ink">
   <p class="bg-ink py-2.5 text-center text-[13px] leading-4.5 text-white">
     Courier delivery across South Africa · Free over R1 500 · Prices include VAT
   </p>
@@ -38,10 +38,10 @@
       <span class="w-12"></span>
     </div>
   </header>
-  <div class="flex-1">
+  <div class="flex min-h-0 flex-1 flex-col">
     <router-outlet />
   </div>
-  <footer class="bg-ink text-white">
+  <footer class="mt-auto shrink-0 bg-ink text-white">
     <div class="mx-auto grid max-w-360 gap-10 px-16 py-12 sm:grid-cols-4">
       <div class="max-w-70">
         <img src="/kudu-logo.svg" alt="Veld Supply" class="h-12 w-auto" />

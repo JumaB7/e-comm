@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @source "../projects/ecomm-components/src";
 
+/* Sticky shop footer: fill the viewport so shell flex-1 / mt-auto can pin it. */
+html,
+body,
+app-root {
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+app-root,
+app-shop-shell,
+app-shop-shell-desktop,
+app-shop-shell-mobile {
+  display: block;
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
 @theme {
   --color-canvas: #f4f4f4;
   --color-ink: #141414;

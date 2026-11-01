@@ -1,21 +1,10 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BreakpointDirective } from '../directives/breakpoint.directive';
-import { scopeIntroKey } from '../models/constants';
+import { SessionStoreService } from '../services/session-store.service';
 import { HomeDesktopComponent } from './home-desktop.component';
 import { HomeMobileComponent } from './home-mobile.component';
 import { ScopeIntroComponent } from './scope-intro.component';
-
-function shouldPlayIntro(): boolean {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return false;
-  }
-  try {
-    return sessionStorage.getItem(scopeIntroKey) !== 'seen';
-  } catch {
-    return true;
-  }
-}
 
 @Component({
   selector: 'app-home',
@@ -32,14 +21,11 @@ function shouldPlayIntro(): boolean {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeContainerComponent {
-  readonly playIntro = signal(shouldPlayIntro());
+  private readonly session = inject(SessionStoreService);
+  readonly playIntro = signal(this.session.shouldPlayScopeIntro());
 
   dismiss(): void {
-    try {
-      sessionStorage.setItem(scopeIntroKey, 'seen');
-    } catch {
-      // Private browsing can block storage. The intro still closes.
-    }
+    this.session.markScopeIntroSeen();
     this.playIntro.set(false);
   }
 }

@@ -1,17 +1,13 @@
 import { Directive, inject, signal } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { saMobileValidator } from '../forms/sa-mobile.validator';
 import { AuthService } from '../services/auth.service';
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('password')?.value;
-  const confirmPassword = group.get('confirmPassword')?.value;
-  return password === confirmPassword ? null : { passwordMismatch: true };
-}
+import { PasswordMatchService } from '../services/password-match.service';
 
 @Directive()
 export class RegisterBaseDirective {
   private readonly auth = inject(AuthService);
+  private readonly passwords = inject(PasswordMatchService);
   readonly submitted = signal(false);
   readonly passwordVisible = signal(false);
   readonly confirmVisible = signal(false);
@@ -23,7 +19,7 @@ export class RegisterBaseDirective {
     phone: new FormControl('', { nonNullable: true, validators: [saMobileValidator()] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
     confirmPassword: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-  }, { validators: [passwordsMatch] });
+  }, { validators: [(group) => this.passwords.match(group)] });
 
   constructor() {
     this.auth.error.set('');

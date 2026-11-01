@@ -1,8 +1,8 @@
 <section class="px-6 py-16">
   <div class="mx-auto w-full max-w-120 border border-line bg-white px-8 py-9">
     @if (receipt(); as item) {
-      <p class="text-[13px] font-medium tracking-[0.08em] text-success">{{ item.reference ? 'PAID' : 'WAITING' }}</p>
-      <h1 class="mt-3 font-display text-[40px] leading-11.5">{{ heading() }}</h1>
+      <p class="text-13 font-medium tracking-label text-success">{{ item.reference ? 'PAID' : 'WAITING' }}</p>
+      <h1 class="mt-3 font-display text-40 leading-11.5">{{ heading() }}</h1>
       <p class="mt-4 text-base leading-6 text-muted">
         @if (item.reference) {
           PayFast reference {{ item.reference }}. We email the receipt to {{ item.email }}.
@@ -10,10 +10,10 @@
           PayFast has not confirmed it yet. This page updates when the signed notification arrives.
         }
       </p>
-      <p class="mt-4 text-[22px] font-semibold leading-7 text-action">{{ item.total }}</p>
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">{{ item.deliveryNote }}</p>
+      <p class="mt-4 text-22 font-semibold leading-7 text-action">{{ item.total }}</p>
+      <p class="mt-2 text-13 leading-4.5 text-muted">{{ item.deliveryNote }}</p>
     } @else if (receiptReady()) {
-      <h1 class="font-display text-[40px] leading-11.5">No payment in this tab yet.</h1>
+      <h1 class="font-display text-40 leading-11.5">No payment in this tab yet.</h1>
     }
     <a routerLink="/shop" class="mt-6 inline-block">
       <ecomm-button label="Back to the shop" variant="secondary" [chevron]="true" />

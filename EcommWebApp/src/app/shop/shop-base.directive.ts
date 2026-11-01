@@ -2,19 +2,13 @@ import { Directive, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
+import { shopFilters } from '../models/constants';
 import { CatalogService } from '../services/catalog.service';
 
 @Directive()
 export class ShopPageBaseDirective {
   private readonly catalog = inject(CatalogService);
-  readonly filters = [
-    { label: 'ALL', category: '' },
-    { label: 'OPTICS', category: 'Optics' },
-    { label: 'APPAREL', category: 'Apparel' },
-    { label: 'KNIVES', category: 'Knives' },
-    { label: 'CAMP', category: 'Camp' },
-    { label: 'PACKS', category: 'Packs' },
-  ];
+  readonly filters = shopFilters;
   readonly category = toSignal(
     inject(ActivatedRoute).queryParamMap.pipe(map((params) => params.get('category') ?? '')),
     { initialValue: '' },

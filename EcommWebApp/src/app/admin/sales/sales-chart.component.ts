@@ -1,15 +1,8 @@
 import { afterNextRender, Component, DestroyRef, effect, ElementRef, inject, input, untracked, viewChild } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
 import Highcharts from 'highcharts';
-import { SalesCategory, SalesMonthPoint } from '../../models/sales.model';
-
-type ChartKind = 'profit' | 'trend' | 'category';
-
-function rands(value: number): string {
-  const digits = Math.trunc(value).toString();
-  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `R ${grouped}`;
-}
+import { ChartKind, SalesCategory, SalesMonthPoint } from '../../models/sales.model';
+import { MoneyService } from '../../services/money.service';
 
 @Component({
   selector: 'app-sales-chart',
@@ -21,6 +14,7 @@ export class SalesChartComponent {
   readonly months = input<SalesMonthPoint[]>([]);
   readonly categories = input<SalesCategory[]>([]);
   private readonly host = viewChild.required<ElementRef<HTMLElement>>('host');
+  private readonly money = inject(MoneyService);
   private chart?: Highcharts.Chart;
 
   constructor() {
@@ -66,6 +60,7 @@ export class SalesChartComponent {
   }
 
   private options(kind: ChartKind, months: SalesMonthPoint[], categories: SalesCategory[]): Highcharts.Options {
+    const format = (value: number) => this.money.formatRands(value);
     const base: Highcharts.Options = {
       chart: { backgroundColor: 'transparent', style: { fontFamily: '"Source Sans 3", sans-serif' }, spacing: [8, 8, 8, 8] },
       title: { text: undefined },
@@ -82,9 +77,9 @@ export class SalesChartComponent {
         ...base,
         chart: { ...base.chart, type: 'column', height: 220 },
         xAxis: { categories: months.map((item) => item.month), lineColor: '#e6e6e6', tickColor: '#e6e6e6', labels: { style: { color: '#5c5c5c', fontSize: '13px' } } },
-        yAxis: { title: { text: undefined }, gridLineColor: '#eeeeee', labels: { style: { color: '#5c5c5c', fontSize: '12px' }, formatter() { return rands(Number(this.value)); } } },
+        yAxis: { title: { text: undefined }, gridLineColor: '#eeeeee', labels: { style: { color: '#5c5c5c', fontSize: '12px' }, formatter() { return format(Number(this.value)); } } },
         plotOptions: { column: { color: '#ff4b1f', borderWidth: 0, pointPadding: 0.28, groupPadding: 0.16 } },
-        tooltip: { ...base.tooltip, pointFormatter() { return `<span>Profit: ${rands(this.y ?? 0)}</span>`; } },
+        tooltip: { ...base.tooltip, pointFormatter() { return `<span>Profit: ${format(this.y ?? 0)}</span>`; } },
         series: [{ type: 'column', name: 'Profit', data: months.map((item) => item.profitRands) }],
       };
     }
@@ -93,9 +88,9 @@ export class SalesChartComponent {
         ...base,
         chart: { ...base.chart, type: 'line', height: 240 },
         xAxis: { categories: months.map((item) => item.month), lineColor: '#e6e6e6', tickColor: '#e6e6e6', labels: { style: { color: '#5c5c5c', fontSize: '13px' } } },
-        yAxis: { title: { text: undefined }, gridLineColor: '#eeeeee', labels: { style: { color: '#5c5c5c', fontSize: '12px' }, formatter() { return rands(Number(this.value)); } } },
+        yAxis: { title: { text: undefined }, gridLineColor: '#eeeeee', labels: { style: { color: '#5c5c5c', fontSize: '12px' }, formatter() { return format(Number(this.value)); } } },
         plotOptions: { line: { marker: { enabled: true, radius: 4, symbol: 'circle' } } },
-        tooltip: { ...base.tooltip, shared: true, pointFormatter() { return `<span style="color:${this.color}">●</span> ${this.series.name}: ${rands(this.y ?? 0)}<br/>`; } },
+        tooltip: { ...base.tooltip, shared: true, pointFormatter() { return `<span style="color:${this.color}">●</span> ${this.series.name}: ${format(this.y ?? 0)}<br/>`; } },
         series: [
           { type: 'line', name: 'Sales', color: '#141414', data: months.map((item) => item.salesRands) },
           { type: 'line', name: 'Profit', color: '#ff4b1f', data: months.map((item) => item.profitRands) },
@@ -131,7 +126,7 @@ export class SalesChartComponent {
         ...base.tooltip,
         pointFormatter() {
           const point = this as Highcharts.Point & { amount?: string; share?: number };
-          return `<span>${point.amount ?? rands(this.y ?? 0)} · ${point.share ?? 0}% of sales</span>`;
+          return `<span>${point.amount ?? format(this.y ?? 0)} · ${point.share ?? 0}% of sales</span>`;
         },
       },
       series: [{

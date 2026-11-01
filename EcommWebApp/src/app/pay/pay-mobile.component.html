@@ -1,5 +1,5 @@
 <section class="px-4 py-5">
-  <h1 class="font-display text-[40px] leading-11.5">Pay</h1>
+  <h1 class="font-display text-40 leading-11.5">Pay</h1>
   <p class="mt-3 text-base leading-6 text-muted">PayFast takes the card or bank login. This shop does not.</p>
   <ul class="mt-4 grid gap-3">
     @for (method of methods; track method.id) {
@@ -11,25 +11,25 @@
           [ngClass]="selected() === method.id ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
           (click)="selected.set(method.id)">
           <span class="block text-lg leading-6.5">{{ method.title }}</span>
-          <span class="mt-1 block text-[13px] leading-4.5 text-muted">{{ method.detail }}</span>
+          <span class="mt-1 block text-13 leading-4.5 text-muted">{{ method.detail }}</span>
         </button>
       </li>
     }
   </ul>
   <aside class="mt-4 border border-line bg-white p-4">
-    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR ORDER</p>
+    <p class="text-13 font-medium tracking-label text-muted">YOUR ORDER</p>
     @for (line of lines(); track line.sku) {
       <p class="mt-2 leading-6">{{ line.name }}</p>
     }
     @if (delivery() === 'collect') {
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">Collect from the shop · VAT included</p>
+      <p class="mt-2 text-13 leading-4.5 text-muted">Collect from the shop · VAT included</p>
     } @else {
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">Courier {{ courier() }} · VAT included</p>
+      <p class="mt-2 text-13 leading-4.5 text-muted">Courier {{ courier() }} · VAT included</p>
     }
-    <p class="mt-2 text-[22px] font-semibold leading-7 text-action">{{ total() }}</p>
+    <p class="mt-2 text-22 font-semibold leading-7 text-action">{{ total() }}</p>
   </aside>
   @if (error()) {
-    <p class="mt-3 text-[13px] leading-4.5 text-danger">{{ error() }}</p>
+    <p class="mt-3 text-13 leading-4.5 text-danger">{{ error() }}</p>
   }
   <button type="button" class="mt-4 w-full border-0 bg-transparent p-0 disabled:opacity-50" [disabled]="paying()" (click)="pay()">
     <ecomm-button [label]="paying() ? 'Sending to PayFast…' : 'Continue to PayFast'" [full]="true" />

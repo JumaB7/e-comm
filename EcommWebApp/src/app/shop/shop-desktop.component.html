@@ -2,17 +2,17 @@
   <section class="mx-auto w-full max-w-360 flex-1 px-16 py-12">
     <div class="flex items-end justify-between gap-6">
       <div>
-        <h1 class="font-display text-[40px] leading-11.5">The range</h1>
+        <h1 class="font-display text-40 leading-11.5">The range</h1>
         <p class="mt-3 text-base leading-6 text-muted">{{ countLabel() }}. Prices in rand, VAT included.</p>
       </div>
-      <p class="text-[13px] font-medium tracking-[0.08em]">SORT: FEATURED</p>
+      <p class="text-13 font-medium tracking-label">SORT: FEATURED</p>
     </div>
     <div class="mt-8 flex flex-wrap gap-2">
       @for (filter of filters; track filter.label) {
         <a
           routerLink="/shop"
           [queryParams]="filter.category ? { category: filter.category } : {}"
-          class="rounded-sm px-3.5 py-2 text-[13px] font-medium tracking-[0.08em]"
+          class="rounded-sm px-3.5 py-2 text-13 font-medium tracking-label"
           [ngClass]="category() === filter.category ? 'bg-inverse text-white' : 'border border-line bg-white text-ink'">
           {{ filter.label }}
         </a>
@@ -38,7 +38,7 @@
     }
   </section>
   <section class="mt-auto border-y border-line bg-white">
-    <ul class="mx-auto grid max-w-360 grid-cols-4 px-16 py-8 text-[13px] font-medium tracking-[0.08em]">
+    <ul class="mx-auto grid max-w-360 grid-cols-4 px-16 py-8 text-13 font-medium tracking-label">
       <li>PAYFAST CHECKOUT</li>
       <li>CARD AND INSTANT EFT</li>
       <li>VAT INCLUDED IN THE PRICE</li>

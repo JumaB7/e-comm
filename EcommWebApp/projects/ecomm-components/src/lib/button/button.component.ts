@@ -15,7 +15,7 @@ export class ButtonComponent {
   protected readonly classes = computed(() => {
     const width = this.full() ? 'w-full' : '';
     const base =
-      'inline-flex items-center justify-center rounded-sm px-6 py-4 text-center text-[15px] font-semibold leading-5';
+      'inline-flex items-center justify-center rounded-sm px-6 py-4 text-center text-15 font-semibold leading-5';
     const look =
       this.variant() === 'secondary'
         ? 'border border-ink bg-white text-ink'

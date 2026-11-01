@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { scopeIntroKey } from '../models/constants';
 
 /** Thin sessionStorage accessor for opaque session keys — not a PII profile cache. */
 @Injectable({ providedIn: 'root' })
@@ -80,6 +81,25 @@ export class SessionStoreService {
   clearAuth(): void {
     this.clearToken();
     this.scrubLegacyProfileKeys();
+  }
+
+  shouldPlayScopeIntro(): boolean {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return false;
+    }
+    try {
+      return sessionStorage.getItem(scopeIntroKey) !== 'seen';
+    } catch {
+      return true;
+    }
+  }
+
+  markScopeIntroSeen(): void {
+    try {
+      sessionStorage.setItem(scopeIntroKey, 'seen');
+    } catch {
+      // Private browsing can block storage. The intro still closes.
+    }
   }
 
   private readBagsByEmail(): Record<string, string> {

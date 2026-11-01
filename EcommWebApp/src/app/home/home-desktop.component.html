@@ -5,8 +5,8 @@
     class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40" />
   <div class="relative mx-auto grid max-w-360 items-center gap-12 px-16 py-16 lg:grid-cols-[minmax(0,1fr)_420px]">
     <div class="max-w-160 py-8">
-      <p class="text-[13px] font-medium tracking-[0.08em] text-action">THE RANGE</p>
-      <h1 class="mt-6 font-display text-[64px] leading-19 tracking-[-0.02em]">Gear for the stalk.</h1>
+      <p class="text-13 font-medium tracking-label text-action">THE RANGE</p>
+      <h1 class="mt-6 font-display text-64 leading-19 tracking-display">Gear for the stalk.</h1>
       <p class="mt-6 max-w-130 text-base leading-6">
         Optics, apparel, knives, and camp kit for the South African hunt. Pay on PayFast with a card or Instant EFT.
       </p>
@@ -24,18 +24,18 @@
           [alt]="item.name"
           class="absolute inset-0 h-full w-full object-cover" />
         <div class="relative bg-linear-to-t from-white via-white/90 to-transparent p-8">
-          <p class="text-[13px] font-medium tracking-[0.08em]">THIS WEEK</p>
-          <p class="mt-3 max-w-85 font-display text-[28px] leading-8.5">Glass that holds up at last light.</p>
+          <p class="text-13 font-medium tracking-label">THIS WEEK</p>
+          <p class="mt-3 max-w-85 font-display text-28 leading-8.5">Glass that holds up at last light.</p>
           <p class="mt-3 text-lg leading-6.5">{{ item.name }}</p>
-          <p class="text-[22px] font-semibold leading-7 text-action">{{ item.price }}</p>
-          <p class="text-[13px] leading-4.5 text-muted">Incl. VAT · {{ item.stock }} in stock</p>
+          <p class="text-22 font-semibold leading-7 text-action">{{ item.price }}</p>
+          <p class="text-13 leading-4.5 text-muted">Incl. VAT · {{ item.stock }} in stock</p>
         </div>
       </a>
     }
   </div>
 </section>
 <section class="mx-auto max-w-360 px-16 py-16">
-  <h2 class="font-display text-[40px] leading-11.5">Shop by kit</h2>
+  <h2 class="font-display text-40 leading-11.5">Shop by kit</h2>
   <ul class="mt-6 grid grid-cols-4 gap-4">
     @for (category of categories; track category.name) {
       <li>
@@ -45,7 +45,7 @@
           class="relative flex h-56 flex-col justify-end overflow-hidden border border-line bg-ink p-5 text-white">
           <img [src]="category.image" [alt]="" class="absolute inset-0 h-full w-full object-cover opacity-70" />
           <div class="relative">
-            <p class="text-[13px] leading-4.5 text-white/80">{{ category.detail }}</p>
+            <p class="text-13 leading-4.5 text-white/80">{{ category.detail }}</p>
             <p class="text-lg leading-6.5">{{ category.name }}</p>
           </div>
         </a>
@@ -57,12 +57,12 @@
   <section class="mx-auto w-full max-w-360 flex-1 px-16 pb-16">
     <div class="flex items-end justify-between gap-6">
       <div>
-        <h2 class="font-display text-[40px] leading-11.5">In the shop</h2>
+        <h2 class="font-display text-40 leading-11.5">In the shop</h2>
         <p class="mt-3 max-w-xl text-base leading-6 text-muted">
           A sample of the range. About fifty products will live here, prices in rand, VAT included.
         </p>
       </div>
-      <a routerLink="/shop" class="text-[13px] font-medium tracking-[0.08em]">VIEW ALL</a>
+      <a routerLink="/shop" class="text-13 font-medium tracking-label">VIEW ALL</a>
     </div>
     <ul class="mt-8 grid grid-cols-4 gap-6">
       @for (product of featured(); track product.sku) {
@@ -80,7 +80,7 @@
     </ul>
   </section>
   <section class="mt-auto border-y border-line bg-white">
-    <ul class="mx-auto grid max-w-360 grid-cols-4 px-16 py-8 text-[13px] font-medium tracking-[0.08em]">
+    <ul class="mx-auto grid max-w-360 grid-cols-4 px-16 py-8 text-13 font-medium tracking-label">
       <li>PAYFAST CHECKOUT</li>
       <li>CARD AND INSTANT EFT</li>
       <li>VAT INCLUDED IN THE PRICE</li>

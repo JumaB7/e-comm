@@ -1,15 +1,15 @@
 <form class="px-4 py-4" [formGroup]="form">
-  <h1 class="font-display text-[40px] leading-11.5">Checkout</h1>
-  <p class="mt-2 text-[13px] leading-4.5 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
+  <h1 class="font-display text-40 leading-11.5">Checkout</h1>
+  <p class="mt-2 text-13 leading-4.5 text-muted">Delivery details stay on this shop. Payment happens on PayFast.</p>
 
   @if (hasSavedDelivery()) {
-    <button type="button" class="mt-4 border-0 bg-transparent p-0 text-[13px] font-medium tracking-[0.08em] uppercase text-ink" (click)="useSavedDetails()">
+    <button type="button" class="mt-4 border-0 bg-transparent p-0 text-13 font-medium tracking-label uppercase text-ink" (click)="useSavedDetails()">
       Use saved details
     </button>
   }
 
   <div class="mt-6 grid gap-4">
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">EMAIL
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" autocomplete="email" />
       @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">
@@ -17,7 +17,7 @@
         </span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">PHONE
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" />
       @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">
@@ -29,37 +29,37 @@
         </span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">FULL NAME
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" autocomplete="name" />
       @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter the name for delivery.</span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">STREET
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" autocomplete="street-address" />
       @if (form.controls.street.invalid && (form.controls.street.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter a street address.</span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">SUBURB
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
       @if (form.controls.suburb.invalid && (form.controls.suburb.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter a suburb.</span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">CITY
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
       @if (form.controls.city.invalid && (form.controls.city.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter a city.</span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">PROVINCE
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
       @if (form.controls.province.invalid && (form.controls.province.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">Enter a province.</span>
       }
     </label>
-    <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
+    <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">POSTAL CODE
       <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" inputmode="numeric" />
       @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
         <span class="font-normal tracking-normal text-danger">
@@ -77,7 +77,7 @@
     [ngClass]="delivery() === 'courier' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
     (click)="deliveryChoice.set('courier')">
     <span class="block leading-6">Courier nationwide</span>
-    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days · {{ courierFee() }}</span>
+    <span class="mt-0.5 block text-13 leading-4.5 text-muted">2–5 working days · {{ courierFee() }}</span>
   </button>
   <button
     type="button"
@@ -86,18 +86,18 @@
     [ngClass]="delivery() === 'collect' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
     (click)="deliveryChoice.set('collect')">
     <span class="block leading-6">Collect from the shop</span>
-    <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
+    <span class="mt-0.5 block text-13 leading-4.5 text-muted">We will email when it is packed</span>
   </button>
 
   <aside class="mt-6 border border-line bg-white p-4">
-    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">YOUR BAG</p>
+    <p class="text-13 font-medium tracking-label text-muted">YOUR BAG</p>
     @for (line of bagRows(); track line.sku) {
       <div class="mt-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="leading-6">{{ line.name }}</p>
             @if (line.detail) {
-              <p class="text-[13px] leading-4.5 text-muted">{{ line.detail }}</p>
+              <p class="text-13 leading-4.5 text-muted">{{ line.detail }}</p>
             }
           </div>
           <p class="shrink-0 leading-6">{{ line.priceLabel }}</p>
@@ -105,10 +105,10 @@
         <div class="mt-2 flex items-center gap-4">
           <div class="flex h-9 items-center border border-line">
             <button type="button" class="px-3 text-base leading-none" (click)="bumpQty(line.sku, -1)" aria-label="Fewer">−</button>
-            <span class="min-w-6 text-center text-[13px] leading-4.5">{{ line.editQty }}</span>
+            <span class="min-w-6 text-center text-13 leading-4.5">{{ line.editQty }}</span>
             <button type="button" class="px-3 text-base leading-none" (click)="bumpQty(line.sku, 1)" aria-label="More">+</button>
           </div>
-          <button type="button" class="border-0 bg-transparent p-0 text-[13px] leading-4.5 text-muted" (click)="remove(line.sku)">Remove</button>
+          <button type="button" class="border-0 bg-transparent p-0 text-13 leading-4.5 text-muted" (click)="remove(line.sku)">Remove</button>
         </div>
       </div>
     }
@@ -118,12 +118,12 @@
       </button>
     }
     @if (delivery() === 'courier') {
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">Courier · {{ courier() }}</p>
+      <p class="mt-2 text-13 leading-4.5 text-muted">Courier · {{ courier() }}</p>
     } @else {
-      <p class="mt-2 text-[13px] leading-4.5 text-muted">Collect from the shop</p>
+      <p class="mt-2 text-13 leading-4.5 text-muted">Collect from the shop</p>
     }
     <p class="mt-2 text-lg leading-6.5">Total {{ total() }}</p>
-    <p class="mt-1 text-[13px] leading-4.5 text-muted">VAT included</p>
+    <p class="mt-1 text-13 leading-4.5 text-muted">VAT included</p>
   </aside>
 
   @if (hasLines() > 0) {
@@ -132,14 +132,14 @@
     </button>
     @if (showValidationSummary()) {
       <div class="mt-3 border border-danger bg-white p-3" role="alert">
-        <p class="text-[13px] leading-4.5 text-danger">Please fix the following fields before checkout</p>
-        <ul class="mt-1.5 list-disc pl-4 text-[13px] leading-4.5 text-danger">
+        <p class="text-13 leading-4.5 text-danger">Please fix the following fields before checkout</p>
+        <ul class="mt-1.5 list-disc pl-4 text-13 leading-4.5 text-danger">
           @for (field of invalidFields(); track field) {
             <li>{{ field }}</li>
           }
         </ul>
       </div>
     }
-    <p class="mt-3 text-[13px] leading-4.5 text-muted">Card, Instant EFT, or Capitec Pay on PayFast.</p>
+    <p class="mt-3 text-13 leading-4.5 text-muted">Card, Instant EFT, or Capitec Pay on PayFast.</p>
   }
 </form>

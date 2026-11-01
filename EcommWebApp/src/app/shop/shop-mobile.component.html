@@ -1,13 +1,13 @@
 <div class="flex min-h-[calc(100vh-11rem)] flex-col">
   <section class="flex-1 px-4 py-4">
-    <h1 class="font-display text-[40px] leading-11.5">The range</h1>
-    <p class="mt-2 text-[13px] leading-4.5 text-muted">{{ countLabel() }} · VAT included</p>
+    <h1 class="font-display text-40 leading-11.5">The range</h1>
+    <p class="mt-2 text-13 leading-4.5 text-muted">{{ countLabel() }} · VAT included</p>
     <div class="mt-4 flex flex-wrap gap-2">
       @for (filter of filters; track filter.label) {
         <a
           routerLink="/shop"
           [queryParams]="filter.category ? { category: filter.category } : {}"
-          class="rounded-sm px-3 py-2 text-[13px] font-medium tracking-[0.08em]"
+          class="rounded-sm px-3 py-2 text-13 font-medium tracking-label"
           [ngClass]="category() === filter.category ? 'bg-inverse text-white' : 'border border-line bg-white text-ink'">
           {{ filter.label }}
         </a>
@@ -33,7 +33,7 @@
     }
   </section>
   <section class="mt-auto border-y border-line bg-white px-4 py-5">
-    <ul class="grid gap-3 text-[13px] font-medium tracking-[0.08em]">
+    <ul class="grid gap-3 text-13 font-medium tracking-label">
       <li>PAYFAST CHECKOUT</li>
       <li>CARD AND INSTANT EFT</li>
       <li>VAT INCLUDED IN THE PRICE</li>

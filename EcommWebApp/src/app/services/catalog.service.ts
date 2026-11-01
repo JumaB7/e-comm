@@ -4,7 +4,7 @@ import { Observable, Subscription, catchError, of, switchMap, tap, throwError } 
 import { CheckoutDetails } from '../models/cart.model';
 import { emptyOrderSummary } from '../models/constants';
 import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model';
-import { Product } from '../models/product.model';
+import { Product, ProductWrite } from '../models/product.model';
 import { SalesReport } from '../models/sales.model';
 import { apiMessage } from './api-message';
 import { SessionStoreService } from './session-store.service';
@@ -156,7 +156,7 @@ export class CatalogService {
         switchMap((result) => {
           this.session.setReceipt(result.receiptKey);
           if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
-            submitPayFast(result.payFastUrl, result.fields);
+            this.submitPayFast(result.payFastUrl, result.fields);
             return of(null);
           }
           return this.http.post<ShopOrder>(`/api/payfast/local/${result.order.id}`, {});
@@ -203,28 +203,19 @@ export class CatalogService {
   private replaceOrder(order: ShopOrder): void {
     this.orders.update((orders) => orders.map((item) => (item.id === order.id ? order : item)));
   }
-}
 
-interface ProductWrite {
-  name: string;
-  sku: string;
-  category: string;
-  priceRands: number;
-  stock: number;
-  specs: { label: string; value: string }[];
-}
-
-function submitPayFast(url: string, fields: Record<string, string>): void {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = url;
-  for (const [name, value] of Object.entries(fields)) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
+  private submitPayFast(url: string, fields: Record<string, string>): void {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    for (const [name, value] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
   }
-  document.body.appendChild(form);
-  form.submit();
 }

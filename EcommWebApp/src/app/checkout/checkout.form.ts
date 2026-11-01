@@ -12,6 +12,17 @@ export type CheckoutForm = FormGroup<{
   postalCode: FormControl<string>;
 }>;
 
+export const checkoutFieldLabels: Record<keyof CheckoutForm['controls'], string> = {
+  email: 'Email',
+  phone: 'Phone',
+  fullName: 'Full name',
+  street: 'Street',
+  suburb: 'Suburb',
+  city: 'City',
+  province: 'Province',
+  postalCode: 'Postal code',
+};
+
 export function checkoutForm(): CheckoutForm {
   return new FormGroup({
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),

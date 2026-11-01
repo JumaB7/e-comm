@@ -1,6 +1,6 @@
 @if (loading()) {
   <div
-    class="fixed inset-0 z-60 flex items-center justify-center bg-[rgba(20,20,20,0.42)] p-6 backdrop-blur-[2px]"
+    class="fixed inset-0 z-60 flex items-center justify-center bg-ink/42 p-6 backdrop-blur-2"
     role="status"
     aria-live="polite">
     <div class="flex flex-col items-center">
@@ -17,8 +17,8 @@
             stroke-linecap="round" />
         </g>
       </svg>
-      <p class="mt-5 text-center text-[20px] leading-6.5 font-semibold text-ink lg:text-[24px] lg:leading-7">Loading</p>
-      <p class="mt-1.5 max-w-62.5 text-center text-[13px] leading-4.5 text-[#404040]">Please wait a moment.</p>
+      <p class="mt-5 text-center text-20 leading-6.5 font-semibold text-ink lg:text-24 lg:leading-7">Loading</p>
+      <p class="mt-1.5 max-w-62.5 text-center text-13 leading-4.5 text-copy">Please wait a moment.</p>
     </div>
   </div>
 }

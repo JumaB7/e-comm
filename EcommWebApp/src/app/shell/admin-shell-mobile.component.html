@@ -2,14 +2,14 @@
   <header class="flex items-center justify-between bg-inverse px-4 py-4 text-white">
     <a routerLink="/admin/orders" class="flex items-center gap-3">
       <img src="/kudu-logo.svg" alt="" class="h-9 w-auto" />
-      <span class="font-display text-[22px] leading-7">Veld Supply</span>
+      <span class="font-display text-22 leading-7">Veld Supply</span>
     </a>
     <div class="text-right">
-      <p class="text-[13px] font-medium tracking-[0.08em] text-action">ADMIN</p>
-      <button type="button" class="mt-1 border-0 bg-transparent p-0 text-[13px] leading-4.5 text-white" (click)="signOut()">Sign out</button>
+      <p class="text-13 font-medium tracking-label text-action">ADMIN</p>
+      <button type="button" class="mt-1 border-0 bg-transparent p-0 text-13 leading-4.5 text-white" (click)="signOut()">Sign out</button>
     </div>
   </header>
-  <nav class="grid grid-cols-4 bg-inverse text-center text-[13px]">
+  <nav class="grid grid-cols-4 bg-inverse text-center text-13">
     @for (link of links; track link.path) {
       <a
         [routerLink]="link.path"

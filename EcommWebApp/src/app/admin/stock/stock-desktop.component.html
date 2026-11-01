@@ -1,11 +1,11 @@
 <section>
-  <h1 class="font-display text-[40px] leading-11.5">Stock</h1>
-  <p class="mt-4 text-[13px] leading-4.5 text-muted">Change a count on the row. Delete takes the product off the shop. Past orders stay.</p>
+  <h1 class="font-display text-40 leading-11.5">Stock</h1>
+  <p class="mt-4 text-13 leading-4.5 text-muted">Change a count on the row. Delete takes the product off the shop. Past orders stay.</p>
   @if (menuSku()) {
     <button type="button" class="fixed inset-0 z-10 cursor-default border-0 bg-transparent p-0" aria-label="Close menu" (click)="closeMenu()"></button>
   }
   <div class="mt-6 border border-line bg-white">
-    <div class="grid grid-cols-[1.6fr_160px_180px_120px_48px] border-b border-line px-4 py-3 text-[13px] font-medium tracking-[0.08em] text-muted">
+    <div class="grid grid-cols-[1.6fr_160px_180px_120px_48px] border-b border-line px-4 py-3 text-13 font-medium tracking-label text-muted">
       <span>PRODUCT</span>
       <span>SKU</span>
       <span>ON HAND</span>
@@ -16,7 +16,7 @@
       @let row = rowView()[product.sku];
       <div class="relative grid grid-cols-[1.6fr_160px_180px_120px_48px] items-center border-b border-line px-4 py-3 last:border-b-0" [ngClass]="{ 'z-20': row.menuOpen }">
         <span>{{ product.name }}</span>
-        <span class="text-[13px] leading-4.5 text-muted">{{ product.sku }}</span>
+        <span class="text-13 leading-4.5 text-muted">{{ product.sku }}</span>
         <span class="flex items-center gap-2">
           @if (row.editing) {
             <input
@@ -42,7 +42,7 @@
           <span class="flex flex-col">
             <button
               type="button"
-              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-10 leading-none text-ink disabled:opacity-40"
               aria-label="Increase stock"
               [disabled]="row.busy"
               (mousedown)="holdStep($event)"
@@ -51,7 +51,7 @@
             </button>
             <button
               type="button"
-              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-[10px] leading-none text-ink disabled:opacity-40"
+              class="flex h-4 w-6 items-center justify-center border-0 bg-transparent p-0 text-10 leading-none text-ink disabled:opacity-40"
               aria-label="Decrease stock"
               [disabled]="!row.canDecrease"
               (mousedown)="holdStep($event)"
@@ -60,7 +60,7 @@
             </button>
           </span>
         </span>
-        <span class="text-[13px] leading-4.5 text-danger">@if (product.low) { Low }</span>
+        <span class="text-13 leading-4.5 text-danger">@if (product.low) { Low }</span>
         <span class="relative justify-self-end">
           <button
             type="button"
@@ -83,7 +83,7 @@
         </span>
       </div>
       @if (row.invalid) {
-        <p class="px-4 pb-2 text-[13px] leading-4.5 text-danger">Use a whole number.</p>
+        <p class="px-4 pb-2 text-13 leading-4.5 text-danger">Use a whole number.</p>
       }
     }
   </div>

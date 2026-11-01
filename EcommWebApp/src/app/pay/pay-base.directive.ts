@@ -1,6 +1,7 @@
 import { Directive, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { checkoutForm } from '../checkout/checkout.form';
+import { payMethods } from '../models/constants';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
 import { SessionStoreService } from '../services/session-store.service';
@@ -11,11 +12,7 @@ export class PayBaseDirective {
   private readonly catalog = inject(CatalogService);
   private readonly session = inject(SessionStoreService);
   private readonly router = inject(Router);
-  readonly methods = [
-    { id: 'card', title: 'Card', detail: 'Visa or Mastercard on PayFast' },
-    { id: 'eft', title: 'Instant EFT', detail: 'FNB, Absa, Standard Bank, Nedbank, and others' },
-    { id: 'capitec', title: 'Capitec Pay', detail: 'Pay from the Capitec app' },
-  ];
+  readonly methods = payMethods;
   readonly selected = signal('card');
   readonly paying = signal(false);
   readonly error = signal('');

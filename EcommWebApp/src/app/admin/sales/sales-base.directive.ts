@@ -1,8 +1,7 @@
 import { Directive, computed, inject } from '@angular/core';
+import { emptySalesDelta } from '../../models/constants';
 import { SalesCategory, SalesMonthPoint } from '../../models/sales.model';
 import { CatalogService } from '../../services/catalog.service';
-
-const emptyDelta = { text: 'No change', up: false, flat: true };
 
 @Directive()
 export class SalesBaseDirective {
@@ -27,7 +26,7 @@ export class SalesBaseDirective {
   readonly productCosts = computed(() => this.report()?.productCosts ?? 'R 0');
   readonly repeatShare = computed(() => this.report()?.repeatShare ?? '0%');
   readonly repeatChange = computed(() => {
-    const change = this.report()?.repeatChange ?? emptyDelta;
+    const change = this.report()?.repeatChange ?? emptySalesDelta;
     return {
       ...change,
       tone: change.flat ? 'text-muted' : change.up ? 'text-success' : 'text-danger',

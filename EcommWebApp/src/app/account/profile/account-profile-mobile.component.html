@@ -1,18 +1,18 @@
 <form class="px-4 py-4" [formGroup]="form" (submit)="save($event)">
-  <h1 class="font-display text-[40px] leading-11.5">Account</h1>
-  <p class="mt-2 text-[13px] leading-4.5 text-muted">Personal and delivery details for checkout.</p>
-  <a routerLink="/account/orders" class="mt-3 inline-block text-[13px] font-medium tracking-[0.08em] uppercase">Your orders</a>
+  <h1 class="font-display text-40 leading-11.5">Account</h1>
+  <p class="mt-2 text-13 leading-4.5 text-muted">Personal and delivery details for checkout.</p>
+  <a routerLink="/account/orders" class="mt-3 inline-block text-13 font-medium tracking-label uppercase">Your orders</a>
 
   @if (ready()) {
     <h2 class="mt-6 text-lg leading-6.5">Personal information</h2>
     <div class="mt-3 grid gap-4">
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">FULL NAME
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">FULL NAME
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="fullName" autocomplete="name" />
         @if (form.controls.fullName.invalid && (form.controls.fullName.touched || submitted())) {
           <span class="font-normal tracking-normal text-danger">Enter your name.</span>
         }
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">EMAIL
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">EMAIL
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="email" autocomplete="email" />
         @if (form.controls.email.invalid && (form.controls.email.touched || submitted())) {
           <span class="font-normal tracking-normal text-danger">
@@ -20,7 +20,7 @@
           </span>
         }
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PHONE
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">PHONE
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" />
         @if (form.controls.phone.invalid && (form.controls.phone.touched || submitted())) {
           <span class="font-normal tracking-normal text-danger">
@@ -36,19 +36,19 @@
 
     <h2 class="mt-6 text-lg leading-6.5">Delivery information</h2>
     <div class="mt-3 grid gap-4">
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">STREET
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">STREET
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="street" autocomplete="street-address" />
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">SUBURB
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">SUBURB
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="suburb" />
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">CITY
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">CITY
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="city" />
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">PROVINCE
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">PROVINCE
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="province" />
       </label>
-      <label class="grid gap-1.5 text-[13px] font-medium tracking-[0.08em] text-muted">POSTAL CODE
+      <label class="grid gap-1.5 text-13 font-medium tracking-label text-muted">POSTAL CODE
         <input class="h-12.5 rounded-sm border border-line bg-white px-3.5 text-base font-normal tracking-normal text-ink" formControlName="postalCode" inputmode="numeric" />
         @if (form.controls.postalCode.invalid && (form.controls.postalCode.touched || submitted())) {
           <span class="font-normal tracking-normal text-danger">Use a 4 digit postal code.</span>
@@ -56,7 +56,7 @@
       </label>
     </div>
 
-    <h3 class="mt-6 text-[13px] font-medium tracking-[0.08em] text-muted">PREFERRED DELIVERY</h3>
+    <h3 class="mt-6 text-13 font-medium tracking-label text-muted">PREFERRED DELIVERY</h3>
     <button
       type="button"
       class="mt-3 w-full px-4 py-3.5 text-left"
@@ -64,7 +64,7 @@
       [ngClass]="form.controls.delivery.value === 'courier' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
       (click)="setDelivery('courier')">
       <span class="block leading-6">Courier nationwide</span>
-      <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">2–5 working days</span>
+      <span class="mt-0.5 block text-13 leading-4.5 text-muted">2–5 working days</span>
     </button>
     <button
       type="button"
@@ -73,17 +73,17 @@
       [ngClass]="form.controls.delivery.value === 'collect' ? 'border-2 border-ink bg-white' : 'border-2 border-line bg-canvas'"
       (click)="setDelivery('collect')">
       <span class="block leading-6">Collect from the shop</span>
-      <span class="mt-0.5 block text-[13px] leading-4.5 text-muted">We will email when it is packed</span>
+      <span class="mt-0.5 block text-13 leading-4.5 text-muted">We will email when it is packed</span>
     </button>
 
     <label class="mt-6 flex cursor-pointer items-start gap-3 text-base leading-6">
       <input class="mt-1 h-4 w-4 accent-ink" type="checkbox" formControlName="prefillCheckout" />
       <span>Fill these details automatically at checkout</span>
     </label>
-    <p class="mt-2 text-[13px] leading-4.5 text-muted">If this is off, use “Use saved details” on checkout.</p>
+    <p class="mt-2 text-13 leading-4.5 text-muted">If this is off, use “Use saved details” on checkout.</p>
 
     @if (error()) {
-      <p class="mt-4 text-[13px] leading-4.5 text-danger">{{ error() }}</p>
+      <p class="mt-4 text-13 leading-4.5 text-danger">{{ error() }}</p>
     }
     <button type="submit" class="mt-4 w-full border-0 bg-transparent p-0" [disabled]="busy()">
       <ecomm-button [label]="busy() ? 'Saving…' : 'Save account'" [full]="true" />

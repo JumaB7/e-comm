@@ -1,16 +1,12 @@
 import { inject, signal } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('password')?.value;
-  const confirmPassword = group.get('confirmPassword')?.value;
-  return password === confirmPassword ? null : { passwordMismatch: true };
-}
+import { PasswordMatchService } from '../services/password-match.service';
 
 export class ResetPasswordBase {
   private readonly auth = inject(AuthService);
+  private readonly passwords = inject(PasswordMatchService);
   private readonly route = inject(ActivatedRoute);
   readonly submitted = signal(false);
   readonly passwordVisible = signal(false);
@@ -26,7 +22,7 @@ export class ResetPasswordBase {
       }),
       confirmPassword: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     },
-    { validators: [passwordsMatch] },
+    { validators: [(group) => this.passwords.match(group)] },
   );
 
   constructor() {

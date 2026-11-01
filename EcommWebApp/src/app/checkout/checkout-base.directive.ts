@@ -5,18 +5,7 @@ import { merge } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
 import { ToastService } from '../services/toast.service';
-import { CheckoutForm, checkoutForm } from './checkout.form';
-
-const checkoutFieldLabels: Record<keyof CheckoutForm['controls'], string> = {
-  email: 'Email',
-  phone: 'Phone',
-  fullName: 'Full name',
-  street: 'Street',
-  suburb: 'Suburb',
-  city: 'City',
-  province: 'Province',
-  postalCode: 'Postal code',
-};
+import { CheckoutForm, checkoutFieldLabels, checkoutForm } from './checkout.form';
 
 /** Shared checkout state for desktop/mobile. Plain class so template type-check sees members. */
 export class CheckoutBaseDirective {

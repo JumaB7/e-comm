@@ -1,16 +1,7 @@
 import { Directive, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CatalogService } from '../../services/catalog.service';
-import { Product } from '../../models/product.model';
-
-interface StockRow {
-  shown: number;
-  editing: boolean;
-  menuOpen: boolean;
-  canDecrease: boolean;
-  busy: boolean;
-  invalid: boolean;
-}
+import { Product, StockRow } from '../../models/product.model';
 
 @Directive()
 export class StockBaseDirective {

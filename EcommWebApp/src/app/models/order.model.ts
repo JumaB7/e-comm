@@ -14,6 +14,26 @@ export interface CheckoutResponse {
   fields?: Record<string, string>;
 }
 
+export interface OrderSection {
+  queue: string;
+  title: string;
+  detail: string;
+  orders: ShopOrder[];
+}
+
+export interface OrderSectionDefinition {
+  queue: string;
+  title: string;
+  detail: string;
+  always: boolean;
+}
+
+export interface ProgressStep {
+  label: string;
+  done: boolean;
+  current: boolean;
+}
+
 export interface ShopOrder {
   id: string;
   customer: string;

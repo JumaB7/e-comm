@@ -1,3 +1,5 @@
+export type ChartKind = 'profit' | 'trend' | 'category';
+
 export interface SalesDelta {
   text: string;
   up: boolean;

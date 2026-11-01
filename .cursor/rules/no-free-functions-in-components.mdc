@@ -1,0 +1,38 @@
+---
+description: Keep behaviour on services, not free functions beside components
+alwaysApply: true
+---
+
+# No free functions in component files
+
+Do not declare a file-level `function` in a component, directive, or container file. Put that behaviour on an `@Injectable` service.
+
+Angular still needs a function where an API asks for one (`ValidatorFn`, a chart formatter). The service owns the logic. The class passes a one-line wrapper.
+
+```typescript
+// Wrong — validator sitting beside the directive
+function completeSku(control: AbstractControl): ValidationErrors | null { /* ... */ }
+
+@Directive()
+export class AdminProductsBaseDirective {
+  readonly form = new FormGroup({
+    sku: new FormControl('', { validators: [completeSku] }),
+  });
+}
+
+// Right
+@Injectable({ providedIn: 'root' })
+export class SkuService {
+  completeSku(control: AbstractControl): ValidationErrors | null { /* ... */ }
+}
+
+@Directive()
+export class AdminProductsBaseDirective {
+  private readonly skus = inject(SkuService);
+  readonly form = new FormGroup({
+    sku: new FormControl('', { validators: [(control) => this.skus.completeSku(control)] }),
+  });
+}
+```
+
+Constants and interfaces stay in `src/app/models`, not in the component file. A method on the class is fine when it only coordinates that screen.

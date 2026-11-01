@@ -1,48 +1,29 @@
 import { Directive, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
-import { Product } from '../../models/product.model';
+import { categorySpecFields, productCategories } from '../../models/constants';
+import { Product, ProductSpec } from '../../models/product.model';
 import { apiMessage } from '../../services/api-message';
 import { CatalogService } from '../../services/catalog.service';
-
-const skuPrefixes: Record<string, string> = {
-  Optics: 'VS-OPT-',
-  Apparel: 'VS-APP-',
-  Knives: 'VS-KNF-',
-  Packs: 'VS-PCK-',
-  Camp: 'VS-CMP-',
-};
-
-function completeSku(control: AbstractControl): ValidationErrors | null {
-  const value = String(control.value ?? '').trim();
-  const original = String(control.parent?.get('originalSku')?.value ?? '').trim();
-  if (original && value === original) {
-    return null;
-  }
-  const category = String(control.parent?.get('category')?.value ?? 'Optics');
-  const prefix = skuPrefixes[category] ?? skuPrefixes['Optics'];
-  if (!value.startsWith(prefix)) {
-    return { prefix: true };
-  }
-  return value.length > prefix.length && !value.endsWith('-') ? null : { sku: true };
-}
+import { SkuService } from '../../services/sku.service';
 
 @Directive()
 export class AdminProductsBaseDirective {
   private readonly catalog = inject(CatalogService);
+  private readonly skus = inject(SkuService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private suspendPrefix = false;
   readonly products = this.catalog.products;
-  readonly categories = ['Optics', 'Apparel', 'Knives', 'Packs', 'Camp'];
+  readonly categories = productCategories;
   readonly adding = signal(false);
   readonly submitted = signal(false);
   readonly category = signal('Optics');
-  readonly skuPrefix = signal(skuPrefixes['Optics']);
+  readonly skuPrefix = signal(this.skus.prefix('Optics'));
   readonly editingSku = signal('');
   readonly menuSku = signal('');
   readonly saveError = signal('');
@@ -52,7 +33,7 @@ export class AdminProductsBaseDirective {
   private readonly editSku = signal('');
   readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    sku: new FormControl(skuPrefixes['Optics'], { nonNullable: true, validators: [Validators.required, completeSku] }),
+    sku: new FormControl(this.skus.prefix('Optics'), { nonNullable: true, validators: [Validators.required, (control) => this.skus.completeSku(control)] }),
     originalSku: new FormControl('', { nonNullable: true }),
     category: new FormControl('Optics', { nonNullable: true, validators: [Validators.required] }),
     price: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d+$/), Validators.min(1)] }),
@@ -185,7 +166,6 @@ export class AdminProductsBaseDirective {
   }
 
   private fill(product: Product): void {
-    const spec = (label: string) => product.specs.find((item) => item.label === label)?.value ?? '';
     const category = this.categories.includes(product.category) ? product.category : 'Camp';
     this.editingSku.set(product.sku);
     this.adding.set(true);
@@ -201,16 +181,10 @@ export class AdminProductsBaseDirective {
       category,
       price: String(product.amount),
       stock: String(product.stock),
-      magnification: spec('Magnification'),
-      weight: spec('Weight'),
-      waterproof: spec('Waterproof') === 'Yes',
-      size: spec('Size'),
-      blade: spec('Blade'),
-      volume: spec('Volume'),
-      power: spec('Power'),
+      ...this.specControls(product.specs),
     });
     this.category.set(category);
-    this.skuPrefix.set(skuPrefixes[category] ?? skuPrefixes['Optics']);
+    this.skuPrefix.set(this.skus.prefix(category));
     this.suspendPrefix = false;
   }
 
@@ -228,7 +202,7 @@ export class AdminProductsBaseDirective {
     this.suspendPrefix = true;
     this.form.reset({
       name: '',
-      sku: skuPrefixes['Optics'],
+      sku: this.skus.prefix('Optics'),
       originalSku: '',
       category: 'Optics',
       price: '',
@@ -242,7 +216,7 @@ export class AdminProductsBaseDirective {
       power: '',
     });
     this.category.set('Optics');
-    this.skuPrefix.set(skuPrefixes['Optics']);
+    this.skuPrefix.set(this.skus.prefix('Optics'));
     this.suspendPrefix = false;
   }
 
@@ -266,37 +240,43 @@ export class AdminProductsBaseDirective {
   }
 
   private applyPrefix(category: string): void {
-    const prefix = skuPrefixes[category] ?? skuPrefixes['Optics'];
+    const prefix = this.skus.prefix(category);
     this.skuPrefix.set(prefix);
     const current = this.form.controls.sku.value;
-    const previous = Object.values(skuPrefixes).find((item) => current.startsWith(item));
+    const previous = this.skus.prefixes().find((item) => current.startsWith(item));
     const rest = previous ? current.slice(previous.length) : current.replace(/^VS-[A-Za-z0-9]+-/, '');
     this.form.controls.sku.setValue(prefix + rest);
   }
 
-  private specs(value: ReturnType<AdminProductsBaseDirective['form']['getRawValue']>): { label: string; value: string }[] {
-    const rows: { label: string; value: string }[] = [];
-    const add = (label: string, text: string) => {
-      const trimmed = text.trim();
-      if (trimmed) {
-        rows.push({ label, value: trimmed });
+  private specs(value: ReturnType<AdminProductsBaseDirective['form']['getRawValue']>): ProductSpec[] {
+    return (categorySpecFields[value.category] ?? []).flatMap((field) => {
+      if (field.key === 'waterproof') {
+        return value.waterproof ? [{ label: field.label, value: 'Yes' }] : [];
       }
+      const text = value[field.key].trim();
+      return text ? [{ label: field.label, value: text }] : [];
+    });
+  }
+
+  private specControls(specs: ProductSpec[]) {
+    const stored = new Map(specs.map((item) => [item.label, item.value]));
+    const controls = {
+      magnification: '',
+      weight: '',
+      waterproof: false,
+      size: '',
+      blade: '',
+      volume: '',
+      power: '',
     };
-    if (value.category === 'Optics') {
-      add('Magnification', value.magnification);
-      add('Weight', value.weight);
-      if (value.waterproof) {
-        rows.push({ label: 'Waterproof', value: 'Yes' });
+    for (const field of Object.values(categorySpecFields).flat()) {
+      const text = stored.get(field.label) ?? '';
+      if (field.key === 'waterproof') {
+        controls.waterproof = text === 'Yes';
+      } else {
+        controls[field.key] = text;
       }
-    } else if (value.category === 'Apparel') {
-      add('Size', value.size);
-    } else if (value.category === 'Knives') {
-      add('Blade', value.blade);
-    } else if (value.category === 'Packs') {
-      add('Volume', value.volume);
-    } else if (value.category === 'Camp') {
-      add('Power', value.power);
     }
-    return rows;
+    return controls;
   }
 }

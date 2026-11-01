@@ -3,6 +3,20 @@ export interface ProductSpec {
   value: string;
 }
 
+export type ProductSpecField =
+  | 'magnification'
+  | 'weight'
+  | 'waterproof'
+  | 'size'
+  | 'blade'
+  | 'volume'
+  | 'power';
+
+export interface CategorySpecField {
+  label: string;
+  key: ProductSpecField;
+}
+
 export interface Product {
   sku: string;
   name: string;
@@ -14,4 +28,22 @@ export interface Product {
   blurb: string;
   image: string;
   specs: ProductSpec[];
+}
+
+export interface ProductWrite {
+  name: string;
+  sku: string;
+  category: string;
+  priceRands: number;
+  stock: number;
+  specs: ProductSpec[];
+}
+
+export interface StockRow {
+  shown: number;
+  editing: boolean;
+  menuOpen: boolean;
+  canDecrease: boolean;
+  busy: boolean;
+  invalid: boolean;
 }

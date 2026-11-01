@@ -20,8 +20,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var shopConnection = builder.Configuration.GetConnectionString("Shop");
+if (string.IsNullOrWhiteSpace(shopConnection))
+{
+    throw new InvalidOperationException(
+        "Connection string 'Shop' is not set. On Azure: Configuration → Connection strings → name Shop (SQLAzure).");
+}
+
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Shop")));
+    options.UseSqlServer(shopConnection));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddSingleton<ProductImageStore>();
@@ -48,11 +56,20 @@ else
     builder.Services.AddSingleton<IEmailSender, LoggingEmailSender>();
 }
 
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not set.");
+var jwtKey = (builder.Configuration["Jwt:Key"] ?? string.Empty).Trim();
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key is not set. On Azure: Configuration → App settings → Jwt__Key (not the local dev-only key).");
+}
 const string developmentJwtKey = "LOCAL_DEV_JWT_KEY_REPLACE_ME_32CHARS";
 if (!builder.Environment.IsDevelopment() && jwtKey == developmentJwtKey)
 {
     throw new InvalidOperationException("Jwt:Key must not use the development signing key outside Development.");
+}
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException("Jwt:Key must be at least 32 bytes (UTF-8). Generate a longer random value.");
 }
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -111,7 +128,19 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Surfaces in Azure LogFiles/stdout when web.config has stdoutLogEnabled.
+        Console.Error.WriteLine($"FATAL: Database.Migrate failed: {ex}");
+        throw new InvalidOperationException(
+            "Database.Migrate failed. Check connection string Shop and that Azure SQL allows this App Service (firewall / Allow Azure services).",
+            ex);
+    }
+
     // Seed users use the well-known local password — Development only.
     if (app.Environment.IsDevelopment())
     {

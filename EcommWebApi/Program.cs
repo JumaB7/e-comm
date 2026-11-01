@@ -29,7 +29,9 @@ if (string.IsNullOrWhiteSpace(shopConnection))
 }
 
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlServer(shopConnection));
+    options.UseSqlServer(shopConnection, sql =>
+        // Azure SQL serverless auto-pauses — 40613 "not currently available" until resume finishes.
+        sql.EnableRetryOnFailure(maxRetryCount: 8, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddSingleton<ProductImageStore>();
@@ -128,17 +130,35 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-    try
+    // Free App Service + serverless SQL: DB may be paused (error 40613) for ~30–60s on first connect.
+    const int migrateAttempts = 8;
+    Exception? migrateFailure = null;
+    for (var attempt = 1; attempt <= migrateAttempts; attempt++)
     {
-        db.Database.Migrate();
+        try
+        {
+            db.Database.Migrate();
+            migrateFailure = null;
+            break;
+        }
+        catch (Exception ex)
+        {
+            migrateFailure = ex;
+            Console.Error.WriteLine($"WARN: Database.Migrate attempt {attempt}/{migrateAttempts} failed: {ex.Message}");
+            if (attempt < migrateAttempts)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(Math.Min(30, attempt * 5)));
+            }
+        }
     }
-    catch (Exception ex)
+
+    if (migrateFailure is not null)
     {
         // Surfaces in Azure LogFiles/stdout when web.config has stdoutLogEnabled.
-        Console.Error.WriteLine($"FATAL: Database.Migrate failed: {ex}");
+        Console.Error.WriteLine($"FATAL: Database.Migrate failed: {migrateFailure}");
         throw new InvalidOperationException(
             "Database.Migrate failed. Check connection string Shop and that Azure SQL allows this App Service (firewall / Allow Azure services).",
-            ex);
+            migrateFailure);
     }
 
     // Seed users use the well-known local password — Development only.

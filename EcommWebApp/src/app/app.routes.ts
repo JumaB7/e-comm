@@ -17,6 +17,7 @@ import { ShopContainerComponent } from './shop/shop-container.component';
 import { AdminShellContainerComponent } from './shell/admin-shell-container.component';
 import { ShopShellContainerComponent } from './shell/shop-shell-container.component';
 import { ForgotPasswordContainerComponent } from './forgot-password/forgot-password-container.component';
+import { HelpContainerComponent } from './help/help-container.component';
 import { ResetPasswordContainerComponent } from './reset-password/reset-password-container.component';
 import { SignInContainerComponent } from './sign-in/sign-in-container.component';
 import { adminGuard } from './services/admin.guard';
@@ -38,6 +39,7 @@ export const routes: Routes = [
       { path: 'forgot-password', component: ForgotPasswordContainerComponent },
       { path: 'reset-password', component: ResetPasswordContainerComponent },
       { path: 'register', component: RegisterContainerComponent },
+      { path: 'help/:page', component: HelpContainerComponent },
       { path: 'pay', component: PayContainerComponent },
       { path: 'paid', component: PaidContainerComponent },
     ],

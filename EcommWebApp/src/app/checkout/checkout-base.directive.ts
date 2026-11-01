@@ -133,6 +133,25 @@ export class CheckoutBaseDirective {
     this.cart.remove(sku);
   }
 
+  readonly clearConfirmOpen = signal(false);
+
+  requestClearBag(): void {
+    if (this.hasLines() < 1) {
+      return;
+    }
+    this.clearConfirmOpen.set(true);
+  }
+
+  cancelClearBag(): void {
+    this.clearConfirmOpen.set(false);
+  }
+
+  confirmClearBag(): void {
+    this.cart.clear();
+    this.qtyEdits.set({});
+    this.clearConfirmOpen.set(false);
+  }
+
   useSavedDetails(): void {
     const profile = this.cart.savedProfile();
     if (!profile) {

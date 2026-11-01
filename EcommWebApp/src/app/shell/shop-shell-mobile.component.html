@@ -17,30 +17,64 @@
       @for (link of links(); track link.label) {
         <a [routerLink]="link.path" [ngClass]="activeLabel() === link.label ? 'text-ink' : 'text-muted'">{{ link.label }}</a>
       }
-      @if (userData(); as user) {
-        <span class="text-ink">{{ user.name }}</span>
-        @if (user.role === 'Admin') {
-          <a routerLink="/admin" class="text-muted">ADMIN</a>
-        }
-        <button type="button" class="border-0 bg-transparent p-0 text-muted" (click)="signOut()">SIGN OUT</button>
-      }
     </nav>
+    @if (userData(); as user) {
+      <div class="mt-3 flex items-center justify-between gap-3 text-[13px] font-medium tracking-[0.08em]">
+        <span class="min-w-0 truncate text-ink">{{ user.name }}</span>
+        <div class="flex shrink-0 items-center gap-4">
+          @if (user.role === 'Admin') {
+            <a routerLink="/admin" class="text-muted">Admin</a>
+          }
+          <button type="button" class="border-0 bg-transparent p-0 text-muted" (click)="signOut()">Sign out</button>
+        </div>
+      </div>
+    }
   </header>
   @if (showSearch()) {
-    <div class="bg-white px-4 pb-3">
-      <input
-        class="h-12.5 w-full rounded-sm border border-line bg-white px-3.5 text-base placeholder:text-muted"
-        placeholder="Search gear"
-        aria-label="Search gear"
-        [value]="search()"
-        (input)="onSearch($event)" />
+    <div class="bg-white px-4 pt-3 pb-3">
+      <label class="relative block">
+        <span class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" aria-hidden="true">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="6.25" stroke="currentColor" stroke-width="1.5" />
+            <path d="M16 16l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </span>
+        <input
+          class="h-12.5 w-full rounded-sm border border-line bg-white py-0 pr-3.5 pl-11 text-base placeholder:text-muted"
+          placeholder="Search gear"
+          aria-label="Search gear"
+          [value]="search()"
+          (input)="onSearch($event)" />
+      </label>
     </div>
   }
   <div class="flex-1">
     <router-outlet />
   </div>
-  <footer class="bg-ink px-4 py-6 text-white">
+  <footer class="bg-ink px-4 py-8 text-white">
     <img src="/kudu-logo.svg" alt="Veld Supply" class="h-9 w-auto" />
-    <p class="mt-3 text-[13px] leading-4.5">PayFast · Courier nationwide · VAT included</p>
+    <p class="mt-3 max-w-70 text-[13px] leading-4.5 text-white/80">
+      Field kit for the South African hunt. Shipped nationwide.
+    </p>
+    <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-8">
+      <div>
+        <p class="text-[13px] font-medium tracking-[0.08em]">SHOP</p>
+        <a routerLink="/shop" [queryParams]="{ category: 'Optics' }" class="mt-3 block text-[13px] leading-4.5 text-white/90">Optics</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Apparel' }" class="mt-2 block text-[13px] leading-4.5 text-white/90">Apparel</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Knives' }" class="mt-2 block text-[13px] leading-4.5 text-white/90">Knives</a>
+        <a routerLink="/shop" [queryParams]="{ category: 'Camp' }" class="mt-2 block text-[13px] leading-4.5 text-white/90">Camp</a>
+      </div>
+      <div>
+        <p class="text-[13px] font-medium tracking-[0.08em]">HELP</p>
+        <a routerLink="/help/delivery" class="mt-3 block text-[13px] leading-4.5 text-white/90">Delivery</a>
+        <a routerLink="/help/returns" class="mt-2 block text-[13px] leading-4.5 text-white/90">Returns</a>
+        <a routerLink="/help/contact" class="mt-2 block text-[13px] leading-4.5 text-white/90">Contact</a>
+      </div>
+      <div class="col-span-2">
+        <p class="text-[13px] font-medium tracking-[0.08em]">PAY</p>
+        <p class="mt-3 text-[13px] leading-4.5 text-white/90">PayFast · Card · Instant EFT · Capitec Pay</p>
+        <p class="mt-2 text-[13px] leading-4.5 text-white/80">VAT included · Courier nationwide</p>
+      </div>
+    </div>
   </footer>
 </div>

@@ -10,6 +10,8 @@ public static class ShopMoney
 {
     public const int CourierCents = 12_000;
     public const int LowStockAt = 4;
+    /// <summary>Unpaid checkout hold before reserved stock is released.</summary>
+    public const int StockReservationMinutes = 45;
 
     public static int RandsToCents(int rands) => rands * 100;
 

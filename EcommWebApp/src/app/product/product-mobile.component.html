@@ -13,6 +13,18 @@
     </button>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">You pay on PayFast. No card number on this page.</p>
   } @else if (ready()) {
-    <h1 class="font-display text-[40px] leading-11.5">That product is not in the shop.</h1>
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">ERROR 404</p>
+    <h1 class="mt-2 font-display text-[40px] leading-11.5">That product is not in the shop</h1>
+    <p class="mt-3 text-base leading-6 text-muted">
+      The SKU may be wrong, or this item was removed. It is not a payment problem.
+    </p>
+    <ol class="mt-6 list-decimal space-y-3 pl-5 text-base leading-6">
+      <li>Browse the shop for what is in stock now.</li>
+      <li>If you had a bookmark or email link, it may be out of date.</li>
+    </ol>
+    <div class="mt-8 grid gap-4">
+      <a routerLink="/shop" class="inline-block border-0 bg-transparent p-0"><ecomm-button label="Browse the shop" [full]="true" /></a>
+      <a routerLink="/" class="text-base leading-6">Back to home</a>
+    </div>
   }
 </section>

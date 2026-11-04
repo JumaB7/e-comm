@@ -9,17 +9,36 @@ using EcommWebApi.Services.Email;
 using EcommWebApi.Services.Orders;
 using EcommWebApi.Services.Products;
 using EcommWebApi.Services.Shop;
+using EcommWebApi.Services.Stock;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Dev-only UI: paste JWT from POST /api/auth/sign-in. Does not weaken [Authorize] on controllers.
+    const string schemeId = "bearer";
+    options.AddSecurityDefinition(schemeId, new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description =
+            "Sign in via POST /api/auth/sign-in, copy the token, then Authorize here. " +
+            "Admin routes need an Admin role JWT. Leave blank to see 401 on protected endpoints.",
+    });
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference(schemeId, document)] = [],
+    });
+});
 
 var shopConnection = builder.Configuration.GetConnectionString("Shop");
 if (string.IsNullOrWhiteSpace(shopConnection))
@@ -34,6 +53,8 @@ builder.Services.AddDbContext<ShopDbContext>(options =>
         sql.EnableRetryOnFailure(maxRetryCount: 8, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<IStockReservationService, StockReservationService>();
+builder.Services.AddHostedService<UnpaidStockReleaseService>();
 builder.Services.AddSingleton<ProductImageStore>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -145,6 +166,27 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    // Runtime exceptions (not startup crashes) — static page with why + next steps.
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "text/html; charset=utf-8";
+            var file = Path.Combine(app.Environment.WebRootPath, "error-pages", "500.html");
+            if (File.Exists(file))
+            {
+                await context.Response.SendFileAsync(file);
+                return;
+            }
+
+            await context.Response.WriteAsync(
+                "Something went wrong on our side. Wait a moment and try again, or email hello@veldsupply.co.za.");
+        });
+    });
 }
 
 // Dev: keep HTTP :5156 usable (proxy / PayFast notify). Redirect drops Authorization.

@@ -14,8 +14,14 @@
       }
     </div>
   } @else {
-    <h1 class="font-display text-[40px] leading-11.5">Help</h1>
-    <p class="mt-3 text-base leading-6 text-muted">That help page was not found.</p>
-    <a routerLink="/help/contact" class="mt-4 inline-block text-base leading-6">Contact us</a>
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">ERROR 404</p>
+    <h1 class="mt-2 font-display text-[40px] leading-11.5">Help page not found</h1>
+    <p class="mt-3 text-base leading-6 text-muted">
+      That help link is not one of Delivery, Returns, or Contact.
+    </p>
+    <div class="mt-6 grid gap-3">
+      <a routerLink="/help/contact" class="text-base leading-6">Contact us</a>
+      <a routerLink="/error/404" class="text-base leading-6">Full error help</a>
+    </div>
   }
 </section>

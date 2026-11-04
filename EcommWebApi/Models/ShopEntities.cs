@@ -70,6 +70,8 @@ public class ShopOrder
     public DateTime? PackedAt { get; set; }
     public DateTime? ShippedAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    /// <summary>True when checkout already decremented stock; unpaid expiry restores once.</summary>
+    public bool StockReserved { get; set; }
     public List<OrderLine> Lines { get; set; } = [];
 }
 

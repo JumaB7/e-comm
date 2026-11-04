@@ -1,0 +1,30 @@
+<section class="mx-auto max-w-360 px-16 py-16">
+  @if (page().code) {
+    <p class="text-[13px] font-medium tracking-[0.08em] text-muted">ERROR {{ page().code }}</p>
+  }
+  <h1 [ngClass]="page().code ? 'mt-3' : ''" class="max-w-xl font-display text-[40px] leading-11.5">{{ page().title }}</h1>
+  <p class="mt-4 max-w-xl text-base leading-6 text-muted">{{ page().why }}</p>
+
+  <div class="mt-10 max-w-180">
+    <h2 class="text-xl font-semibold leading-6.5">What to do next</h2>
+    <ol class="mt-4 list-decimal space-y-3 pl-5 text-base leading-6">
+      @for (step of page().nextSteps; track step.text) {
+        <li>
+          {{ step.text }}
+          @if (step.linkLabel && step.linkPath) {
+            <a [routerLink]="step.linkPath" class="text-action hover:underline hover:underline-offset-2">{{ step.linkLabel }}</a>{{ step.textAfter ?? '' }}
+          }
+        </li>
+      }
+    </ol>
+  </div>
+
+  <div class="mt-10 flex flex-wrap items-center gap-6">
+    <a [routerLink]="page().primary.path" class="inline-block border-0 bg-transparent p-0">
+      <ecomm-button [label]="page().primary.label" />
+    </a>
+    @if (page().secondary; as secondary) {
+      <a [routerLink]="secondary.path" class="text-base leading-6">{{ secondary.label }}</a>
+    }
+  </div>
+</section>

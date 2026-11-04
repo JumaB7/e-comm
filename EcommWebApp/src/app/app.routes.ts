@@ -17,6 +17,7 @@ import { ShopContainerComponent } from './shop/shop-container.component';
 import { AdminShellContainerComponent } from './shell/admin-shell-container.component';
 import { ShopShellContainerComponent } from './shell/shop-shell-container.component';
 import { ForgotPasswordContainerComponent } from './forgot-password/forgot-password-container.component';
+import { ErrorContainerComponent } from './error/error-container.component';
 import { HelpContainerComponent } from './help/help-container.component';
 import { ResetPasswordContainerComponent } from './reset-password/reset-password-container.component';
 import { SignInContainerComponent } from './sign-in/sign-in-container.component';
@@ -42,6 +43,8 @@ export const routes: Routes = [
       { path: 'help/:page', component: HelpContainerComponent },
       { path: 'pay', component: PayContainerComponent },
       { path: 'paid', component: PaidContainerComponent },
+      { path: 'error/:code', component: ErrorContainerComponent },
+      { path: '**', component: ErrorContainerComponent },
     ],
   },
   {
@@ -55,6 +58,7 @@ export const routes: Routes = [
       { path: 'products', component: AdminProductsContainerComponent },
       { path: 'sales', component: SalesContainerComponent },
       { path: 'stock', component: StockContainerComponent },
+      { path: '**', redirectTo: '/error/404' },
     ],
   },
 ];

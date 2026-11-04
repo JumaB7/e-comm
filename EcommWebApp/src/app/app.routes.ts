@@ -25,6 +25,21 @@ import { adminGuard } from './services/admin.guard';
 import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
+  // Admin before shop shell — otherwise shop `**` swallows /admin.
+  {
+    path: 'admin',
+    component: AdminShellContainerComponent,
+    canActivate: [adminGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'orders' },
+      { path: 'orders', component: OrdersContainerComponent },
+      { path: 'orders/:id', component: OrderContainerComponent },
+      { path: 'products', component: AdminProductsContainerComponent },
+      { path: 'sales', component: SalesContainerComponent },
+      { path: 'stock', component: StockContainerComponent },
+      { path: '**', redirectTo: '/error/404' },
+    ],
+  },
   {
     path: '',
     component: ShopShellContainerComponent,
@@ -45,20 +60,6 @@ export const routes: Routes = [
       { path: 'paid', component: PaidContainerComponent },
       { path: 'error/:code', component: ErrorContainerComponent },
       { path: '**', component: ErrorContainerComponent },
-    ],
-  },
-  {
-    path: 'admin',
-    component: AdminShellContainerComponent,
-    canActivate: [adminGuard],
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'orders' },
-      { path: 'orders', component: OrdersContainerComponent },
-      { path: 'orders/:id', component: OrderContainerComponent },
-      { path: 'products', component: AdminProductsContainerComponent },
-      { path: 'sales', component: SalesContainerComponent },
-      { path: 'stock', component: StockContainerComponent },
-      { path: '**', redirectTo: '/error/404' },
     ],
   },
 ];

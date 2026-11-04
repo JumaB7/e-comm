@@ -1,11 +1,16 @@
 using EcommWebApi.Contracts;
 using EcommWebApi.Data;
 using EcommWebApi.Models;
+using EcommWebApi.Services.Stock;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services;
 
-public class PaymentService(ShopDbContext db, IConfiguration configuration, IHostEnvironment environment)
+public class PaymentService(
+    ShopDbContext db,
+    IConfiguration configuration,
+    IHostEnvironment environment,
+    IStockReservationService stock)
 {
     public async Task<bool> ApplyAsync(IReadOnlyList<KeyValuePair<string, string>> fields)
     {
@@ -22,6 +27,8 @@ public class PaymentService(ShopDbContext db, IConfiguration configuration, IHos
         {
             return false;
         }
+
+        await using var tx = await db.Database.BeginTransactionAsync();
         var order = await db.Orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Number == number);
         if (order is null || !decimal.TryParse(amountText, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount))
         {
@@ -34,24 +41,51 @@ public class PaymentService(ShopDbContext db, IConfiguration configuration, IHos
         }
         if (order.PaidAt is not null)
         {
+            await tx.CommitAsync();
             return true; // idempotent replay
         }
+
+        var stockNote = "";
+        if (!order.StockReserved)
+        {
+            var held = new List<OrderLine>();
+            foreach (var line in order.Lines)
+            {
+                if (!await stock.TryReserveAsync(line.Sku, line.Quantity))
+                {
+                    await stock.ReleaseOrderLinesAsync(held);
+                    held.Clear();
+                    if (order.Status == "Cancelled")
+                    {
+                        // Late PayFast ITN after unpaid expiry — money took, stock gone.
+                        stockNote =
+                            " Paid after the checkout hold expired and stock could not be re-reserved — resolve fulfilment manually.";
+                        break;
+                    }
+
+                    await tx.RollbackAsync();
+                    return false;
+                }
+                held.Add(line);
+            }
+
+            if (held.Count == order.Lines.Count)
+            {
+                order.StockReserved = true;
+            }
+        }
+
         order.PaidAt = DateTime.UtcNow;
         order.PayFastReference = values.GetValueOrDefault("pf_payment_id") ?? "";
         order.Status = "Paid";
         order.Tone = "paid";
         order.Fulfilment = "To pack";
-        order.FulfilmentNote = "Paid, not yet packed.";
-        order.PaymentNote = "Marked paid only because the PayFast signature matched.";
-        foreach (var line in order.Lines)
-        {
-            var product = await db.Products.FirstOrDefaultAsync(item => item.Sku == line.Sku);
-            if (product is not null)
-            {
-                product.Stock = Math.Max(0, product.Stock - line.Quantity);
-            }
-        }
+        order.FulfilmentNote = string.IsNullOrEmpty(stockNote)
+            ? "Paid, not yet packed."
+            : $"Paid, not yet packed.{stockNote}";
+        order.PaymentNote = "Marked paid only because the PayFast signature matched." + stockNote;
         await db.SaveChangesAsync();
+        await tx.CommitAsync();
         return true;
     }
 

@@ -9,6 +9,7 @@ using EcommWebApi.Services.Email;
 using EcommWebApi.Services.Orders;
 using EcommWebApi.Services.Products;
 using EcommWebApi.Services.Shop;
+using EcommWebApi.Services.Stock;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,8 @@ builder.Services.AddDbContext<ShopDbContext>(options =>
     options.UseSqlServer(shopConnection));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<IStockReservationService, StockReservationService>();
+builder.Services.AddHostedService<UnpaidStockReleaseService>();
 builder.Services.AddSingleton<ProductImageStore>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

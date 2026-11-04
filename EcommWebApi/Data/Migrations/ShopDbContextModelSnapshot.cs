@@ -197,6 +197,9 @@ namespace EcommWebApi.Data.Migrations
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("StockReserved")
+                        .HasColumnType("bit");
+
                     b.Property<string>("PayFastReference")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

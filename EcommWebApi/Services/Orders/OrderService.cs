@@ -2,11 +2,16 @@ using System.Globalization;
 using EcommWebApi.Contracts;
 using EcommWebApi.Data;
 using EcommWebApi.Models;
+using EcommWebApi.Services.Stock;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services.Orders;
 
-public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHostEnvironment environment) : IOrderService
+public class OrderService(
+    ShopDbContext db,
+    IConfiguration configuration,
+    IWebHostEnvironment environment,
+    IStockReservationService stock) : IOrderService
 {
     public async Task<OrderModel?> Receipt(string key)
     {
@@ -26,21 +31,28 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
             return ShopOutcome<CheckoutModel>.BadRequest("Name, email, and a delivery choice are required.");
         }
         var method = request.Method is "eft" or "capitec" or "card" ? request.Method : "card";
+        await using var tx = await db.Database.BeginTransactionAsync();
         var lines = new List<OrderLine>();
         foreach (var requested in request.Lines)
         {
             if (requested.Qty < 1)
             {
+                await tx.RollbackAsync();
                 return ShopOutcome<CheckoutModel>.BadRequest("Quantity has to be at least 1.");
             }
-            var product = await db.Products.FirstOrDefaultAsync(item => item.Sku == requested.Sku);
+            var product = await db.Products.AsNoTracking().FirstOrDefaultAsync(item => item.Sku == requested.Sku);
             if (product is null)
             {
+                await tx.RollbackAsync();
                 return ShopOutcome<CheckoutModel>.BadRequest("A product in the bag is no longer in the shop.");
             }
-            if (product.Stock < requested.Qty)
+            if (!await stock.TryReserveAsync(product.Sku, requested.Qty))
             {
-                return ShopOutcome<CheckoutModel>.BadRequest($"{product.Name} only has {product.Stock} in stock.");
+                await tx.RollbackAsync();
+                return ShopOutcome<CheckoutModel>.BadRequest(
+                    product.Stock < requested.Qty
+                        ? $"{product.Name} only has {product.Stock} in stock."
+                        : $"{product.Name} just sold out. Remove it from the bag and try again.");
             }
             lines.Add(new OrderLine
             {
@@ -77,10 +89,20 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
             PaymentMethod = method,
             PaymentNote = "Paid only after the PayFast signature matches.",
             CreatedAt = DateTime.UtcNow,
+            StockReserved = true,
             Lines = lines,
         };
         db.Orders.Add(order);
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
 
         var merchantId = configuration["PayFast:MerchantId"];
         // Local-only shortcut when no PayFast merchant is configured in Development.
@@ -226,7 +248,7 @@ public class OrderService(ShopDbContext db, IConfiguration configuration, IWebHo
         var orders = await db.Orders.ToListAsync();
         var todayOrders = orders.Where(order => OrderMapper.ShopDate(order.CreatedAt) == today).ToList();
         var paidToday = todayOrders.Where(order => order.PaidAt is not null).Sum(order => order.TotalCents);
-        var awaiting = orders.Count(order => order.PaidAt is null);
+        var awaiting = orders.Count(order => order.PaidAt is null && order.Status == "Awaiting payment");
         var lowStock = await db.Products.CountAsync(product => product.Stock <= ShopMoney.LowStockAt);
         return new OrderSummaryModel(todayOrders.Count, ShopMoney.Rand(paidToday), ShopMoney.RandCompact(paidToday), awaiting, lowStock);
     }

@@ -5,13 +5,13 @@ namespace EcommWebApi.Controllers;
 
 [ApiController]
 [Route("api/product-images")]
-public class ProductImagesController(ProductImageStore images) : ControllerBase
+public class ProductImagesController(IProductImageStore images) : ControllerBase
 {
     [HttpGet("{fileName}")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
-    public IActionResult Get(string fileName)
+    public async Task<IActionResult> Get(string fileName, CancellationToken cancellationToken)
     {
-        var path = images.FindPathByFileName(fileName);
-        return path is null ? NotFound() : PhysicalFile(path, ProductImageStore.ContentType(path));
+        var image = await images.FindPathByFileName(fileName, cancellationToken);
+        return image is null ? NotFound() : File(image.Content, image.ContentType);
     }
 }

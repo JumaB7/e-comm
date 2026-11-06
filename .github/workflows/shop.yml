@@ -26,6 +26,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Test the API
+        run: dotnet test EcommWebApi.Tests/EcommWebApi.Tests.csproj --configuration Release
+
       - name: Publish the API
         run: dotnet publish EcommWebApi/EcommWebApi.csproj --configuration Release --output artifacts/api
 
@@ -69,6 +72,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest
     environment: staging
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Download the build
         uses: actions/download-artifact@v4
@@ -76,11 +82,24 @@ jobs:
       - name: Put the shop in the API
         run: mkdir -p api/wwwroot && cp -a shop/. api/wwwroot/
 
+      - name: Check the Linux package
+        run: |
+          test -f api/EcommWebApi.dll
+          test -f api/EcommWebApi.runtimeconfig.json
+          test -f api/wwwroot/index.html
+          test ! -d api/api
+
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Publish to UAT
         uses: azure/webapps-deploy@v3
         with:
-          app-name: veld-supply
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          app-name: veld-supply-linux
           package: api
 
   deploy-production:

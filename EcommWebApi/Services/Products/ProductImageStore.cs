@@ -91,7 +91,7 @@ public class ProductImageStore(IWebHostEnvironment env)
         return PublicPath(name);
     }
 
-    public static string PublicPath(string fileName) => $"/api/product-images/{fileName}";
+    public static string PublicPath(string fileName) => ProductImageNames.PublicPath(fileName);
 
     public static string ContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {

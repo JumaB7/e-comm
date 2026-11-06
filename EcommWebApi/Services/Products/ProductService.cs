@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EcommWebApi.Services.Products;
 
-public class ProductService(ShopDbContext db, ProductImageStore images) : IProductService
+public class ProductService(ShopDbContext db, IProductImageStore images) : IProductService
 {
     private static readonly Dictionary<string, string> SkuPrefixes = new(StringComparer.Ordinal)
     {
@@ -93,11 +93,19 @@ public class ProductService(ShopDbContext db, ProductImageStore images) : IProdu
         product.Name = name;
         if (skuChanged)
         {
-            var moved = images.Rename(product.Sku, nextSku);
-            if (moved is not null)
+            try
             {
-                product.Image = moved;
+                var moved = await images.Rename(product.Sku, nextSku);
+                if (moved is not null)
+                {
+                    product.Image = moved;
+                }
             }
+            catch (InvalidOperationException error)
+            {
+                return ShopOutcome<ProductModel>.BadRequest(error.Message);
+            }
+
             product.Sku = nextSku;
         }
         product.Category = category;
@@ -119,7 +127,7 @@ public class ProductService(ShopDbContext db, ProductImageStore images) : IProdu
         {
             return false;
         }
-        images.Remove(product.Sku);
+        await images.Remove(product.Sku);
         db.Products.Remove(product);
         await db.SaveChangesAsync();
         return true;

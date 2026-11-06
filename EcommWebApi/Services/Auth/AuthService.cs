@@ -29,6 +29,7 @@ public class AuthService(
         {
             return ShopOutcome<AuthModel>.Conflict("That email already has an account.");
         }
+        // Role is always Customer here — never take it from the request body.
         var user = new ShopUser
         {
             Name = name,
@@ -40,7 +41,8 @@ public class AuthService(
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
-        return ShopOutcome<AuthModel>.Ok(Session(user));
+        await ClaimGuestOrders(user);
+        return ShopOutcome<AuthModel>.Ok(await IssueSession(user));
     }
 
     public async Task<ShopOutcome<AuthModel>> SignIn(SignInRequest request)
@@ -51,7 +53,85 @@ public class AuthService(
         {
             return ShopOutcome<AuthModel>.Unauthorized("Email or password does not match.");
         }
-        return ShopOutcome<AuthModel>.Ok(Session(user));
+        await ClaimGuestOrders(user);
+        return ShopOutcome<AuthModel>.Ok(await IssueSession(user));
+    }
+
+    public async Task<ShopOutcome<AuthModel>> Refresh(RefreshRequest request)
+    {
+        var raw = request.RefreshToken.Trim();
+        if (raw.Length == 0)
+        {
+            return ShopOutcome<AuthModel>.Unauthorized("Sign in again.");
+        }
+
+        var hash = HashToken(raw);
+        var user = await db.Users.FirstOrDefaultAsync(item => item.RefreshTokenHash == hash);
+        if (user is null
+            || user.RefreshTokenExpiresAt is null
+            || user.RefreshTokenExpiresAt < DateTime.UtcNow)
+        {
+            if (user is not null)
+            {
+                ClearRefresh(user);
+                await db.SaveChangesAsync();
+            }
+            return ShopOutcome<AuthModel>.Unauthorized("Sign in again.");
+        }
+
+        // Rotate refresh token on each use.
+        return ShopOutcome<AuthModel>.Ok(await IssueSession(user));
+    }
+
+    public async Task<ShopOutcome<MessageModel>> SignOut(string? refreshToken)
+    {
+        var raw = refreshToken?.Trim() ?? "";
+        if (raw.Length > 0)
+        {
+            var hash = HashToken(raw);
+            var user = await db.Users.FirstOrDefaultAsync(item => item.RefreshTokenHash == hash);
+            if (user is not null)
+            {
+                ClearRefresh(user);
+                await db.SaveChangesAsync();
+            }
+        }
+        return ShopOutcome<MessageModel>.Ok(new MessageModel("Signed out."));
+    }
+
+    public async Task<ShopOutcome<MessageModel>> RevokeSessions(int userId)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Id == userId);
+        if (user is null)
+        {
+            return ShopOutcome<MessageModel>.NotFound();
+        }
+        ClearRefresh(user);
+        await db.SaveChangesAsync();
+        return ShopOutcome<MessageModel>.Ok(new MessageModel("Sessions revoked. Sign in again."));
+    }
+
+    public async Task<ShopOutcome<MessageModel>> SetRoleForOps(int userId, string role)
+    {
+        var normalized = role.Trim();
+        if (normalized is not ("Admin" or "Customer"))
+        {
+            return ShopOutcome<MessageModel>.BadRequest("Role must be Admin or Customer.");
+        }
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Id == userId);
+        if (user is null)
+        {
+            return ShopOutcome<MessageModel>.NotFound();
+        }
+        if (user.Role == normalized)
+        {
+            return ShopOutcome<MessageModel>.Ok(new MessageModel("Role unchanged."));
+        }
+        user.Role = normalized;
+        // Demotion / promotion invalidates refresh so the old access JWT cannot be extended.
+        ClearRefresh(user);
+        await db.SaveChangesAsync();
+        return ShopOutcome<MessageModel>.Ok(new MessageModel($"Role set to {normalized}. Sessions revoked."));
     }
 
     public async Task<ShopOutcome<MessageModel>> RequestPasswordReset(ForgotPasswordRequest request)
@@ -74,6 +154,7 @@ public class AuthService(
         var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
         user.PasswordResetTokenHash = HashToken(rawToken);
         user.PasswordResetExpiresAt = DateTime.UtcNow.Add(ResetLifetime);
+        ClearRefresh(user);
         await db.SaveChangesAsync();
 
         var appBase = (configuration["App:PublicUrl"] ?? configuration["PayFast:ReturnBase"] ?? "http://localhost:4200")
@@ -108,13 +189,14 @@ public class AuthService(
         user.PasswordHash = PasswordBox.Hash(request.Password);
         user.PasswordResetTokenHash = null;
         user.PasswordResetExpiresAt = null;
+        ClearRefresh(user);
         await db.SaveChangesAsync();
         return ShopOutcome<MessageModel>.Ok(new MessageModel("Password updated. Sign in with the new password."));
     }
 
-    public async Task<ShopOutcome<CheckoutProfileModel>> Profile(string email)
+    public async Task<ShopOutcome<CheckoutProfileModel>> Profile(int userId)
     {
-        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Email == email);
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Id == userId);
         if (user is null)
         {
             return ShopOutcome<CheckoutProfileModel>.Unauthorized("Sign in again.");
@@ -122,9 +204,9 @@ public class AuthService(
         return ShopOutcome<CheckoutProfileModel>.Ok(await MapProfile(user));
     }
 
-    public async Task<ShopOutcome<ProfileUpdateModel>> UpdateProfile(string currentEmail, UpdateProfileRequest request)
+    public async Task<ShopOutcome<ProfileUpdateModel>> UpdateProfile(int userId, UpdateProfileRequest request)
     {
-        var user = await db.Users.FirstOrDefaultAsync(item => item.Email == currentEmail);
+        var user = await db.Users.FirstOrDefaultAsync(item => item.Id == userId);
         if (user is null)
         {
             return ShopOutcome<ProfileUpdateModel>.Unauthorized("Sign in again.");
@@ -141,6 +223,7 @@ public class AuthService(
             return ShopOutcome<ProfileUpdateModel>.Conflict("That email already has an account.");
         }
         var delivery = request.Delivery == "collect" ? "collect" : "courier";
+        // Role is intentionally never updated from profile — Admin stays seed/ops-only.
         user.Name = name;
         user.Email = email;
         user.Phone = phone;
@@ -152,7 +235,24 @@ public class AuthService(
         user.Delivery = delivery;
         user.PrefillCheckout = request.PrefillCheckout;
         await db.SaveChangesAsync();
-        return ShopOutcome<ProfileUpdateModel>.Ok(new ProfileUpdateModel(Session(user), await MapProfile(user)));
+        return ShopOutcome<ProfileUpdateModel>.Ok(new ProfileUpdateModel(await IssueSession(user), await MapProfile(user)));
+    }
+
+    private async Task ClaimGuestOrders(ShopUser user)
+    {
+        var email = user.Email.Trim().ToLowerInvariant();
+        var orphans = await db.Orders
+            .Where(order => order.ShopUserId == null && order.Email.ToLower() == email)
+            .ToListAsync();
+        if (orphans.Count == 0)
+        {
+            return;
+        }
+        foreach (var order in orphans)
+        {
+            order.ShopUserId = user.Id;
+        }
+        await db.SaveChangesAsync();
     }
 
     private async Task<CheckoutProfileModel> MapProfile(ShopUser user)
@@ -166,7 +266,7 @@ public class AuthService(
         if (street.Length == 0 && suburb.Length == 0 && city.Length == 0)
         {
             var order = await db.Orders.AsNoTracking()
-                .Where(item => item.Email == user.Email)
+                .Where(item => item.ShopUserId == user.Id || item.Email == user.Email)
                 .OrderByDescending(item => item.CreatedAt)
                 .FirstOrDefaultAsync();
             if (order is not null)
@@ -192,7 +292,26 @@ public class AuthService(
             user.PrefillCheckout);
     }
 
-    private AuthModel Session(ShopUser user) => new(tokens.Create(user), user.Name, user.Email, user.Phone, user.Role);
+    private async Task<AuthModel> IssueSession(ShopUser user)
+    {
+        var rawRefresh = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        user.RefreshTokenHash = HashToken(rawRefresh);
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.Add(tokens.RefreshLifetimeFor(user));
+        await db.SaveChangesAsync();
+        return new AuthModel(
+            tokens.CreateAccessToken(user),
+            rawRefresh,
+            user.Name,
+            user.Email,
+            user.Phone,
+            user.Role);
+    }
+
+    private static void ClearRefresh(ShopUser user)
+    {
+        user.RefreshTokenHash = null;
+        user.RefreshTokenExpiresAt = null;
+    }
 
     private static string HashToken(string rawToken)
     {

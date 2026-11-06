@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using EcommWebApi.Contracts;
+using EcommWebApi.Services;
 using EcommWebApi.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +22,29 @@ public class AuthController(IAuthService auth) : ControllerBase
         ShopResults.From(await auth.SignIn(request));
 
     [EnableRateLimiting("auth")]
+    [HttpPost("refresh")]
+    public async Task<ActionResult<AuthModel>> Refresh(RefreshRequest request) =>
+        ShopResults.From(await auth.Refresh(request));
+
+    [EnableRateLimiting("auth")]
+    [HttpPost("sign-out")]
+    public async Task<ActionResult<MessageModel>> SignOut(RefreshRequest? request) =>
+        ShopResults.From(await auth.SignOut(request?.RefreshToken));
+
+    [Authorize]
+    [EnableRateLimiting("auth")]
+    [HttpPost("revoke-sessions")]
+    public async Task<ActionResult<MessageModel>> RevokeSessions()
+    {
+        var userId = ShopClaims.UserId(User);
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+        return ShopResults.From(await auth.RevokeSessions(userId.Value));
+    }
+
+    [EnableRateLimiting("auth")]
     [HttpPost("forgot-password")]
     public async Task<ActionResult<MessageModel>> ForgotPassword(ForgotPasswordRequest request) =>
         ShopResults.From(await auth.RequestPasswordReset(request));
@@ -35,15 +58,23 @@ public class AuthController(IAuthService auth) : ControllerBase
     [HttpGet("profile")]
     public async Task<ActionResult<CheckoutProfileModel>> Profile()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
-        return ShopResults.From(await auth.Profile(email));
+        var userId = ShopClaims.UserId(User);
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+        return ShopResults.From(await auth.Profile(userId.Value));
     }
 
     [Authorize]
     [HttpPut("profile")]
     public async Task<ActionResult<ProfileUpdateModel>> UpdateProfile(UpdateProfileRequest request)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
-        return ShopResults.From(await auth.UpdateProfile(email, request));
+        var userId = ShopClaims.UserId(User);
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+        return ShopResults.From(await auth.UpdateProfile(userId.Value, request));
     }
 }

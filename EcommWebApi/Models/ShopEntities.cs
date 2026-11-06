@@ -29,9 +29,12 @@ public class ShopUser
     public string Email { get; set; } = "";
     public string Phone { get; set; } = "";
     public string PasswordHash { get; set; } = "";
+    /// <summary>Seed/ops only — never accept Role from register/profile HTTP bodies.</summary>
     public string Role { get; set; } = "Customer";
     public string? PasswordResetTokenHash { get; set; }
     public DateTime? PasswordResetExpiresAt { get; set; }
+    public string? RefreshTokenHash { get; set; }
+    public DateTime? RefreshTokenExpiresAt { get; set; }
     public string Street { get; set; } = "";
     public string Suburb { get; set; } = "";
     public string City { get; set; } = "";
@@ -46,6 +49,8 @@ public class ShopOrder
     public int Id { get; set; }
     public string Number { get; set; } = "";
     public string ReceiptKey { get; set; } = "";
+    /// <summary>Set when checkout is signed in; guest orders stay null until claimed by email match.</summary>
+    public int? ShopUserId { get; set; }
     public string CustomerName { get; set; } = "";
     public string Email { get; set; } = "";
     public string Phone { get; set; } = "";

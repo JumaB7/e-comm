@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using EcommWebApi.Contracts;
+using EcommWebApi.Services;
 using EcommWebApi.Services.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,29 +22,29 @@ public class OrdersController(IOrderService orders) : ControllerBase
     [HttpGet("mine")]
     public async Task<ActionResult<List<OrderModel>>> Mine()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
-        if (email.Length == 0)
+        var userId = ShopClaims.UserId(User);
+        if (userId is null)
         {
             return Unauthorized();
         }
-        return await orders.ListForEmail(email);
+        return await orders.ListForUser(userId.Value);
     }
 
     [Authorize]
     [HttpGet("mine/{number}")]
     public async Task<ActionResult<OrderModel>> MineOrder(string number)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email) ?? "";
-        if (email.Length == 0)
+        var userId = ShopClaims.UserId(User);
+        if (userId is null)
         {
             return Unauthorized();
         }
-        var order = await orders.GetForEmail(number, email);
+        var order = await orders.GetForUser(number, userId.Value);
         return order is null ? NotFound() : order;
     }
 
     [EnableRateLimiting("checkout")]
     [HttpPost]
     public async Task<ActionResult<CheckoutModel>> Create(CreateOrderRequest request) =>
-        ShopResults.From(await orders.Create(request));
+        ShopResults.From(await orders.Create(request, ShopClaims.UserId(User)));
 }

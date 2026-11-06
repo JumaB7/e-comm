@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
 
-/** Thin sessionStorage accessor for opaque session keys — not a PII profile cache. */
+/**
+ * Opaque session keys in sessionStorage only (never localStorage) — limits XSS persistence.
+ * Do not log token values.
+ */
 @Injectable({ providedIn: 'root' })
 export class SessionStoreService {
   private readonly tokenKey = 'veld-token';
+  private readonly refreshTokenKey = 'veld-refresh-token';
   private readonly bagKey = 'veld-bag';
   /** Signed-out users' bags, keyed by email — restored on the next sign-in. */
   private readonly bagsByEmailKey = 'veld-bags-by-email';
@@ -15,11 +19,27 @@ export class SessionStoreService {
   }
 
   setToken(token: string): void {
+    this.scrubTokenFromLocalStorage();
     sessionStorage.setItem(this.tokenKey, token);
   }
 
   clearToken(): void {
     sessionStorage.removeItem(this.tokenKey);
+    this.scrubTokenFromLocalStorage();
+  }
+
+  getRefreshToken(): string | null {
+    return sessionStorage.getItem(this.refreshTokenKey);
+  }
+
+  setRefreshToken(token: string): void {
+    this.scrubTokenFromLocalStorage();
+    sessionStorage.setItem(this.refreshTokenKey, token);
+  }
+
+  clearRefreshToken(): void {
+    sessionStorage.removeItem(this.refreshTokenKey);
+    this.scrubTokenFromLocalStorage();
   }
 
   getBag(): string | null {
@@ -74,12 +94,20 @@ export class SessionStoreService {
   scrubLegacyProfileKeys(): void {
     for (const key of this.legacyProfileKeys) {
       sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
     }
+    this.scrubTokenFromLocalStorage();
   }
 
   clearAuth(): void {
     this.clearToken();
+    this.clearRefreshToken();
     this.scrubLegacyProfileKeys();
+  }
+
+  private scrubTokenFromLocalStorage(): void {
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.refreshTokenKey);
   }
 
   private readBagsByEmail(): Record<string, string> {

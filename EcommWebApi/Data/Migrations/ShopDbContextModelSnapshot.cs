@@ -232,6 +232,9 @@ namespace EcommWebApi.Data.Migrations
                     b.Property<DateTime?>("ShippedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ShopUserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -265,6 +268,8 @@ namespace EcommWebApi.Data.Migrations
 
                     b.HasIndex("ReceiptKey")
                         .IsUnique();
+
+                    b.HasIndex("ShopUserId");
 
                     b.ToTable("Orders");
                 });
@@ -305,6 +310,13 @@ namespace EcommWebApi.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordResetTokenHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshTokenHash")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
@@ -367,14 +379,19 @@ namespace EcommWebApi.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EcommWebApi.Models.ShopOrder", b =>
+                {
+                    b.HasOne("EcommWebApi.Models.ShopUser", null)
+                        .WithMany()
+                        .HasForeignKey("ShopUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Lines");
+                });
+
             modelBuilder.Entity("EcommWebApi.Models.Product", b =>
                 {
                     b.Navigation("Specs");
-                });
-
-            modelBuilder.Entity("EcommWebApi.Models.ShopOrder", b =>
-                {
-                    b.Navigation("Lines");
                 });
 #pragma warning restore 612, 618
         }

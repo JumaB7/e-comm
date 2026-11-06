@@ -19,7 +19,7 @@ public class OrderService(
         return order is null ? null : OrderMapper.Order(order);
     }
 
-    public async Task<ShopOutcome<CheckoutModel>> Create(CreateOrderRequest request)
+    public async Task<ShopOutcome<CheckoutModel>> Create(CreateOrderRequest request, int? shopUserId)
     {
         if (request.Lines is null || request.Lines.Count == 0)
         {
@@ -29,6 +29,11 @@ public class OrderService(
         if (delivery.Length == 0 || request.Name.Trim().Length == 0 || request.Email.Trim().Length == 0)
         {
             return ShopOutcome<CheckoutModel>.BadRequest("Name, email, and a delivery choice are required.");
+        }
+        int? linkedUserId = null;
+        if (shopUserId is int id && id > 0 && await db.Users.AnyAsync(user => user.Id == id))
+        {
+            linkedUserId = id;
         }
         var method = request.Method is "eft" or "capitec" or "card" ? request.Method : "card";
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -71,6 +76,7 @@ public class OrderService(
         {
             Number = $"VS-{next}",
             ReceiptKey = Guid.NewGuid().ToString("N"),
+            ShopUserId = linkedUserId,
             CustomerName = request.Name.Trim(),
             Email = request.Email.Trim(),
             Phone = request.Phone.Trim(),
@@ -141,11 +147,10 @@ public class OrderService(
         return orders.Select(OrderMapper.Order).ToList();
     }
 
-    public async Task<List<OrderModel>> ListForEmail(string email)
+    public async Task<List<OrderModel>> ListForUser(int shopUserId)
     {
-        var match = email.Trim().ToLowerInvariant();
         var orders = await db.Orders.Include(order => order.Lines)
-            .Where(order => order.Email.ToLower() == match)
+            .Where(order => order.ShopUserId == shopUserId)
             .OrderByDescending(order => order.CreatedAt)
             .ToListAsync();
         return orders.Select(OrderMapper.Order).ToList();
@@ -157,11 +162,10 @@ public class OrderService(
         return order is null ? null : OrderMapper.Order(order);
     }
 
-    public async Task<OrderModel?> GetForEmail(string number, string email)
+    public async Task<OrderModel?> GetForUser(string number, int shopUserId)
     {
-        var match = email.Trim().ToLowerInvariant();
         var order = await db.Orders.Include(item => item.Lines)
-            .FirstOrDefaultAsync(item => item.Number == number && item.Email.ToLower() == match);
+            .FirstOrDefaultAsync(item => item.Number == number && item.ShopUserId == shopUserId);
         return order is null ? null : OrderMapper.Order(order);
     }
 

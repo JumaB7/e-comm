@@ -111,8 +111,17 @@ export class AuthService {
   }
 
   signOut(): void {
+    const refreshToken = this.session.getRefreshToken();
+    if (refreshToken) {
+      this.http.post('/api/auth/sign-out', { refreshToken }).subscribe({ error: () => undefined });
+    }
     this.clearSession();
     void this.router.navigateByUrl('/');
+  }
+
+  /** Used by the auth interceptor when the access JWT expires. */
+  applySession(session: AuthSession): void {
+    this.store(session);
   }
 
   profile(): Observable<CheckoutProfile | undefined> {
@@ -200,6 +209,9 @@ export class AuthService {
 
   private store(session: AuthSession): void {
     this.session.setToken(session.token);
+    if (session.refreshToken) {
+      this.session.setRefreshToken(session.refreshToken);
+    }
     this.session.scrubLegacyProfileKeys();
     this.profile$ = undefined;
     const claims = readAuthClaims(session.token);

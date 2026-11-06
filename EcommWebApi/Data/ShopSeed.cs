@@ -109,6 +109,16 @@ public static class ShopSeed
             Order("VS-1047", "A. Naidoo", "a.naidoo@example.co.za", "083 555 0190", "8 Marine Parade", "Durban", "Durban", "KwaZulu-Natal", "4001", "collect", 0, "Awaiting payment", "awaiting", "Waiting", "Waiting on payment.", "", "", new DateTime(2026, 10, 26, 8, 20, 0), false, ("VS-APP-220", 1, "M")),
             Order("VS-1048", "Thabo Mokoena", "thabo@example.co.za", "082 555 0142", "14 Kloof Road", "Parktown", "Johannesburg", "Gauteng", "2193", "courier", ShopMoney.CourierCents, "Paid", "paid", "To pack", "Paid, not yet packed.", "pf_184920", "card", new DateTime(2026, 10, 26, 14, 12, 0), true, ("VS-OPT-1042", 1, ""), ("VS-APP-220", 1, "M")));
         db.SaveChanges();
+
+        var customer = db.Users.FirstOrDefault(user => user.Email == "thabo@example.co.za");
+        if (customer is not null)
+        {
+            foreach (var order in db.Orders.Where(item => item.Email == customer.Email && item.ShopUserId == null))
+            {
+                order.ShopUserId = customer.Id;
+            }
+            db.SaveChanges();
+        }
     }
 
     private static ShopUser User(string name, string email, string phone, string role) => new()

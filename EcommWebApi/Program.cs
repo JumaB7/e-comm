@@ -201,6 +201,35 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// Browser hardening — tokens live in sessionStorage; CSP limits XSS blast radius.
+var enforceHttpsCsp = !app.Environment.IsDevelopment();
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    var csp =
+        "default-src 'self'; " +
+        "base-uri 'self'; " +
+        "object-src 'none'; " +
+        "frame-ancestors 'none'; " +
+        "script-src 'self'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com data:; " +
+        "img-src 'self' data: blob:; " +
+        "connect-src 'self'; " +
+        "form-action 'self' https://sandbox.payfast.co.za https://www.payfast.co.za";
+    if (enforceHttpsCsp)
+    {
+        csp += "; upgrade-insecure-requests";
+    }
+    headers["Content-Security-Policy"] = csp;
+    await next();
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors("EcommWebApp");

@@ -1,4 +1,5 @@
 using EcommWebApi.Contracts;
+using EcommWebApi.Services.Auth;
 using EcommWebApi.Services.Orders;
 using EcommWebApi.Services.Products;
 using Microsoft.AspNetCore.Authorization;
@@ -9,8 +10,13 @@ namespace EcommWebApi.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/admin")]
-public class AdminController(IOrderService orders, IProductService products) : ControllerBase
+public class AdminController(IOrderService orders, IProductService products, IAuthService auth) : ControllerBase
 {
+    /// <summary>Clears refresh tokens for a suspected stolen session. Does not change Role.</summary>
+    [HttpPost("users/{id:int}/revoke-sessions")]
+    public async Task<ActionResult<MessageModel>> RevokeUserSessions(int id) =>
+        ShopResults.From(await auth.RevokeSessions(id));
+
     [HttpGet("orders")]
     public Task<List<OrderModel>> Orders() => orders.List();
 

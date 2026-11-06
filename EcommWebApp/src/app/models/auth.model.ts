@@ -1,5 +1,6 @@
 export interface AuthSession {
   token: string;
+  refreshToken: string;
   name: string;
   email: string;
   phone: string;

@@ -44,7 +44,9 @@ public record CheckoutModel(
     string? PayFastUrl,
     Dictionary<string, string>? Fields);
 
-public record AuthModel(string Token, string Name, string Email, string Phone, string Role);
+public record AuthModel(string Token, string RefreshToken, string Name, string Email, string Phone, string Role);
+
+public record RefreshRequest(string RefreshToken);
 
 public record CheckoutProfileModel(
     string Name,

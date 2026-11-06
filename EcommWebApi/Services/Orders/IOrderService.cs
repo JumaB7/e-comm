@@ -6,15 +6,15 @@ public interface IOrderService
 {
     Task<OrderModel?> Receipt(string key);
 
-    Task<ShopOutcome<CheckoutModel>> Create(CreateOrderRequest request);
+    Task<ShopOutcome<CheckoutModel>> Create(CreateOrderRequest request, int? shopUserId);
 
     Task<List<OrderModel>> List();
 
-    Task<List<OrderModel>> ListForEmail(string email);
+    Task<List<OrderModel>> ListForUser(int shopUserId);
 
     Task<OrderModel?> Get(string number);
 
-    Task<OrderModel?> GetForEmail(string number, string email);
+    Task<OrderModel?> GetForUser(string number, int shopUserId);
 
     Task<OrderModel?> Pack(string number);
 

@@ -35,6 +35,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             user.Property(item => item.Phone).HasMaxLength(40);
             user.Property(item => item.Role).HasMaxLength(20);
             user.Property(item => item.PasswordResetTokenHash).HasMaxLength(128);
+            user.Property(item => item.RefreshTokenHash).HasMaxLength(128);
             user.Property(item => item.Street).HasMaxLength(160);
             user.Property(item => item.Suburb).HasMaxLength(80);
             user.Property(item => item.City).HasMaxLength(80);
@@ -47,6 +48,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
         {
             order.HasIndex(item => item.Number).IsUnique();
             order.HasIndex(item => item.ReceiptKey).IsUnique();
+            order.HasIndex(item => item.ShopUserId);
             order.Property(item => item.Number).HasMaxLength(20);
             order.Property(item => item.ReceiptKey).HasMaxLength(32);
             order.Property(item => item.CustomerName).HasMaxLength(120);
@@ -56,6 +58,7 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
             order.Property(item => item.Tone).HasMaxLength(20);
             order.Property(item => item.Fulfilment).HasMaxLength(40);
             order.Property(item => item.TrackingNumber).HasMaxLength(40);
+            order.HasOne<ShopUser>().WithMany().HasForeignKey(item => item.ShopUserId).OnDelete(DeleteBehavior.SetNull);
             order.HasMany(item => item.Lines).WithOne().HasForeignKey(line => line.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
 

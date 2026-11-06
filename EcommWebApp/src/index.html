@@ -5,8 +5,8 @@
   <title>Veld Supply</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Defense in depth with API CSP headers; style unsafe-inline for Angular component styles. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*; form-action 'self' https://sandbox.payfast.co.za https://www.payfast.co.za;">
+  <!-- Matches the API Content-Security-Policy header. frame-ancestors is header-only. style-src allows Angular component styles. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*; form-action 'self' https://sandbox.payfast.co.za https://www.payfast.co.za;">
   <link rel="icon" type="image/svg+xml" href="kudu-logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

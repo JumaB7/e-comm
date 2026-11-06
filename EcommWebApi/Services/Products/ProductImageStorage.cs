@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 
@@ -16,7 +17,7 @@ public static class ProductImageStorage
         {
             throw new InvalidOperationException(
                 "AzureStorage:ServiceUri is not set. Set AzureStorage__ServiceUri to the blob endpoint. " +
-                "Locally, sign in with Azure CLI or Visual Studio. In App Service, the system-assigned managed identity is used.");
+                "Locally, sign in with Azure CLI. In App Service, the system-assigned managed identity is used.");
         }
 
         if (!Uri.TryCreate(serviceUri, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
@@ -45,17 +46,21 @@ public static class ProductImageStorage
         return containerName;
     }
 
-    private static DefaultAzureCredential CreateCredential(IHostEnvironment environment)
+    private static TokenCredential CreateCredential(IHostEnvironment environment)
     {
-        var development = environment.IsDevelopment();
+        if (environment.IsDevelopment())
+        {
+            return new AzureCliCredential();
+        }
+
         return new DefaultAzureCredential(new DefaultAzureCredentialOptions
         {
             ExcludeInteractiveBrowserCredential = true,
             ExcludeAzurePowerShellCredential = true,
-            ExcludeVisualStudioCredential = !development,
-            ExcludeVisualStudioCodeCredential = !development,
-            ExcludeAzureCliCredential = !development,
-            ExcludeAzureDeveloperCliCredential = !development,
+            ExcludeVisualStudioCredential = true,
+            ExcludeVisualStudioCodeCredential = true,
+            ExcludeAzureCliCredential = true,
+            ExcludeAzureDeveloperCliCredential = true,
         });
     }
 

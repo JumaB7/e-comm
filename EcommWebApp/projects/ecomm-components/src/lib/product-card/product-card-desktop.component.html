@@ -4,13 +4,15 @@
       <img [src]="photo()" [alt]="name()" class="absolute inset-0 h-full w-full object-cover" />
     }
     @if (outOfStock()) {
-      <div class="absolute top-3 left-3 z-10">
-        <ecomm-status-pill label="Out of stock" tone="low" />
-      </div>
+      <span
+        class="absolute top-3 left-3 z-10 inline-flex items-center rounded-sm bg-danger px-2 py-1 text-xs font-medium leading-4 text-white"
+        >Out of stock</span
+      >
     } @else if (lowStockHint()) {
-      <div class="absolute top-3 left-3 z-10">
-        <ecomm-status-pill [label]="lowStockHint()" tone="awaiting" />
-      </div>
+      <span
+        class="absolute top-3 left-3 z-10 inline-flex items-center rounded-sm border border-line bg-canvas px-2 py-1 text-xs font-medium leading-4 text-ink"
+        >{{ lowStockHint() }}</span
+      >
     }
   </div>
   <div class="flex flex-col gap-1 px-4 py-4">

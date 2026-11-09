@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { StatusPillComponent } from '../status-pill/status-pill.component';
 
 @Component({
   selector: 'ecomm-product-card-desktop',
-  imports: [StatusPillComponent],
   templateUrl: './product-card-desktop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

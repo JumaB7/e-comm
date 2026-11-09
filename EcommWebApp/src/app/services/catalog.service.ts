@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, Subscription, catchError, of, switchMap, tap, throwError } from 'rxjs';
+import { Observable, Subscription, catchError, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { CheckoutDetails } from '../models/cart.model';
 import { emptyOrderSummary } from '../models/constants';
 import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model';
@@ -15,6 +15,7 @@ export class CatalogService {
   private readonly http = inject(HttpClient);
   private readonly spinner = inject(SpinnerService);
   private readonly session = inject(SessionStoreService);
+  private productsRequest$: Observable<Product[]> | undefined;
   readonly search = signal('');
   readonly products = signal<Product[]>([]);
   readonly featured = computed(() => this.products().slice(0, 4));
@@ -35,12 +36,18 @@ export class CatalogService {
   }
 
   loadProducts(): void {
-    this.spinner
-      .pending(this.http.get<Product[]>('/api/products').pipe(catchError(() => of([] as Product[]))))
-      .subscribe((products) => {
-        this.products.set(products);
-        this.ready.set(true);
-      });
+    if (this.ready()) {
+      return;
+    }
+    this.productsRequest$ ??= this.http.get<Product[]>('/api/products').pipe(
+      catchError(() => of([] as Product[])),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    // Spinner stays suppressed during the scope intro; after that it can show if still loading.
+    this.spinner.pending(this.productsRequest$).subscribe((products) => {
+      this.products.set(products);
+      this.ready.set(true);
+    });
   }
 
   loadAdmin(): void {

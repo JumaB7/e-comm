@@ -1,10 +1,12 @@
 using EcommWebApi.Data;
 using EcommWebApi.Models;
+using EcommWebApi.Services.Products;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EcommWebApi.Services.Stock;
 
-public class StockReservationService(ShopDbContext db) : IStockReservationService
+public class StockReservationService(ShopDbContext db, IMemoryCache cache) : IStockReservationService
 {
     public async Task<bool> TryReserveAsync(string sku, int quantity, CancellationToken cancellationToken = default)
     {
@@ -19,6 +21,10 @@ public class StockReservationService(ShopDbContext db) : IStockReservationServic
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(product => product.Stock, product => product.Stock - quantity),
                 cancellationToken);
+        if (affected == 1)
+        {
+            cache.Remove(ProductCatalogCache.ListKey);
+        }
         return affected == 1;
     }
 
@@ -34,6 +40,7 @@ public class StockReservationService(ShopDbContext db) : IStockReservationServic
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(product => product.Stock, product => product.Stock + quantity),
                 cancellationToken);
+        cache.Remove(ProductCatalogCache.ListKey);
     }
 
     public async Task ReleaseOrderLinesAsync(IEnumerable<OrderLine> lines, CancellationToken cancellationToken = default)

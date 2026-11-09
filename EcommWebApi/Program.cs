@@ -49,6 +49,7 @@ if (string.IsNullOrWhiteSpace(shopConnection))
 
 builder.Services.AddDbContext<ShopDbContext>(options =>
     options.UseSqlServer(shopConnection));
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<IStockReservationService, StockReservationService>();

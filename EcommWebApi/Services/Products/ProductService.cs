@@ -2,10 +2,11 @@ using EcommWebApi.Contracts;
 using EcommWebApi.Data;
 using EcommWebApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EcommWebApi.Services.Products;
 
-public class ProductService(ShopDbContext db, IProductImageStore images) : IProductService
+public class ProductService(ShopDbContext db, IProductImageStore images, IMemoryCache cache) : IProductService
 {
     private static readonly Dictionary<string, string> SkuPrefixes = new(StringComparer.Ordinal)
     {
@@ -18,8 +19,16 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
 
     public async Task<List<ProductModel>> List()
     {
+        if (cache.TryGetValue(ProductCatalogCache.ListKey, out List<ProductModel>? cached) && cached is not null)
+        {
+            return cached;
+        }
+
         var products = await db.Products.Include(product => product.Specs).OrderBy(product => product.Id).ToListAsync();
-        return products.Select(OrderMapper.Product).ToList();
+        var list = products.Select(OrderMapper.Product).ToList();
+        // Kept until product/stock writes clear it — no short TTL.
+        cache.Set(ProductCatalogCache.ListKey, list);
+        return list;
     }
 
     public async Task<ProductModel?> Get(string sku)
@@ -60,6 +69,7 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
         };
         db.Products.Add(product);
         await db.SaveChangesAsync();
+        cache.Remove(ProductCatalogCache.ListKey);
         return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
     }
 
@@ -117,6 +127,7 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
             product.Specs.Add(spec);
         }
         await db.SaveChangesAsync();
+        cache.Remove(ProductCatalogCache.ListKey);
         return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
     }
 
@@ -130,6 +141,7 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
         await images.Remove(product.Sku);
         db.Products.Remove(product);
         await db.SaveChangesAsync();
+        cache.Remove(ProductCatalogCache.ListKey);
         return true;
     }
 
@@ -149,6 +161,7 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
             return ShopOutcome<ProductModel>.BadRequest(error.Message);
         }
         await db.SaveChangesAsync();
+        cache.Remove(ProductCatalogCache.ListKey);
         return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
     }
 
@@ -166,6 +179,7 @@ public class ProductService(ShopDbContext db, IProductImageStore images) : IProd
         }
         product.Stock = Math.Max(0, product.Stock + request.Direction * request.Quantity);
         await db.SaveChangesAsync();
+        cache.Remove(ProductCatalogCache.ListKey);
         return ShopOutcome<ProductModel>.Ok(OrderMapper.Product(product));
     }
 

@@ -11,7 +11,17 @@ public class CartService(ShopDbContext db) : ICartService
         var courierDue = request.Delivery != "collect";
         var lines = new List<CartQuoteLineModel>();
         var subtotal = 0;
-        foreach (var requested in request.Lines ?? [])
+        if (request.Lines is null || request.Lines.Count == 0)
+        {
+            return new CartQuoteModel(
+                ShopMoney.Rand(0),
+                ShopMoney.Rand(0),
+                ShopMoney.Rand(0),
+                ShopMoney.Rand(ShopMoney.CourierCents),
+                lines);
+        }
+
+        foreach (var requested in request.Lines)
         {
             if (requested.Qty < 1)
             {

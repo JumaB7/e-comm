@@ -7,8 +7,14 @@ const showAfterMs = 1000;
 export class SpinnerService {
   private readonly count = signal(0);
   private readonly visible = signal(false);
+  private readonly suppressed = signal(false);
   private wait: ReturnType<typeof setTimeout> | undefined;
-  readonly isLoading = computed(() => this.visible());
+  readonly isLoading = computed(() => this.visible() && !this.suppressed());
+
+  /** Hide the overlay without cancelling in-flight work (e.g. scope intro). */
+  suppressOverlay(hidden: boolean): void {
+    this.suppressed.set(hidden);
+  }
 
   show(immediate = false): void {
     const idle = this.count() === 0;

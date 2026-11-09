@@ -68,9 +68,12 @@ export class CartService {
         lines: this.lines().map((line) => ({ sku: line.sku, qty: line.qty, detail: line.detail })),
       })),
     ).pipe(
-      switchMap((body) =>
-        this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote))),
-      ),
+      switchMap((body) => {
+        if (body.lines.length === 0) {
+          return of(emptyCartQuote);
+        }
+        return this.http.post<CartQuote>('/api/cart/quote', body).pipe(catchError(() => of(emptyCartQuote)));
+      }),
     ),
     { initialValue: emptyCartQuote },
   );

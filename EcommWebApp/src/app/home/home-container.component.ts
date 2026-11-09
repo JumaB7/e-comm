@@ -1,7 +1,8 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BreakpointDirective } from '../directives/breakpoint.directive';
 import { scopeIntroKey } from '../models/constants';
+import { SpinnerService } from '../services/spinner.service';
 import { HomeDesktopComponent } from './home-desktop.component';
 import { HomeMobileComponent } from './home-mobile.component';
 import { ScopeIntroComponent } from './scope-intro.component';
@@ -32,7 +33,14 @@ function shouldPlayIntro(): boolean {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeContainerComponent {
+  private readonly spinner = inject(SpinnerService);
   readonly playIntro = signal(shouldPlayIntro());
+
+  constructor() {
+    if (this.playIntro()) {
+      this.spinner.suppressOverlay(true);
+    }
+  }
 
   dismiss(): void {
     try {
@@ -40,6 +48,7 @@ export class HomeContainerComponent {
     } catch {
       // Private browsing can block storage. The intro still closes.
     }
+    this.spinner.suppressOverlay(false);
     this.playIntro.set(false);
   }
 }

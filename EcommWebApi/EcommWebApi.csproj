@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>2e6f3dca-475d-4bc7-893e-b16457582e5d</UserSecretsId>
+    <!-- Keep checked-in web.config as-is for Azure ANCM (avoid broken launcher transforms). -->
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
   </PropertyGroup>
 
   <ItemGroup>

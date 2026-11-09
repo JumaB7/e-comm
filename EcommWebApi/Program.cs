@@ -48,7 +48,9 @@ if (string.IsNullOrWhiteSpace(shopConnection))
 }
 
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlServer(shopConnection));
+    options.UseSqlServer(shopConnection, sql =>
+        // Azure SQL serverless auto-pauses — 40613 "not currently available" until resume finishes.
+        sql.EnableRetryOnFailure(maxRetryCount: 8, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
@@ -153,18 +155,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-    try
-    {
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        // Surfaces in Azure LogFiles/stdout when web.config has stdoutLogEnabled.
-        Console.Error.WriteLine($"FATAL: Database.Migrate failed: {ex}");
-        throw new InvalidOperationException(
-            "Database.Migrate failed. Check connection string Shop and that Azure SQL allows this App Service (firewall / Allow Azure services).",
-            ex);
-    }
+    // Deploy does not stop Azure SQL. Free/serverless SQL auto-pauses; App Service recycle then hits
+    // Migrate while the DB is still resuming (40613). Wait long enough for resume before dying.
+    MigrateWithPauseRetry(db);
 
     // Seed users use the well-known local password — Development only.
     if (app.Environment.IsDevelopment())
@@ -247,3 +240,58 @@ app.Run();
 
 static string ClientAddress(HttpContext httpContext) =>
     httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+static void MigrateWithPauseRetry(ShopDbContext db)
+{
+    const int maxAttempts = 12;
+    Exception? lastError = null;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            return;
+        }
+        catch (Exception ex) when (IsSqlUnavailable(ex))
+        {
+            lastError = ex;
+            var waitSeconds = Math.Min(20, 3 + attempt * 2);
+            Console.Error.WriteLine(
+                $"WARN: SQL unavailable during Migrate (attempt {attempt}/{maxAttempts}); waiting {waitSeconds}s for auto-resume. {ex.Message}");
+            Thread.Sleep(TimeSpan.FromSeconds(waitSeconds));
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"FATAL: Database.Migrate failed: {ex}");
+            throw new InvalidOperationException(
+                "Database.Migrate failed. Check connection string Shop and Azure SQL firewall / credentials.",
+                ex);
+        }
+    }
+
+    Console.Error.WriteLine($"FATAL: Database.Migrate failed after pause retries: {lastError}");
+    throw new InvalidOperationException(
+        "Database.Migrate failed: Azure SQL stayed unavailable (often serverless/free auto-pause). Open EcommUat in the portal until Online, then restart the app.",
+        lastError);
+}
+
+static bool IsSqlUnavailable(Exception ex)
+{
+    for (var current = ex; current is not null; current = current.InnerException)
+    {
+        if (current is Microsoft.Data.SqlClient.SqlException sql
+            && (sql.Number == 40613 || sql.Number == 40197 || sql.Number == 40501 || sql.Number == 4060))
+        {
+            return true;
+        }
+
+        if (current.Message.Contains("not currently available", StringComparison.OrdinalIgnoreCase)
+            || current.Message.Contains("transient failure", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

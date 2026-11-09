@@ -10,4 +10,8 @@ public class CartController(ICartService cart) : ControllerBase
 {
     [HttpPost("quote")]
     public Task<CartQuoteModel> Quote(CartQuoteRequest request) => cart.Quote(request);
+
+    /// <summary>Live stock and prices for the bag. Does not hold or reserve stock.</summary>
+    [HttpPost("validate")]
+    public Task<CartValidateModel> Validate(CartQuoteRequest request) => cart.Validate(request);
 }

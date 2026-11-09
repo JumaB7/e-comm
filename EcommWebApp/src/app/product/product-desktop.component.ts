@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ButtonComponent, ProductCardDesktopComponent } from 'ecomm-components';
+import { ButtonComponent, ProductCardDesktopComponent, StatusPillComponent } from 'ecomm-components';
 import { ProductBaseDirective } from './product-base.directive';
 
 @Component({
   selector: 'app-product-desktop',
-  imports: [RouterLink, ButtonComponent, ProductCardDesktopComponent],
+  imports: [RouterLink, ButtonComponent, ProductCardDesktopComponent, StatusPillComponent],
   templateUrl: './product-desktop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

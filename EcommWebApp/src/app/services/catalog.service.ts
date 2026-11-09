@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, Subscription, catchError, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, Subscription, catchError, finalize, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
+import { CATALOG_TTL_MS } from '../constants/catalog.constants';
 import { CheckoutDetails } from '../models/cart.model';
 import { emptyOrderSummary } from '../models/constants';
 import { CheckoutResponse, OrderSummary, ShopOrder } from '../models/order.model';
@@ -15,11 +16,16 @@ export class CatalogService {
   private readonly http = inject(HttpClient);
   private readonly spinner = inject(SpinnerService);
   private readonly session = inject(SessionStoreService);
-  private productsRequest$: Observable<Product[]> | undefined;
+  private readonly destroyRef = inject(DestroyRef);
+  private inflight$: Observable<Product[] | null> | undefined;
+  private fetchSeq = 0;
+  private appliedSeq = 0;
+  private fetchedAt = 0;
   readonly search = signal('');
   readonly products = signal<Product[]>([]);
   readonly featured = computed(() => this.products().slice(0, 4));
   readonly ready = signal(false);
+  readonly refreshing = signal(false);
   readonly orders = signal<ShopOrder[]>([]);
   readonly ordersReady = signal(false);
   readonly myOrders = signal<ShopOrder[]>([]);
@@ -32,22 +38,35 @@ export class CatalogService {
   readonly receiptReady = signal(false);
 
   constructor() {
-    this.loadProducts();
+    this.ensureProducts();
+    if (typeof document !== 'undefined') {
+      const onVisible = () => {
+        if (document.visibilityState === 'visible') {
+          this.ensureProducts();
+        }
+      };
+      document.addEventListener('visibilitychange', onVisible);
+      this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', onVisible));
+    }
   }
 
+  /** Initial load / stale-while-revalidate. Dedupes concurrent callers. */
   loadProducts(): void {
-    if (this.ready()) {
+    this.ensureProducts();
+  }
+
+  /** Force a background refresh (e.g. after the buyer places an order). */
+  refreshAfterPurchase(): void {
+    this.fetchedAt = 0;
+    this.startFetch(true);
+  }
+
+  ensureProducts(force = false): void {
+    if (!force && this.ready() && !this.isStale()) {
       return;
     }
-    this.productsRequest$ ??= this.http.get<Product[]>('/api/products').pipe(
-      catchError(() => of([] as Product[])),
-      shareReplay({ bufferSize: 1, refCount: false }),
-    );
-    // Spinner stays suppressed during the scope intro; after that it can show if still loading.
-    this.spinner.pending(this.productsRequest$).subscribe((products) => {
-      this.products.set(products);
-      this.ready.set(true);
-    });
+    const silent = this.ready();
+    this.startFetch(silent);
   }
 
   loadAdmin(): void {
@@ -69,6 +88,24 @@ export class CatalogService {
     return this.products().find((product) => product.sku === sku);
   }
 
+  /** Merge live stock hints from checkout validate into the in-memory catalog. */
+  applyStockHints(hints: { sku: string; stock: number }[]): void {
+    if (hints.length === 0) {
+      return;
+    }
+    const bySku = new Map(hints.map((hint) => [hint.sku, hint.stock]));
+    this.products.update((products) =>
+      products.map((product) => {
+        const stock = bySku.get(product.sku);
+        if (stock === undefined) {
+          return product;
+        }
+        return { ...product, stock, low: stock <= 4 };
+      }),
+    );
+    this.markLocalCatalogFresh();
+  }
+
   findOrder(id: string): ShopOrder | undefined {
     return this.orders().find((order) => order.id === id);
   }
@@ -84,13 +121,17 @@ export class CatalogService {
           return;
         }
         this.products.update((products) => products.map((item) => (item.sku === product.sku ? product : item)));
+        this.markLocalCatalogFresh();
         this.loadAdmin();
       });
   }
 
   removeProduct(sku: string): void {
     this.spinner.pending(this.http.delete(`/api/admin/products/${sku}`), { immediate: true }).subscribe({
-      next: () => this.products.update((products) => products.filter((product) => product.sku !== sku)),
+      next: () => {
+        this.products.update((products) => products.filter((product) => product.sku !== sku));
+        this.markLocalCatalogFresh();
+      },
     });
   }
 
@@ -99,6 +140,7 @@ export class CatalogService {
       tap((saved) => {
         if (!this.find(saved.sku)) {
           this.products.update((products) => [...products, saved]);
+          this.markLocalCatalogFresh();
         }
       }),
     );
@@ -110,6 +152,7 @@ export class CatalogService {
       .pipe(
         tap((saved) => {
           this.products.update((products) => products.map((item) => (item.sku === sku ? saved : item)));
+          this.markLocalCatalogFresh();
         }),
       );
   }
@@ -124,6 +167,7 @@ export class CatalogService {
       .pipe(
         tap((saved) => {
           this.products.update((products) => products.map((item) => (item.sku === saved.sku ? saved : item)));
+          this.markLocalCatalogFresh();
         }),
       );
   }
@@ -160,6 +204,7 @@ export class CatalogService {
   pay(details: CheckoutDetails): Observable<ShopOrder | null> {
     return this.spinner.pending(
       this.http.post<CheckoutResponse>('/api/orders', details).pipe(
+        tap(() => this.refreshAfterPurchase()),
         switchMap((result) => {
           this.session.setReceipt(result.receiptKey);
           if (result.mode === 'payfast' && result.payFastUrl && result.fields) {
@@ -205,6 +250,50 @@ export class CatalogService {
         this.myOrder.set(order);
         this.myOrderReady.set(true);
       });
+  }
+
+  private isStale(): boolean {
+    return this.fetchedAt === 0 || Date.now() - this.fetchedAt >= CATALOG_TTL_MS;
+  }
+
+  private startFetch(silent: boolean): void {
+    if (this.inflight$) {
+      return;
+    }
+    const seq = ++this.fetchSeq;
+    this.refreshing.set(true);
+    const request$ = this.http.get<Product[]>('/api/products').pipe(
+      catchError(() => of(null)),
+      tap((products) => {
+        if (products === null) {
+          return;
+        }
+        if (seq < this.appliedSeq) {
+          return;
+        }
+        this.appliedSeq = seq;
+        this.products.set(products);
+        this.fetchedAt = Date.now();
+        this.ready.set(true);
+      }),
+      finalize(() => {
+        this.inflight$ = undefined;
+        this.refreshing.set(false);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+    this.inflight$ = request$;
+    if (silent) {
+      request$.subscribe();
+      return;
+    }
+    this.spinner.pending(request$).subscribe();
+  }
+
+  /** Local catalog edits win over any older in-flight list response. */
+  private markLocalCatalogFresh(): void {
+    this.appliedSeq = Math.max(this.appliedSeq, this.fetchSeq);
+    this.fetchedAt = Date.now();
   }
 
   private replaceOrder(order: ShopOrder): void {

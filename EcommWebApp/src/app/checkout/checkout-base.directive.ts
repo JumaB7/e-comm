@@ -1,7 +1,9 @@
-import { computed, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { merge } from 'rxjs';
+import { CATALOG_TTL_MS } from '../constants/catalog.constants';
+import { CartValidate } from '../models/cart.model';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
 import { ToastService } from '../services/toast.service';
@@ -24,6 +26,7 @@ export class CheckoutBaseDirective {
   private readonly catalog = inject(CatalogService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   readonly lines = this.cart.displayLines;
   readonly subtotal = this.cart.subtotalLabel;
   readonly courier = this.cart.courierLabel;
@@ -38,6 +41,13 @@ export class CheckoutBaseDirective {
   private readonly qtyEdits = signal<Record<string, number>>({});
   readonly invalidFields = signal<string[]>([]);
   readonly showValidationSummary = computed(() => this.submitted() && this.invalidFields().length > 0);
+  readonly availability = signal<CartValidate | null>(null);
+  readonly availabilityMessages = computed(() => this.availability()?.messages ?? []);
+  readonly availabilityNeedsAction = computed(() => {
+    const result = this.availability();
+    return !!result && (!result.ok || result.messages.length > 0);
+  });
+  private availabilityCheckedAt = 0;
   readonly bagRows = computed(() =>
     this.lines().map((line) => ({
       ...line,
@@ -98,6 +108,16 @@ export class CheckoutBaseDirective {
         }
       });
     });
+    this.checkAvailability();
+    if (typeof document !== 'undefined') {
+      const onVisible = () => {
+        if (document.visibilityState === 'visible' && this.isAvailabilityStale()) {
+          this.checkAvailability();
+        }
+      };
+      document.addEventListener('visibilitychange', onVisible);
+      this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', onVisible));
+    }
   }
 
   bumpQty(sku: string, delta: number): void {
@@ -105,7 +125,7 @@ export class CheckoutBaseDirective {
     const current = this.qtyEdits()[sku] ?? 1;
     const next = Math.max(1, current + delta);
     if (stock !== undefined && next > stock) {
-      this.toast.show(`Only ${stock} in stock.`);
+      this.toast.show(`Only ${stock} in stock (indicative — confirmed at checkout).`);
       this.qtyEdits.update((edits) => ({ ...edits, [sku]: stock }));
       return;
     }
@@ -127,10 +147,23 @@ export class CheckoutBaseDirective {
     if (capped) {
       this.toast.show('Bag updated to match available stock.');
     }
+    this.checkAvailability();
+  }
+
+  /** Apply the validate response the customer has already been shown. */
+  applyAvailabilityFixes(): void {
+    const result = this.availability();
+    if (!result) {
+      return;
+    }
+    this.cart.applyValidatedQuantities(result);
+    this.toast.show('Bag updated from the latest stock check. This did not reserve stock.');
+    this.checkAvailability();
   }
 
   remove(sku: string): void {
     this.cart.remove(sku);
+    this.checkAvailability();
   }
 
   readonly clearConfirmOpen = signal(false);
@@ -149,6 +182,7 @@ export class CheckoutBaseDirective {
   confirmClearBag(): void {
     this.cart.clear();
     this.qtyEdits.set({});
+    this.availability.set(null);
     this.clearConfirmOpen.set(false);
   }
 
@@ -179,7 +213,30 @@ export class CheckoutBaseDirective {
     if (this.form.invalid || this.hasLines() === 0) {
       return;
     }
-    void this.router.navigate(['/pay']);
+    this.cart.validateBag().subscribe((result) => {
+      this.availability.set(result);
+      this.availabilityCheckedAt = Date.now();
+      if (!result.ok || result.messages.length > 0) {
+        this.toast.show('Stock or price changed. Review the messages before paying.');
+        return;
+      }
+      void this.router.navigate(['/pay']);
+    });
+  }
+
+  private checkAvailability(): void {
+    if (this.cart.count() === 0) {
+      this.availability.set(null);
+      return;
+    }
+    this.cart.validateBag().subscribe((result) => {
+      this.availability.set(result);
+      this.availabilityCheckedAt = Date.now();
+    });
+  }
+
+  private isAvailabilityStale(): boolean {
+    return this.availabilityCheckedAt === 0 || Date.now() - this.availabilityCheckedAt >= CATALOG_TTL_MS;
   }
 
   private refreshInvalidFields(): void {

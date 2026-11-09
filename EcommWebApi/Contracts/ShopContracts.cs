@@ -111,6 +111,27 @@ public record CartQuoteModel(string Subtotal, string Courier, string Total, stri
 
 public record CartQuoteRequest(string? Delivery, List<OrderLineRequest>? Lines);
 
+/// <summary>Read-only bag check — does not reserve stock.</summary>
+public record CartValidateLineModel(
+    string Sku,
+    string Name,
+    int RequestedQty,
+    int AvailableStock,
+    int PricedQty,
+    string UnitPrice,
+    string LinePrice,
+    string Status,
+    string Message);
+
+public record CartValidateModel(
+    bool Ok,
+    string Subtotal,
+    string Courier,
+    string Total,
+    string CourierFee,
+    List<CartValidateLineModel> Lines,
+    List<string> Messages);
+
 public record CreateProductRequest(string Name, string Sku, string Category, int PriceRands, int Stock, List<SpecModel>? Specs);
 
 public record StockRequest(string Name, int Quantity, int Direction);

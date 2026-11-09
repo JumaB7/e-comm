@@ -3,6 +3,15 @@
     @if (photo()) {
       <img [src]="photo()" [alt]="name()" class="absolute inset-0 h-full w-full object-cover" />
     }
+    @if (outOfStock()) {
+      <div class="absolute top-3 left-3 z-10">
+        <ecomm-status-pill label="Out of stock" tone="low" />
+      </div>
+    } @else if (lowStockHint()) {
+      <div class="absolute top-3 left-3 z-10">
+        <ecomm-status-pill [label]="lowStockHint()" tone="awaiting" />
+      </div>
+    }
   </div>
   <div class="flex flex-col gap-1 px-4 py-4">
     <p class="text-[13px] font-medium tracking-[0.08em] text-muted">{{ category() }}</p>

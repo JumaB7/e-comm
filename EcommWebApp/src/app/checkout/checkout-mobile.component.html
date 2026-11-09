@@ -98,6 +98,19 @@
         </button>
       }
     </div>
+    @if (availabilityMessages().length > 0) {
+      <div class="mt-3 border border-danger bg-white p-3" role="status">
+        <p class="text-[13px] leading-4.5 text-danger">Stock check (nothing reserved yet)</p>
+        <ul class="mt-1.5 list-disc pl-4 text-[13px] leading-4.5 text-danger">
+          @for (message of availabilityMessages(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+        <button type="button" class="mt-3 w-full border-0 bg-transparent p-0" (click)="applyAvailabilityFixes()">
+          <ecomm-button label="Update bag to match stock" [full]="true" />
+        </button>
+      </div>
+    }
     @for (line of bagRows(); track line.sku) {
       <div class="mt-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
         <div class="flex items-start justify-between gap-3">

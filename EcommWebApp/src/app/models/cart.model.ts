@@ -19,6 +19,31 @@ export interface CartQuote {
   lines: CartQuoteLine[];
 }
 
+/** Read-only availability check — not a stock reservation. */
+export type CartValidateStatus = 'ok' | 'reduced' | 'unavailable' | 'missing';
+
+export interface CartValidateLine {
+  sku: string;
+  name: string;
+  requestedQty: number;
+  availableStock: number;
+  pricedQty: number;
+  unitPrice: string;
+  linePrice: string;
+  status: CartValidateStatus;
+  message: string;
+}
+
+export interface CartValidate {
+  ok: boolean;
+  subtotal: string;
+  courier: string;
+  total: string;
+  courierFee: string;
+  lines: CartValidateLine[];
+  messages: string[];
+}
+
 export interface CheckoutDetails {
   email: string;
   phone: string;

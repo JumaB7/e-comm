@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { CatalogService } from '../services/catalog.service';
+import { StockAvailabilityService } from '../services/stock-availability.service';
 import { ToastService } from '../services/toast.service';
 
 @Directive()
@@ -11,6 +12,7 @@ export class ProductBaseDirective {
   private readonly catalog = inject(CatalogService);
   private readonly cart = inject(CartService);
   private readonly toast = inject(ToastService);
+  private readonly stockAvailability = inject(StockAvailabilityService);
   readonly sku = toSignal(inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('sku') ?? '')), {
     initialValue: '',
   });
@@ -22,6 +24,19 @@ export class ProductBaseDirective {
     const product = this.product();
     return product ? this.cart.remainingStock(product) : 0;
   });
+  readonly outOfStock = computed(() => {
+    const product = this.product();
+    return !!product && this.stockAvailability.isOutOfStock(product.stock);
+  });
+  readonly stockHint = computed(() => {
+    const product = this.product();
+    return product ? this.stockAvailability.lowStockHint(product.stock) : '';
+  });
+  readonly metaLine = computed(() => {
+    const product = this.product();
+    return product ? this.stockAvailability.metaLine(product.sku, product.stock) : '';
+  });
+  readonly addLabel = computed(() => (this.outOfStock() ? 'Out of stock' : 'Add to bag'));
 
   decrease(): void {
     this.quantity.update((value) => Math.max(1, value - 1));
@@ -37,7 +52,7 @@ export class ProductBaseDirective {
 
   addToBag(): void {
     const product = this.product();
-    if (!product) {
+    if (!product || this.outOfStock()) {
       return;
     }
     const requested = this.quantity();

@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { Observable, catchError, of, switchMap, tap } from 'rxjs';
 import { CheckoutProfile } from '../models/auth.model';
-import { CartLine, CartQuote, CheckoutDetails } from '../models/cart.model';
-import { emptyCartQuote } from '../models/constants';
+import { CartLine, CartQuote, CartValidate, CheckoutDetails } from '../models/cart.model';
+import { emptyCartQuote, emptyCartValidate } from '../models/constants';
 import { Product } from '../models/product.model';
 import { AuthService } from './auth.service';
 import { CatalogService } from './catalog.service';
@@ -233,6 +233,38 @@ export class CartService {
     } else {
       this.postalChoice.set(value);
     }
+  }
+
+  /** Live availability and prices. Does not reserve stock. */
+  validateBag(): Observable<CartValidate> {
+    const lines = this.lines().map((line) => ({ sku: line.sku, qty: line.qty, detail: line.detail }));
+    if (lines.length === 0) {
+      return of(emptyCartValidate);
+    }
+    return this.http
+      .post<CartValidate>('/api/cart/validate', { delivery: this.delivery(), lines })
+      .pipe(
+        tap((result) => {
+          this.catalog.applyStockHints(
+            result.lines.map((line) => ({ sku: line.sku, stock: line.availableStock })),
+          );
+        }),
+        catchError(() =>
+          of({
+            ...emptyCartValidate,
+            messages: ['Could not check stock right now. Your bag was not changed — try again in a moment.'],
+          }),
+        ),
+      );
+  }
+
+  /** Apply validate suggestions the customer has already been shown. */
+  applyValidatedQuantities(result: CartValidate): void {
+    const updates: Record<string, number> = {};
+    for (const line of result.lines) {
+      updates[line.sku] = line.status === 'ok' || line.status === 'reduced' ? line.pricedQty : 0;
+    }
+    this.applyQuantities(updates);
   }
 
   qtyOf(sku: string): number {

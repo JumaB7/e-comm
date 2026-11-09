@@ -1,8 +1,18 @@
-import { CartQuote } from './cart.model';
+import { CartQuote, CartValidate } from './cart.model';
 import { OrderSummary } from './order.model';
 import { ShopDefaults } from './shop-defaults.model';
 
 export const emptyCartQuote: CartQuote = { subtotal: '', courier: '', total: '', courierFee: '', lines: [] };
+
+export const emptyCartValidate: CartValidate = {
+  ok: false,
+  subtotal: '',
+  courier: '',
+  total: '',
+  courierFee: '',
+  lines: [],
+  messages: [],
+};
 
 export const emptyShopDefaults: ShopDefaults = {
   customerEmail: '',

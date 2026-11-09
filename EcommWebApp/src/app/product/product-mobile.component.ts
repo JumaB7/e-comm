@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ButtonComponent } from 'ecomm-components';
+import { ButtonComponent, StatusPillComponent } from 'ecomm-components';
 import { ProductBaseDirective } from './product-base.directive';
 
 @Component({
   selector: 'app-product-mobile',
-  imports: [RouterLink, ButtonComponent],
+  imports: [RouterLink, ButtonComponent, StatusPillComponent],
   templateUrl: './product-mobile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

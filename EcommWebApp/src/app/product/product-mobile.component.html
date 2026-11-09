@@ -6,10 +6,21 @@
     <p class="mt-4 text-[13px] font-medium tracking-[0.08em] uppercase">{{ item.category }}</p>
     <h1 class="mt-3 font-display text-[40px] leading-11.5">{{ item.name }}</h1>
     <p class="mt-3 text-[22px] font-semibold leading-7 text-action">{{ item.price }}</p>
-    <p class="mt-3 text-[13px] leading-4.5 text-muted">Incl. VAT · {{ item.stock }} in stock · SKU {{ item.sku }}</p>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <p class="text-[13px] leading-4.5 text-muted">{{ metaLine() }}</p>
+      @if (outOfStock()) {
+        <ecomm-status-pill label="Out of stock" tone="low" />
+      } @else if (stockHint()) {
+        <ecomm-status-pill [label]="stockHint()" tone="awaiting" />
+      }
+    </div>
     <p class="mt-3 text-base leading-6">{{ item.blurb }}</p>
-    <button type="button" class="mt-4 w-full border-0 bg-transparent p-0" (click)="addToBag()">
-      <ecomm-button label="Add to bag" [full]="true" />
+    <button
+      type="button"
+      class="mt-4 w-full border-0 bg-transparent p-0 disabled:opacity-50"
+      (click)="addToBag()"
+      [disabled]="outOfStock()">
+      <ecomm-button [label]="addLabel()" [full]="true" />
     </button>
     <p class="mt-3 text-[13px] leading-4.5 text-muted">You pay on PayFast. No card number on this page.</p>
   } @else if (ready()) {
